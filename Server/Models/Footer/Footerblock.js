@@ -1,0 +1,10 @@
+const FooterBlockSchema = new Schema(
+    {
+        id: String,
+        type: { type: String, enum: ["text", "menu", "logo", "social", "newsletter", "html"], required: true },
+        order: Number,
+        column: Number,
+        data: Schema.Types.Mixed,
+    },
+    { _id: false },
+)
