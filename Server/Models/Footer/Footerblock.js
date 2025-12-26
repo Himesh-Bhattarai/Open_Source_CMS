@@ -1,4 +1,6 @@
-const FooterBlockSchema = new Schema(
+import { Schema } from "mongoose"
+
+export const FooterBlockSchema = new Schema(
     {
         id: String,
         type: { type: String, enum: ["text", "menu", "logo", "social", "newsletter", "html"], required: true },

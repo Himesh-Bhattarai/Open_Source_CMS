@@ -1,14 +1,16 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-const UserSchema = z.object({
+const LoginValidation = z.object({
     email: z.string().email(),
-    password: z.string().min(8).max(24),
-    name: z.string().min(3).max(50),
-    avatar: z.string().optional(),
-    status:z.enum(["active", "inactive", "suspended"]).default("active"),
-    lastLogin: z.date().optional(),
-    twoFactorEnabled: z.boolean().default(false),
-});
+    password: z.string().min(8).max(24)
+})
 
-export default UserSchema;
-
+export const validateLogin = (req, res, next) => {
+    try {
+        LoginValidation.parse(req.body);
+        next();
+    } catch (err) {
+        err.statusCode = err.statusCode || 400;
+        next(err);
+    }
+} 

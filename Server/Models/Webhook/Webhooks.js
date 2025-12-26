@@ -1,3 +1,4 @@
+import { Schema, model, models } from "mongoose"
 
 const WebhookSchema = new Schema(
     {

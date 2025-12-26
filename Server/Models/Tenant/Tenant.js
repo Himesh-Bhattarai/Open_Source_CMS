@@ -1,3 +1,5 @@
+
+import { Schema, model, models } from "mongoose"
 const TenantSchema = new Schema(
   {
     _id: { type: String, required: true },
