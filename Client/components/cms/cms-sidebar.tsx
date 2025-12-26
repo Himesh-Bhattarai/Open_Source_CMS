@@ -240,9 +240,9 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           </nav>
         </ScrollArea>
 
-        <div className="p-3 border-t border-sidebar-border flex-shrink-0">
+        <div className="p-3 border-t border-sidebar-border shrink-0">
           <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-sidebar-accent/50">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center shrink-0">
               <span className="text-primary-foreground text-xs font-medium">
                 {user?.name
                   .split(" ")

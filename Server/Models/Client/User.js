@@ -1,11 +1,10 @@
 const UserSchema = new Schema(
     {
-        _id: { type: String, required: true },
         email: { type: String, required: true, unique: true },
         passwordHash: { type: String, required: true },
         name: { type: String, required: true },
         avatar: String,
-        role: { type: String, enum: ["admin", "owner", "manager", "editor", "viewer"], default: "viewer" },
+        role: { type: String, enum: ["admin", "web-owner", "manager", "editor", "viewer"], default: "web-owner" },
         status: { type: String, enum: ["active", "inactive", "suspended"], default: "active" },
         lastLogin: Date,
         twoFactorEnabled: { type: Boolean, default: false },

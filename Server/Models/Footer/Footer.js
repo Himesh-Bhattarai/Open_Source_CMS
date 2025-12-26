@@ -1,7 +1,6 @@
 
 const FooterSchema = new Schema(
     {
-        _id: { type: String, required: true },
         tenantId: { type: String, required: true, ref: "Tenant" },
         layout: { type: String, enum: ["2-column", "3-column", "4-column", "custom"] },
         blocks: [FooterBlockSchema],

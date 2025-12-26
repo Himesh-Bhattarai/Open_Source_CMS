@@ -32,7 +32,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   }
 
   return (
-    <header className="h-14 md:h-16 border-b bg-card flex-shrink-0 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
+    <header className="h-14 md:h-16 border-b bg-card shrink-0 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
       {isImpersonating && (
         <div className="absolute top-0 left-0 right-0 bg-amber-500 text-white px-4 py-1 text-xs flex items-center justify-center gap-2 z-50">
           <Shield className="h-3 w-3" />
@@ -124,7 +124,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
           <DropdownMenuContent align="end" className="w-72">
             <div className="p-3">
               <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">

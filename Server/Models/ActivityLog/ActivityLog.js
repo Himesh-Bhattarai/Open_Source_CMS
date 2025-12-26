@@ -1,7 +1,6 @@
 
 const ActivityLogSchema = new Schema(
     {
-        _id: { type: String, required: true },
         tenantId: { type: String, required: true, ref: "Tenant" },
         userId: { type: String, ref: "User" },
         action: {
