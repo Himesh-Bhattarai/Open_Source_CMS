@@ -15,3 +15,5 @@ const FieldSchema = new Schema(
     },
     { _id: false },
 )
+
+export const Field = models.Field || model("Field", FieldSchema)

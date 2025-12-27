@@ -11,6 +11,7 @@ import tenantRoutes from './Routes/Tenant/Combined/Tenant.js';
 import activityLogRoutes from './Routes/ActivityLog/ActivityLog.js';
 import blogRoutes from './Routes/Blog/Combined.js';
 import collectionRoutes from './Routes/Collection/Collection.js';
+import combinedRoutes from './Routes/Fields/Combined.js';
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/v1/create', tenantRoutes);
 app.use('/api/v1/activity', activityLogRoutes)
 app.use('/api/v1/blog', blogRoutes);
 app.use('/api/v1/new', collectionRoutes);
+app.use('/api/v1/fields', combinedRoutes)
 
 // Error handler (must be after routes)
 app.use(errorHandler);
