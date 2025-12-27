@@ -8,3 +8,5 @@ router.post("/login",
     validateLogin,
     LoginController
 )
+
+export default router;

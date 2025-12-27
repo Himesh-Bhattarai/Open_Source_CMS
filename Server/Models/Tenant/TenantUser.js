@@ -2,7 +2,6 @@ import { Schema, model, models } from "mongoose"
 
 const TenantUserSchema = new Schema(
     {
-        _id: { type: String, required: true },
         tenantId: { type: String, required: true, ref: "Tenant" },
         userId: { type: String, required: true, ref: "User" },
         role: { type: String, enum: ["owner", "manager", "editor", "viewer"], required: true },
