@@ -13,3 +13,5 @@ const MenuItemSchema = new Schema(
     },
     { _id: false },
 )
+
+export const MenuItem = models.MenuItem || model("MenuItem", MenuItemSchema)

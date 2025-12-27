@@ -1,4 +1,5 @@
 import { Schema, model, models } from "mongoose"
+import MenuItemSchema from "./MenuItem"
 
 
 const MenuSchema = new Schema(

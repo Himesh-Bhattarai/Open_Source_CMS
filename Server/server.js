@@ -14,6 +14,7 @@ import collectionRoutes from './Routes/Collection/Collection.js';
 import combinedRoutes from './Routes/Fields/Combined.js';
 import footerRoutes from './Routes/Footer/Combined.js';
 import mediaRoutes from './Routes/Media/Media.js';
+import menuRoutes from './Routes/Menu/Combined.js';
 
 dotenv.config();
 const app = express();
@@ -30,7 +31,8 @@ app.use('/api/v1/new', collectionRoutes);
 app.use('/api/v1/fields', combinedRoutes);
 app.use('/api/v1/create-tenant', tenantRoutes);
 app.use('/api/v1/create-footer', footerRoutes);
-app.use('/api/v1/create-media', mediaRoutes)
+app.use('/api/v1/create-media', mediaRoutes);
+app.use('/api/v1/create-menu', menuRoutes);
 
 // Error handler
 app.use(errorHandler);
