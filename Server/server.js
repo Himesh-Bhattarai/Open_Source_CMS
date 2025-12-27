@@ -8,6 +8,7 @@ import { errorHandler } from './Utils/Logger/errorHandler.js';
 // Import routes
 import authRoutes from './Routes/Auth/Combined/Auth.js';
 import tenantRoutes from './Routes/Tenant/Combined/Tenant.js';
+import activityLogRoutes from './Routes/ActivityLog/ActivityLog.js';
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.use(cookieParser()); // parse cookies
 // Routes
 app.use('/api/v1/auth', authRoutes); 
 app.use('/api/v1/create', tenantRoutes);
+app.use('/api/v1/activity', activityLogRoutes)
 
 // Error handler (must be after routes)
 app.use(errorHandler);

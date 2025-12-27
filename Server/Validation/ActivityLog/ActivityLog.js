@@ -1,6 +1,6 @@
 import { z} from 'zod';
 
-export const ActivityLogSchema = z.object({
+ const ActivityLogSchema = z.object({
     tenantId: z.string(),
     userId: z.string().optional(),
     action: z.enum(["create", "update", "delete", "publish", "unpublish", "login", "logout"]),
@@ -10,3 +10,13 @@ export const ActivityLogSchema = z.object({
     ipAddress: z.string(),
     userAgent: z.string(),
 });
+
+export const validateActivityLog = (req, res, next)=>{
+    try{
+        ActivityLogSchema.parse(req.body);
+        next();
+    }catch(err){
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}
