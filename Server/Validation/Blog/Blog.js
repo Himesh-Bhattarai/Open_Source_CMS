@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-export const BlogSchema = z.object({
+const BlogSchema = z.object({
     tenantId: z.string(),
     title: z.string().min(3).max(50),
     slug: z.string().min(3).max(50),
@@ -12,3 +12,14 @@ export const BlogSchema = z.object({
     tags: z.array(z.string()).optional(),
     status: z.enum(["draft", "published"]).default("draft"),
 });
+
+
+export const validateBlog = (req, res, next)=>{
+    try{
+        BlogSchema.parse(req.body);
+        next();
+    }catch(err){
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}
