@@ -7,7 +7,7 @@ const UserSchema = new Schema(
         passwordHash: { type: String, required: true },
         name: { type: String, required: true },
         avatar: String,
-        role: { type: String, enum: ["admin", "web-owner", "manager", "editor", "viewer"], default: "web-owner" },
+        role: { type: String, enum: ["admin", "web-owner"], default: "web-owner" },
         status: { type: String, enum: ["active", "inactive", "suspended"], default: "active" },
         lastLogin: Date,
         twoFactorEnabled: { type: Boolean, default: false },
