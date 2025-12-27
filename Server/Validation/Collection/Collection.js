@@ -1,14 +1,19 @@
 import {z} from 'zod';
 
-export const BlogSchema = z.object({
+const CollectionSchema = z.object({
     tenantId: z.string(),
-    title: z.string().min(3).max(50),
+    name: z.string().min(3).max(50),
     slug: z.string().min(3).max(50),
     description: z.string().optional(),
-    body: z.string().optional(),
-    image: z.string().optional(),
-    author: z.string().optional(),
-    category: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    status: z.enum(["draft", "published"]).default("draft"),
+    postCount: z.number().default(0),
 })
+
+export const validateCollection = (req, res, next)=>{
+    try{
+        CollectionSchema.parse(req.body);
+        next();
+    }catch(err){
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}
