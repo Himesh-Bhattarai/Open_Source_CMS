@@ -12,23 +12,25 @@ import activityLogRoutes from './Routes/ActivityLog/ActivityLog.js';
 import blogRoutes from './Routes/Blog/Combined.js';
 import collectionRoutes from './Routes/Collection/Collection.js';
 import combinedRoutes from './Routes/Fields/Combined.js';
+import footerRoutes from './Routes/Footer/Combined.js';
 
 dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json()); // parse JSON body
-app.use(cookieParser()); // parse cookies
+app.use(express.json()); 
+app.use(cookieParser()); 
 
 // Routes
-app.use('/api/v1/auth', authRoutes); 
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/create', tenantRoutes);
 app.use('/api/v1/activity', activityLogRoutes)
 app.use('/api/v1/blog', blogRoutes);
 app.use('/api/v1/new', collectionRoutes);
-app.use('/api/v1/fields', combinedRoutes)
+app.use('/api/v1/fields', combinedRoutes);
+app.use('/api/v1/create-footer', footerRoutes);
 
-// Error handler (must be after routes)
+// Error handler
 app.use(errorHandler);
 
 // Connect to DB

@@ -10,3 +10,5 @@ export const FooterBlockSchema = new Schema(
     },
     { _id: false },
 )
+
+export const FooterBlock = models.FooterBlock || model("FooterBlock", FooterBlockSchema)    

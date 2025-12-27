@@ -1,4 +1,5 @@
 import { Schema, model, models } from "mongoose"
+import { FooterBlockSchema } from "./FooterBlock"
 
 const FooterSchema = new Schema(
     {

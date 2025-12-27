@@ -1,6 +1,5 @@
 import {z} from "zod";
-
-export const FooterBlockSchema = z.object({
+const FooterBlockSchema = z.object({
     tenantId: z.string(),
     title: z.string().min(3).max(50),
     slug: z.string().min(3).max(50),
@@ -12,3 +11,13 @@ export const FooterBlockSchema = z.object({
     tags: z.array(z.string()).optional(),
     status: z.enum(["draft", "published"]).default("draft"),
 });
+
+export const validateFooterBlock = (req,res,next)=>{
+    try{
+        FooterBlockSchema.parse(req.body)
+        next();
+    }catch(err){
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}
