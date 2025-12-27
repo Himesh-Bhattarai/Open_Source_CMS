@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-export const TenantSchema = z.object({
+ const TenantSchema = z.object({
     name: z.string().min(3).max(50),
     domain: z.string().min(3).max(50).unique(),
     apiKey: z.string().min(3).max(50).unique(),
@@ -14,3 +14,14 @@ export const TenantSchema = z.object({
         dateFormat: z.string().optional(),
     }),
 })
+
+
+export const validateTenant = (req, res, next)=>{
+    try{
+        TenantSchema.safeParse(req.body);
+        next();
+    }catch(err){
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}
