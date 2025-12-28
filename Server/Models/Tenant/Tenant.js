@@ -1,5 +1,5 @@
-
-import { Schema, model, models } from "mongoose"
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 const TenantSchema = new Schema(
   {
     _id: { type: String, required: true, ref:"User" },
@@ -22,8 +22,5 @@ const TenantSchema = new Schema(
     collection: "tenants",
   },
 )
-
-TenantSchema.index({ domain: 1 })
-TenantSchema.index({ apiKey: 1 })
 
 export const Tenant = models.Tenant || model("Tenant", TenantSchema)

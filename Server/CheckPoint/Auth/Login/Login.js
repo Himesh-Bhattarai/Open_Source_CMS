@@ -1,7 +1,7 @@
 import { logger as log } from "../../../Utils/Logger/logger.js"
 import { User } from "../../../Models/Client/User.js"
 import bcrypt from "bcrypt"
-import { generateToken } from "../../../Utils/JWT/jwt.js"
+import { generateTokens } from "../../../Utils/JWT/jwt.js"
 export const loginCheckpoint = async (req, res, next) => {
     try {
         const { email, password } = req.body;

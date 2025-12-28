@@ -1,6 +1,7 @@
 
+import mongoose from 'mongoose';
+const { Schema, model, models } = mongoose;
 
-import { Schema, model, models } from "mongoose"
 const UserSchema = new Schema(
     {
         email: { type: String, required: true, unique: true },
@@ -18,6 +19,5 @@ const UserSchema = new Schema(
     },
 )
 
-UserSchema.index({ email: 1 })
 
 export const User = models.User || model("User", UserSchema)

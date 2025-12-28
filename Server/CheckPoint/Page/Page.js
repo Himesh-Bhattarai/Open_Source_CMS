@@ -1,4 +1,4 @@
-import { Page } from "../../Models/Page/Page";
+import { Page } from "../../Models/Page/Page.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const pageCheckpoint = (req, res, next) => {

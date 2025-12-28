@@ -1,4 +1,4 @@
-import { Field } from "../../../Models/Field/Field";
+import { Field } from "../../../Models/Field/Field.js";
 import {logger as log} from "../../../Utils/Logger/logger.js";
 
 export const fieldCheckPoint = async (req, res, next)=>{

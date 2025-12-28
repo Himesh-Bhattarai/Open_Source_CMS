@@ -1,7 +1,7 @@
 import express from 'express';
 import LoginRoute from '../Login/LoginRoute.js';
-import LogoutRoute from '../Logout/LogoutRoute.js';
-import RegisterRoute from '../Register/RegisterRoute.js';
+import LogoutRoute from '../Logout/Logout.js';
+import RegisterRoute from '../Register/Register.js';
 
 const router = express.Router();
 

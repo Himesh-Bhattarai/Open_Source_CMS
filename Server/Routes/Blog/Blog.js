@@ -1,12 +1,12 @@
 import express from 'express';
 import { validateBlog } from '../../Validation/Blog/Blog.js';
-import { BlogCheckpoint } from '../../../CheckPoint/Blog/Blog.js';
+import { BlogPostCheckpoint } from '../../CheckPoint/Blog/BlogPost.js';
 
 const router = express.Router();
 
 router.post("/blog",
     validateBlog,
-    BlogCheckpoint
+    BlogPostCheckpoint
 )
 
 export default router;

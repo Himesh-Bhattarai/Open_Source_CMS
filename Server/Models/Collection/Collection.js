@@ -1,6 +1,5 @@
-
-import { Schema, model, models } from "mongoose"
-
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 // Collection Schema (Dynamic Content)
 
 const CollectionSchema = new Schema(

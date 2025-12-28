@@ -1,7 +1,8 @@
-import { Schema, model, models } from "mongoose"
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 
 // Menu Schema
-const MenuItemSchema = new Schema(
+export const MenuItemSchema = new Schema(
     {
         id: String,
         label: { type: String, required: true },

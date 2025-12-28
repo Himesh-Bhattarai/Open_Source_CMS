@@ -1,3 +1,8 @@
+import bcrypt from "bcrypt";
+import { User } from "../../../Models/Client/User.js";
+import { Session } from "../../../Models/Client/Session.js";
+import { generateTokens } from "../../../Utils/JWT/jwt.js";
+import {logger as log} from "../../../Utils/Logger/logger.js";
 export const registerCheckpoint = async (req, res, next) => {
     try {
         const { email, password, name } = req.body;

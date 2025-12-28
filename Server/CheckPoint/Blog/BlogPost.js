@@ -1,4 +1,4 @@
-import { BlogPost } from "../../Models/Blog/Blogpost";
+import { BlogPost } from "../../Models/Blog/Blogpost.js";
 import {logger as log} from "../../Utils/Logger/logger.js";
 
 export const BlogPostCheckpoint =async (req, res, next) =>{

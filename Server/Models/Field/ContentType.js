@@ -1,5 +1,6 @@
-import { Schema, model, models } from "mongoose"
-
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
+import  {FieldSchema}  from "./Field.js"
 const ContentTypeSchema = new Schema(
     {
         _id: { type: String, required: true },

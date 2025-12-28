@@ -1,5 +1,6 @@
-import { Schema, model, models } from "mongoose"
-import MenuItemSchema from "./MenuItem"
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
+import {MenuItemSchema} from "./MenuItem.js"
 
 
 const MenuSchema = new Schema(

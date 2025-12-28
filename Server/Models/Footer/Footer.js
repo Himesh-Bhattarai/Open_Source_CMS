@@ -1,5 +1,6 @@
-import { Schema, model, models } from "mongoose"
-import { FooterBlockSchema } from "./FooterBlock"
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
+import { FooterBlockSchema } from "./FooterBlock.js"
 
 const FooterSchema = new Schema(
     {

@@ -1,5 +1,5 @@
 import express from "express";
-import { logoutCheckpoint } from "../../../../Controllers/Auth/Logout.js";
+import { logoutCheckpoint } from "../../../CheckPoint/Auth/Logout/Logout.js";
 
 const router = express.Router();
 

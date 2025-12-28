@@ -1,4 +1,4 @@
-import { jwt} from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 //import Jwt secret form env
 // refresh and access token with expire

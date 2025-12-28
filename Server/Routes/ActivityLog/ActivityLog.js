@@ -1,5 +1,5 @@
 import express from 'express';
-import { ActivityLogCheckpoint } from '../../../CheckPoint/ActivityLog/ActivityLog.js';
+import { ActivityLogCheckpoint } from '../../CheckPoint/ActivityLog/ActivityLog.js';
 import { validateActivityLog } from '../../Validation/ActivityLog/ActivityLog.js';
 
 const router = express.Router();

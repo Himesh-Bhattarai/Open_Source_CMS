@@ -1,7 +1,7 @@
 import { User } from '../../../Models/Client/User.js';
 import { Session } from '../../../Models/Client/Session.js';
 import { logger as log } from '../../../Utils/Logger/logger.js';
-import { verifyToken } from '../../../Utils/JWT/jwt.js';
+import { verifyAccessToken } from '../../../Utils/JWT/jwt.js';
 
 export const logoutCheckpoint = async (req, res, next) => {
     try {
@@ -12,7 +12,7 @@ export const logoutCheckpoint = async (req, res, next) => {
             throw err;
         }
 
-        const payload = verifyToken(token);
+        const payload = verifyAccessToken(token);
         const userId = payload.userId;
 
         log.info(`Logout Attempt by: ${userId}`);

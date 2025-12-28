@@ -1,4 +1,4 @@
-import { Footer } from "../../Models/Footer/Footer";
+import { Footer } from "../../Models/Footer/Footer.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const footerCheckpoint = async (req, res, next) => {

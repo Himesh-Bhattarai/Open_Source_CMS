@@ -1,4 +1,4 @@
-import { ContentType } from "../../../Models/Field/ContentType";
+import { ContentType } from "../../../Models/Field/ContentType.js";
 
 import { logger as log } from "../../../Utils/Logger/logger.js";
 

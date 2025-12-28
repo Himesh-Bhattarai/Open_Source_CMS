@@ -1,4 +1,4 @@
-import {z} from 'zon'
+import {z} from 'zod'
 const ContentTypeSchema = z.object({
     tenantId: z.string(),
     name: z.string().min(3).max(50),

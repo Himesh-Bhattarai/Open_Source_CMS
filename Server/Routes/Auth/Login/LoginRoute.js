@@ -1,12 +1,12 @@
 import express from "express";
-import { LoginController } from "../../../../Controllers/Auth/LoginController.js";
+import { loginCheckpoint } from "../../../CheckPoint/Auth/Login/Login.js";
 import { validateLogin } from "../../../Validation/Client/User.js";
 
 const router = express.Router();
 
 router.post("/login",
     validateLogin,
-    LoginController
+    loginCheckpoint
 )
 
 export default router;

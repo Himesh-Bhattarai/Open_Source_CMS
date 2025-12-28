@@ -1,5 +1,5 @@
-import { Theme } from "../../../Models/Theme/Theme.js";
-import { logger as log } from "../../../Utils/Logger/logger.js";
+import { Theme } from "../../Models/Theme/Theme.js";
+import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const themeCheckpoint = (req, res, next) => {
     try {

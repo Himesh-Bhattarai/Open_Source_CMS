@@ -1,4 +1,6 @@
 // server.js or index.js
+import "module-alias/register.js";
+
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';

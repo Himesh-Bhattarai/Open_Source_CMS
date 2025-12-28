@@ -1,7 +1,8 @@
-import { Schema, model, models } from "mongoose"
-import { PageBlockSchema } from "./PageBlock"
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose; 
+import  {PageBlockSchema}  from "./PageBlock.js"
 
-const PageSchema = new Schema(
+ export const PageSchema = new Schema(
     {
         _id: { type: String, required: true },
         tenantId: { type: String, required: true, ref: "Tenant" },

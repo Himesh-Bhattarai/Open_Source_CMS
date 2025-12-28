@@ -1,4 +1,4 @@
-import { Media } from "../../Models/Media/Media";
+import { Media } from "../../Models/Media/Media.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const mediaCheckpoint = async (req, res, next) => {

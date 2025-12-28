@@ -1,4 +1,4 @@
-import { FooterBlock } from "../../Models/Footer/FooterBlock";
+import { FooterBlock } from "../../Models/Footer/FooterBlock.js";
 
 import { logger as log } from "../../Utils/Logger/logger.js";
 

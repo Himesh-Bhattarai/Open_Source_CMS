@@ -1,5 +1,5 @@
-import { Schema, model, models } from "mongoose"
-
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 const MediaSchema = new Schema(
     {
         _id: { type: String, required: true },

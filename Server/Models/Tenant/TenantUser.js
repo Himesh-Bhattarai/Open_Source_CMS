@@ -1,5 +1,5 @@
-import { Schema, model, models } from "mongoose"
-
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 const TenantUserSchema = new Schema(
     {
         tenantId: { type: String, required: true, ref: "Tenant" },

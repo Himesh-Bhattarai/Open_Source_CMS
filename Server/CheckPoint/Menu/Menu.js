@@ -1,4 +1,4 @@
-import { Menu } from "../../Models/Menu/Menu";
+import { Menu } from "../../Models/Menu/Menu.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const menuCheckpoint = async (req, res, next) => {

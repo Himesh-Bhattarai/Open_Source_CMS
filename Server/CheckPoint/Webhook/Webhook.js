@@ -1,5 +1,5 @@
-import {Webhook} from "../../../Models/Webhook/Webhooks.js";
-import {logger as log} from "../../../Utils/Logger/logger.js";
+import {Webhook} from "../../Models/Webhook/Webhooks.js";
+import {logger as log} from "../../Utils/Logger/logger.js";
 
 export const webhookCheckpoint = async(req, res, next) =>{
     try{

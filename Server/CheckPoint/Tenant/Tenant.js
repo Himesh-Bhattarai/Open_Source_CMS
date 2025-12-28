@@ -1,7 +1,7 @@
-import { Tenant } from "../../Models/Tenant/Tenant";
+import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { logger as log } from "../../Utils/Logger/logger.js"
 
-export const TenantCheckpoint = async (req, res, next) => {
+export const tenantCheckpoint = async (req, res, next) => {
     try {
         const { name, domain, apiKey, ownerEmail, status, plan, settings, subdomain } = req.body;
 

@@ -1,5 +1,5 @@
-import { Schema, model, models } from "mongoose"
-
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 // Version History Schema
 const VersionSchema = new Schema(
     {

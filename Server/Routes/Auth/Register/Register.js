@@ -1,11 +1,13 @@
 import express from 'express';
 
-import { RegisterController } from '../../../../Controllers/Auth/RegisterController.js';
+import { registerCheckpoint } from '../../../CheckPoint/Auth/Register/Register.js';
 import { validateRegister } from '../../../Validation/Client/User.js';
 
 const router = express.Router();
 
 router.post("/register",
     validateRegister,
-    RegisterController
+    registerCheckpoint
 )
+
+export default router

@@ -1,6 +1,6 @@
-import { Schema, model, models } from "mongoose"
-
-const PageBlockSchema = new Schema(
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
+export const PageBlockSchema = new Schema(
     {
         id: String,
         type: {

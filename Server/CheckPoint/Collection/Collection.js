@@ -1,4 +1,4 @@
-import { Collection } from "../../Models/Collection/Collection";
+import { Collection } from "../../Models/Collection/Collection.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const collectionCheckpoint = async (req, res, next) => {

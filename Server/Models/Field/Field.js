@@ -1,7 +1,7 @@
-import { Schema, model, models } from "mongoose"
-
+import mongoose from "mongoose";
+const { Schema, model, models } = mongoose;
 // Content Type Schema
-const FieldSchema = new Schema(
+export const FieldSchema = new Schema(
     {
         id: String,
         name: String,

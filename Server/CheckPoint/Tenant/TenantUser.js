@@ -1,7 +1,7 @@
-import { logger as log } from "../../../Utils/Logger/logger.js";
-import { Tenant } from "../../../Models/Tenant/Tenant.js";
+import { logger as log } from "../../Utils/Logger/logger.js";
+import { Tenant } from "../../Models/Tenant/Tenant.js";
 
-export const TenantUser = async (req, res, next) => {
+export const tenantUserCheckpoint = async (req, res, next) => {
     try {
         const { userId, role } = req.body
 

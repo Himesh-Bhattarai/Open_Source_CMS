@@ -1,4 +1,4 @@
-import { PageBlock } from "../../Models/Page/PageBlock";
+import { PageBlock } from "../../Models/Page/PageBlock.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const pageBlockCheckpoint = (req, res, next)=>{
