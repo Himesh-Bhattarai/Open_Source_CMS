@@ -1,6 +1,6 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-export const PageSchema = z.object({
+const PageSchema = z.object({
     tenantId: z.string(),
     title: z.string().min(3).max(50),
     slug: z.string().min(3).max(50),
@@ -15,5 +15,16 @@ export const PageSchema = z.object({
     publishedAt: z.date().optional(),
     publishedBy: z.string().optional(),
     authorId: z.string().optional(),
-    
+
 })
+
+export const validatePage = (req, res, next) => {
+    try {
+
+        PageSchema.parse(req.body);
+        next();
+    } catch (err) {
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}

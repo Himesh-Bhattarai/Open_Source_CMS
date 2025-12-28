@@ -1,4 +1,5 @@
 import { Schema, model, models } from "mongoose"
+import { PageBlockSchema } from "./PageBlock"
 
 const PageSchema = new Schema(
     {

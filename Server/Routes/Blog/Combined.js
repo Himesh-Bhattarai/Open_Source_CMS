@@ -6,3 +6,5 @@ const router = express.Router();
 
 router.use('/blog', blogRoute);
 router.use('/blog-category', blogCategoryRoute);
+
+export default router
