@@ -1,6 +1,6 @@
 import {z} from'zod';
 
-export const ThemeSchema = z.object({
+const ThemeSchema = z.object({
     tenantId: z.string(),
     colors: z.object({
         primary: z.string(),
@@ -27,3 +27,14 @@ export const ThemeSchema = z.object({
         variant: z.enum(["multi-column", "minimal", "centered"]),
     }),
 })
+
+
+export const validateTheme = (req, res, next)=>{
+    try{
+        ThemeSchema.parse(req.body);
+        next();
+    }catch(err){
+        err.statusCode = err.statusCode || 400;
+        next(err)
+    }
+}
