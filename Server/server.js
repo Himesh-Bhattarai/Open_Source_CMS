@@ -17,6 +17,7 @@ import menuRoutes from './Routes/Menu/Combined.js';
 import pageRoutes from './Routes/Page/Combined.js';
 import footerRoutes from './Routes/Footer/Combined.js';
 import themeRoutes from './Routes/Theme/Theme.js';
+import versionRoutes from './Routes/Version/Version.js';
 
 dotenv.config();
 const app = express();
@@ -36,7 +37,8 @@ app.use('/api/v1/create-footer', footerRoutes);
 app.use('/api/v1/create-media', mediaRoutes);
 app.use('/api/v1/create-menu', menuRoutes);
 app.use('/api/v1/create-page', pageRoutes);
-app.use('/api/v1/theme', themeRoutes);
+app.use('/api/v1/create-theme', themeRoutes);
+app.use('/api/v1/create-version', versionRoutes);
 
 // Error handler
 app.use(errorHandler);
