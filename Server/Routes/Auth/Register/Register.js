@@ -5,7 +5,7 @@ import { validateRegister } from '../../../Validation/Client/User.js';
 
 const router = express.Router();
 
-router.post("/register",
+router.post("/",
     validateRegister,
     registerCheckpoint
 )

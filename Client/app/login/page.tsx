@@ -11,8 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, EyeOff, Loader2, Chrome, Facebook } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { loginApi } from "@/Api/Auth/Login"
 
 export default function LoginPage() {
+
+
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -23,21 +26,28 @@ export default function LoginPage() {
   const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    // Simulate authentication
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        localStorage.setItem("cms_auth", "authenticated")
-        router.push("/cms")
-      } else {
-        setError("Please enter valid credentials")
-        setIsLoading(false)
+    try {
+      
+      const response = await loginApi(formData);
+
+      if (!response.ok) {
+        setError(response.data.message || "Login failed");
+        setIsLoading(false);
+        return;
       }
-    }, 1000)
-  }
+
+      router.push("/cms");
+    } catch (err) {
+      setError("An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const handleGoogleLogin = () => {
     setIsLoading(true)
@@ -58,6 +68,7 @@ export default function LoginPage() {
   }
 
   return (
+    
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary/5 via-background to-primary/5 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-2 text-center">

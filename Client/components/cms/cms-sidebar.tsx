@@ -32,9 +32,11 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/useAuth";
 
-const adminNavigation = [
+import { NavigationItem } from "@/lib/types/navigation";
+
+export const adminNavigation: NavigationItem[] = [
   { name: "Dashboard", href: "/cms", icon: LayoutDashboard },
   {
     name: "Websites",
@@ -54,39 +56,47 @@ const adminNavigation = [
       { name: "Platform Settings", href: "/cms/settings", icon: Settings },
     ],
   },
-]
+];
 
-const getTenantNavigation = (integrations?: any) => {
-  const baseNav = [{ name: "Dashboard", href: "/cms", icon: LayoutDashboard, alwaysShow: true }]
+export const getTenantNavigation = (integrations?: any): NavigationItem[] => {
+  const baseNav: NavigationItem[] = [
+    { name: "Dashboard", href: "/cms", icon: LayoutDashboard, alwaysShow: true },
+  ];
 
-  const contentChildren = []
-  if (integrations?.pages) contentChildren.push({ name: "Pages", href: "/cms/content/pages", icon: FileText })
-  if (integrations?.blog) contentChildren.push({ name: "Blog Posts", href: "/cms/content/blog", icon: Newspaper })
+  const contentChildren: NavigationItem[] = [];
+  if (integrations?.pages)
+    contentChildren.push({ name: "Pages", href: "/cms/content/pages", icon: FileText });
+  if (integrations?.blog)
+    contentChildren.push({ name: "Blog Posts", href: "/cms/content/blog", icon: Newspaper });
+
   contentChildren.push(
     { name: "Collections", href: "/cms/content/collections", icon: FolderOpen },
     { name: "Content Types", href: "/cms/content/types", icon: Layers },
-  )
+  );
 
   baseNav.push({
     name: "Content",
     icon: FileText,
-    children: contentChildren,
-  } as any)
+    children: contentChildren as any, // see NOTE below
+  });
 
-  const globalChildren = []
-  if (integrations?.menu) globalChildren.push({ name: "Menus", href: "/cms/global/menus", icon: MenuIcon })
-  if (integrations?.footer) globalChildren.push({ name: "Footer", href: "/cms/global/footer", icon: Footprints })
+  const globalChildren: NavigationItem[] = [];
+  if (integrations?.menu)
+    globalChildren.push({ name: "Menus", href: "/cms/global/menus", icon: MenuIcon });
+  if (integrations?.footer)
+    globalChildren.push({ name: "Footer", href: "/cms/global/footer", icon: Footprints });
+
   globalChildren.push(
     { name: "SEO Settings", href: "/cms/global/seo", icon: Search },
     { name: "Layout & Theme", href: "/cms/global/layout", icon: Palette },
-  )
+  );
 
   baseNav.push({
     name: "Global",
     icon: Globe,
     highlight: true,
-    children: globalChildren,
-  } as any)
+    children: globalChildren as any,
+  });
 
   baseNav.push(
     { name: "Theme", href: "/cms/theme", icon: Palette, alwaysShow: true },
@@ -98,10 +108,11 @@ const getTenantNavigation = (integrations?: any) => {
     { name: "Notifications", href: "/cms/notifications", icon: Bell, alwaysShow: true },
     { name: "Team", href: "/cms/users", icon: Users, alwaysShow: true },
     { name: "Integrations", href: "/cms/integrations", icon: Plug, alwaysShow: true },
-  )
+  );
 
-  return baseNav
-}
+  return baseNav;
+};
+
 
 interface CMSSidebarProps {
   isOpen?: boolean
@@ -142,7 +153,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           isOpen ? "translate-x-0 shadow-xl" : "-translate-x-full",
         )}
       >
-        <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border flex-shrink-0">
+        <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border shrink-0">
           <Link href="/cms" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">CF</span>
@@ -156,7 +167,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
         </div>
 
         {(isOwner || isImpersonating) && (
-          <div className="px-4 py-3 border-b border-sidebar-border flex-shrink-0">
+          <div className="px-4 py-3 border-b border-sidebar-border shrink-0">
             <div
               className={cn(
                 "border rounded-lg p-3",
@@ -245,9 +256,9 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
             <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center shrink-0">
               <span className="text-primary-foreground text-xs font-medium">
                 {user?.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                  ?.split(" ")
+                  ?.map((n : string) => n[0])
+                  ?.join("")}
               </span>
             </div>
             <div className="flex-1 min-w-0">

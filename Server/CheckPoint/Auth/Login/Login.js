@@ -1,7 +1,8 @@
 import { logger as log } from "../../../Utils/Logger/logger.js"
 import { User } from "../../../Models/Client/User.js"
+import { Session } from "../../../Models/Client/Session.js"
 import bcrypt from "bcrypt"
-import { generateTokens } from "../../../Utils/JWT/jwt.js"
+import { generateTokens } from "../../../Utils/Jwt/Jwt.js"
 export const loginCheckpoint = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -37,7 +38,7 @@ export const loginCheckpoint = async (req, res, next) => {
         }
 
         //check user is admin or web owner and send redirect in response login successful
-        const redirect = user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+        const redirect = user.role === "admin" ? "/cms" : "/cms";
 
         //Generate Token payload
         const payload = {
@@ -45,7 +46,7 @@ export const loginCheckpoint = async (req, res, next) => {
             role: user.role,
         };
 
-        const { accessToken, refreshToken } = await generateToken(payload);
+        const { accessToken, refreshToken } = generateTokens(payload);
 
         //save into Database 
         const CheckSession = await Session.findOne({ userId: user._id });
@@ -53,16 +54,16 @@ export const loginCheckpoint = async (req, res, next) => {
         if (!CheckSession) {
             await Session.create({
                 userId: user._id,
-                name: user.name,
-                accessToken: await bcrypt.hash(accessToken, 10),
+                email: user.email,
                 refreshToken: await bcrypt.hash(refreshToken, 10),
+                isActive: true
             });
         } else {
             await Session.updateOne(
                 { userId: user._id },
                 {
-                    accessToken: await bcrypt.hash(accessToken, 10),
                     refreshToken: await bcrypt.hash(refreshToken, 10),
+                    isActive: true
                 }
             );
 

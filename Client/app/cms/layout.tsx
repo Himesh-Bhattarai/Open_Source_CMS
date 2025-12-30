@@ -4,8 +4,8 @@ import type React from "react"
 import { CMSSidebar } from "@/components/cms/cms-sidebar"
 import { CMSHeader } from "@/components/cms/cms-header"
 import { useState, useEffect } from "react"
-import { AuthProvider } from "@/lib/auth-context"
 import { useRouter, usePathname } from "next/navigation"
+import { verifyMe } from "@/Api/Auth/VerifyAuth"
 import { Loader2 } from "lucide-react"
 
 export default function CMSLayout({
@@ -18,16 +18,17 @@ export default function CMSLayout({
   const router = useRouter()
   const pathname = usePathname()
 
-  useEffect(() => {
-    const authToken = localStorage.getItem("cms_auth")
 
-    if (!authToken) {
-      // Not authenticated, redirect to login
-      router.push("/login")
-    } else {
-      setIsAuthenticated(true)
-    }
-  }, [router, pathname])
+  useEffect(() => {
+    verifyMe()
+      .then(() => {
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        router.replace("/login");
+      });
+  }, [router]);
 
   if (isAuthenticated === null) {
     return (
@@ -37,11 +38,10 @@ export default function CMSLayout({
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
-
   return (
-    <AuthProvider>
+    
       <div className="flex h-screen overflow-hidden bg-muted/30">
         <CMSSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -53,6 +53,6 @@ export default function CMSLayout({
           </main>
         </div>
       </div>
-    </AuthProvider>
+    
   )
 }

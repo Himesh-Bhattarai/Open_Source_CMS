@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { User } from "../../../Models/Client/User.js";
 import { Session } from "../../../Models/Client/Session.js";
-import { generateTokens } from "../../../Utils/JWT/jwt.js";
+import { generateTokens } from "../../../Utils/Jwt/Jwt.js";
 import {logger as log} from "../../../Utils/Logger/logger.js";
 export const registerCheckpoint = async (req, res, next) => {
     try {
@@ -23,17 +23,17 @@ export const registerCheckpoint = async (req, res, next) => {
 
         // Create new user
         const newUser = await User.create({ email, passwordHash, name, role: "web-owner" });
-
+        
         // Generate tokens
         const payload = { userId: newUser._id, role: newUser.role };
-        const { accessToken, refreshToken } = await generateTokens(payload);
-
+        const { accessToken, refreshToken } =  generateTokens(payload);
+        
         // Save session
         await Session.create({
             userId: newUser._id,
             name: newUser.name,
-            accessTokenHash: await bcrypt.hash(accessToken, 10),
-            refreshTokenHash: await bcrypt.hash(refreshToken, 10)
+            email: newUser.email,
+            refreshToken: await bcrypt.hash(refreshToken, 10)
         });
 
         // Send cookies

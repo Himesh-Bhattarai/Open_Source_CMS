@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, EyeOff, Loader2, Check, Chrome, Facebook } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-
+import { registerApi } from "@/Api/Auth/Signup"
+import { set } from "date-fns"
 export default function SignupPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
@@ -30,6 +31,7 @@ export default function SignupPage() {
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Register From submitted", formData)
     e.preventDefault()
     setIsLoading(true)
     setError("")
@@ -41,15 +43,19 @@ export default function SignupPage() {
       return
     }
 
-    setTimeout(() => {
-      if (formData.name && formData.email && formData.password) {
-        localStorage.setItem("cms_auth", "authenticated")
-        router.push("/cms")
+    try {
+      const apiRequest = await registerApi(formData);
+      console.log("REGISTER RESPONSE:", apiRequest)
+    } catch (err) {
+      if (typeof err === "string") {
+
+        throw new Error(err);
       } else {
-        setError("Please fill in all fields")
+        console.log(err);
+        setError("An error occurred")
         setIsLoading(false)
       }
-    }, 1000)
+    }
   }
 
   const handleGoogleSignup = () => {
@@ -166,9 +172,8 @@ export default function SignupPage() {
                   {passwordRequirements.map((req, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-xs">
                       <div
-                        className={`h-4 w-4 rounded-full flex items-center justify-center ${
-                          req.met ? "bg-green-100 dark:bg-green-900/30" : "bg-muted"
-                        }`}
+                        className={`h-4 w-4 rounded-full flex items-center justify-center ${req.met ? "bg-green-100 dark:bg-green-900/30" : "bg-muted"
+                          }`}
                       >
                         {req.met && <Check className="h-3 w-3 text-green-600 dark:text-green-400" />}
                       </div>

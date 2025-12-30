@@ -4,7 +4,7 @@ import { validateLogin } from "../../../Validation/Client/User.js";
 
 const router = express.Router();
 
-router.post("/login",
+router.post("/",
     validateLogin,
     loginCheckpoint
 )

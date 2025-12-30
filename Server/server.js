@@ -1,11 +1,12 @@
 // server.js or index.js
-import "module-alias/register.js";
-
+import cors from "cors";
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import { connectDB } from './Database/db.js';
 import { errorHandler } from './Utils/Logger/errorHandler.js';
+import dotenv from "dotenv";
+dotenv.config();
+
 
 // Import routes
 import authRoutes from './Routes/Auth/Combined/Auth.js';
@@ -25,8 +26,12 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json()); 
-app.use(cookieParser()); 
+app.use(cors({
+    origin: "http://localhost:3000", // your frontend
+    credentials: true
+}));
+app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/v1/auth', authRoutes);

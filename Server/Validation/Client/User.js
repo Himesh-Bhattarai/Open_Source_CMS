@@ -23,7 +23,7 @@ const RegisterValidation = z.object({
     email: z.string().email(),
     password: z.string().min(8).max(24),
     name: z.string().min(2).max(50),
-    role: z.enum(["admin", "web-owner"]).default("web-owner"),
+    role: z.enum(["admin", "web-owner"]).default("web-owner").optional(),
 });
 
 export const validateRegister = (req, res, next) =>{

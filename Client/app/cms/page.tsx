@@ -4,30 +4,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { BarChart3, FileText, Globe, ImageIcon, Settings, Users, Clock, AlertTriangle, Building2 } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/useAuth";
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 export default function CMSDashboard() {
-  const { user, isAdmin, isOwner, isImpersonating, impersonatedTenant } = useAuth()
-  const router = useRouter()
-  const [mounted, setMounted] = useState(false)
+  const router = useRouter();
+  const { user, loading, isAdmin, isImpersonating, impersonatedTenant } = useAuth();
+  console.log(user, loading, isAdmin, isImpersonating, impersonatedTenant);
+
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
-  if (!mounted) {
-    return null
+  if (!mounted || loading) {
+    return null; // or spinner
+  }
+
+  if (!user) {
+    router.push("/login");
+    return null;
   }
 
   if (isAdmin && !isImpersonating) {
-    return <AdminDashboard />
+    return <AdminDashboard />;
   }
 
-  return <OwnerDashboard user={user} tenantName={impersonatedTenant?.name || user?.tenantName} />
+  return (
+    <OwnerDashboard
+      user={user}
+      tenantName={impersonatedTenant?.name || user?.tenantName}
+    />
+  );
 }
-
 function AdminDashboard() {
   const stats = [
     { label: "Total Websites", value: "12", icon: Building2, change: "+2 this month", color: "text-blue-600" },
@@ -177,7 +189,7 @@ function OwnerDashboard({ user, tenantName }: { user: any; tenantName?: string }
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">
-          Welcome back, {user?.name.split(" ")[0]}!
+          Welcome back, {user?.name?.split(" ")[0]}!
         </h1>
         <p className="text-pretty text-muted-foreground mt-2">
           {tenantName ? `Managing ${tenantName}` : "Here's what's happening with your website."}

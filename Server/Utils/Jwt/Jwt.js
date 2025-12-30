@@ -1,4 +1,7 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv'
+dotenv.config()
+
 
 //import Jwt secret form env
 // refresh and access token with expire
@@ -47,3 +50,16 @@ export const verifyRefreshToken = async (token) => {
     return decoded;
 };
 
+//strong token verification middleware
+export const verificationMiddleware = (req, res, next)=>{
+    const token = req.cookies.accessToken;
+    if(!token){
+        const err = new Error("No access token found");
+        err.statusCode = 401;
+        throw err;
+    }
+    const decoded = jwt.verify(token, ACCESS_TOKEN)
+    req.user = decoded;
+    console.log(decoded);
+    next();
+}
