@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
 
 export default function TenantsPage() {

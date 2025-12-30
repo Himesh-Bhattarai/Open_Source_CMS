@@ -26,7 +26,7 @@ export default function CMSLayout({
       })
       .catch(() => {
         setIsAuthenticated(false);
-        router.replace("/login");
+        router.replace("/");
       });
   }, [router]);
 

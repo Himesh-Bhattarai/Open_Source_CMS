@@ -21,6 +21,10 @@ export function useAuth() {
       });
   }, []);
 
+  const startImpersonation = (tenant: any) => {
+    setImpersonatedTenant(tenant);
+  };
+
   const stopImpersonation = () => {
     setImpersonatedTenant(null);
   };
@@ -28,11 +32,17 @@ export function useAuth() {
   return {
     user,
     loading,
+
+    // roles
     isAdmin: user?.role === "admin",
     isOwner: user?.role === "web-owner",
+
+    // impersonation state
     isImpersonating: Boolean(impersonatedTenant),
     impersonatedTenant,
-    setImpersonatedTenant,
-    stopImpersonation, // ✅ NOW EXISTS
+
+    // impersonation actions
+    startImpersonation,
+    stopImpersonation,
   };
 }

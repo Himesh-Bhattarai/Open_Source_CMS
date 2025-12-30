@@ -22,10 +22,7 @@ export const logoutCheckpoint = async (req, res, next) => {
         res.clearCookie('refreshToken', { httpOnly: true });
 
         // Clear session tokens
-        await Session.findOneAndUpdate({ userId }, { $set: { accessTokenHash: null, refreshTokenHash: null } });
-
-        // Update user's last login
-        await User.findByIdAndUpdate(userId, { lastLogin: new Date() });
+        await Session.findOneAndUpdate({ userId }, { $set: { logoutAt: new Date(),  refreshToken: null } });
 
         log.info(`Logout Successful by: ${userId}`);
         return res.status(200).json({ message: "Logout successful" });

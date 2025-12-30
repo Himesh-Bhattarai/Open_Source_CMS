@@ -158,82 +158,82 @@ export interface ThemeResponse {
   updatedAt: string
 }
 
-export class ContentFlowCMS {
-  private config: Required<CMSConfig>
+// export class ContentFlowCMS {
+//   private config: Required<CMSConfig>
 
-  constructor(config: CMSConfig) {
-    this.config = {
-      ...config,
-      cacheTime: config.cacheTime ?? 60,
-    }
-  }
+//   constructor(config: CMSConfig) {
+//     this.config = {
+//       ...config,
+//       cacheTime: config.cacheTime ?? 60,
+//     }
+//   }
 
-  private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const url = `${this.config.baseUrl}/api/v1/${this.config.tenant}${endpoint}`
+//   private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+//     const url = `${this.config.baseUrl}/api/v1/${this.config.tenant}${endpoint}`
 
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        "X-API-Key": this.config.apiKey,
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      next: {
-        revalidate: this.config.cacheTime,
-        ...options?.next,
-      },
-    })
+//     const response = await fetch(url, {
+//       ...options,
+//       headers: {
+//         "X-API-Key": this.config.apiKey,
+//         "Content-Type": "application/json",
+//         ...options?.headers,
+//       },
+//       next: {
+//         revalidate: this.config.cacheTime,
+//         ...options?.next,
+//       },
+//     })
 
-    if (!response.ok) {
-      throw new Error(`CMS API Error: ${response.status} ${response.statusText}`)
-    }
+//     if (!response.ok) {
+//       throw new Error(`CMS API Error: ${response.status} ${response.statusText}`)
+//     }
 
-    return response.json()
-  }
+//     return response.json()
+//   }
 
-  // Menu APIs
-  async getMenu(location = "header"): Promise<MenuResponse> {
-    return this.fetch<MenuResponse>(`/menu?location=${location}`)
-  }
+//   // Menu APIs
+//   async getMenu(location = "header"): Promise<MenuResponse> {
+//     return this.fetch<MenuResponse>(`/menu?location=${location}`)
+//   }
 
-  // Footer APIs
-  async getFooter(): Promise<FooterResponse> {
-    return this.fetch<FooterResponse>("/footer")
-  }
+//   // Footer APIs
+//   async getFooter(): Promise<FooterResponse> {
+//     return this.fetch<FooterResponse>("/footer")
+//   }
 
-  // Page APIs
-  async getPage(slug: string): Promise<PageResponse> {
-    return this.fetch<PageResponse>(`/pages/${slug}`)
-  }
+//   // Page APIs
+//   async getPage(slug: string): Promise<PageResponse> {
+//     return this.fetch<PageResponse>(`/pages/${slug}`)
+//   }
 
-  // Blog APIs
-  async getBlogPosts(params?: {
-    limit?: number
-    offset?: number
-    category?: string
-    tag?: string
-  }): Promise<BlogResponse> {
-    const queryParams = new URLSearchParams()
-    if (params?.limit) queryParams.append("limit", params.limit.toString())
-    if (params?.offset) queryParams.append("offset", params.offset.toString())
-    if (params?.category) queryParams.append("category", params.category)
-    if (params?.tag) queryParams.append("tag", params.tag)
+//   // Blog APIs
+//   async getBlogPosts(params?: {
+//     limit?: number
+//     offset?: number
+//     category?: string
+//     tag?: string
+//   }): Promise<BlogResponse> {
+//     const queryParams = new URLSearchParams()
+//     if (params?.limit) queryParams.append("limit", params.limit.toString())
+//     if (params?.offset) queryParams.append("offset", params.offset.toString())
+//     if (params?.category) queryParams.append("category", params.category)
+//     if (params?.tag) queryParams.append("tag", params.tag)
 
-    const query = queryParams.toString()
-    return this.fetch<BlogResponse>(`/blog${query ? `?${query}` : ""}`)
-  }
+//     const query = queryParams.toString()
+//     return this.fetch<BlogResponse>(`/blog${query ? `?${query}` : ""}`)
+//   }
 
-  async getBlogPost(slug: string): Promise<BlogPost> {
-    return this.fetch<BlogPost>(`/blog/${slug}`)
-  }
+//   async getBlogPost(slug: string): Promise<BlogPost> {
+//     return this.fetch<BlogPost>(`/blog/${slug}`)
+//   }
 
-  // Theme APIs
-  async getTheme(): Promise<ThemeResponse> {
-    return this.fetch<ThemeResponse>("/theme")
-  }
-}
+//   // Theme APIs
+//   async getTheme(): Promise<ThemeResponse> {
+//     return this.fetch<ThemeResponse>("/theme")
+//   }
+// }
 
-// Factory function for easy initialization
-export function createCMSClient(config: CMSConfig): ContentFlowCMS {
-  return new ContentFlowCMS(config)
-}
+// // Factory function for easy initialization
+// export function createCMSClient(config: CMSConfig): ContentFlowCMS {
+//   return new ContentFlowCMS(config)
+// }

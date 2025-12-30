@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth";
+import { logoutApi } from "@/Api/Auth/Logout";
 
 interface CMSHeaderProps {
   onMenuClick?: () => void
@@ -26,9 +27,14 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false)
   const router = useRouter()
 
-  const handleLogout = () => {
-    localStorage.removeItem("cms_auth")
-    router.push("/login")
+  const handleLogout = async () => {
+    const res = await logoutApi();
+
+    
+      router.push("/"); // ⬅️ leave protected tree
+      router.refresh();     
+      console.log("Logout successful");        // ⬅️ refresh AFTER navigation
+    
   }
 
   return (

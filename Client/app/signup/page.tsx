@@ -45,7 +45,11 @@ export default function SignupPage() {
 
     try {
       const apiRequest = await registerApi(formData);
-      console.log("REGISTER RESPONSE:", apiRequest)
+      if(apiRequest.ok){
+        router.push("/login")
+      }
+      setIsLoading(false)
+
     } catch (err) {
       if (typeof err === "string") {
 
