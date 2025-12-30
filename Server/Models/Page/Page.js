@@ -4,7 +4,6 @@ import  {PageBlockSchema}  from "./PageBlock.js"
 
  export const PageSchema = new Schema(
     {
-        _id: { type: String, required: true },
         tenantId: { type: String, required: true, ref: "Tenant" },
         title: { type: String, required: true },
         slug: { type: String, required: true },

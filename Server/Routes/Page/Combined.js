@@ -4,7 +4,7 @@ import express from "express";
 
 const router = express.Router();
 
-router.use('/page', Page);
-router.use('/page-block', PageBlock);
+router.use('/', Page);
+router.use('/', PageBlock);
 
 export default router
