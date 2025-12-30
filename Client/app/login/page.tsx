@@ -31,7 +31,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      
+
       const response = await loginApi(formData);
 
       if (!response.ok) {
@@ -68,7 +68,7 @@ export default function LoginPage() {
   }
 
   return (
-    
+
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary/5 via-background to-primary/5 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-2 text-center">

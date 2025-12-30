@@ -140,7 +140,7 @@ export function AdvancedSearch() {
                     </Badge>
                   )}
                   <Select value={filter.field} onValueChange={(value) => updateFilter(filter.id, "field", value)}>
-                    <SelectTrigger className="w-35">
+                    <SelectTrigger className="w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -152,7 +152,7 @@ export function AdvancedSearch() {
                     </SelectContent>
                   </Select>
                   <Select value={filter.operator} onValueChange={(value) => updateFilter(filter.id, "operator", value)}>
-                    <SelectTrigger className="w-35">
+                    <SelectTrigger className="w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

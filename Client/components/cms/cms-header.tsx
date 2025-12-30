@@ -15,11 +15,12 @@ import { Badge } from "@/components/ui/badge"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth";
-import { logoutApi } from "@/Api/Auth/Logout";
 
+import { logoutApi } from "@/Api/Auth/Logout"
 interface CMSHeaderProps {
   onMenuClick?: () => void
 }
+
 
 export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   const { setTheme, theme } = useTheme()
@@ -27,15 +28,13 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false)
   const router = useRouter()
 
-  const handleLogout = async () => {
-    const res = await logoutApi();
+  const handleLogout = async() => {
+    const callLogout = await logoutApi();
+    router.push("/");
+    router.refresh();
 
-    
-      router.push("/"); // ⬅️ leave protected tree
-      router.refresh();     
-      console.log("Logout successful");        // ⬅️ refresh AFTER navigation
-    
   }
+
 
   return (
     <header className="h-14 md:h-16 border-b bg-card shrink-0 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">

@@ -15,7 +15,7 @@ export function CTABlock({ data }: CTABlockProps) {
   const isGradient = data.variant === "gradient"
 
   return (
-    <section className={`py-20 lg:py-32 ${isGradient ? "bg-linear-to-br from-primary to-primary/80" : "bg-primary"}`}>
+    <section className={`py-20 lg:py-32 ${isGradient ? "bg-gradient-to-br from-primary to-primary/80" : "bg-primary"}`}>
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center text-primary-foreground">
           <h2 className="text-balance text-4xl lg:text-5xl font-bold tracking-tight mb-4">

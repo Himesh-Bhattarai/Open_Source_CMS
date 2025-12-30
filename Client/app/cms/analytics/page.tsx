@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
         </div>
         <div className="flex gap-2">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-45">
+            <SelectTrigger className="w-[180px]">
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
@@ -123,7 +123,7 @@ export default function AnalyticsPage() {
               <CardDescription>Daily visitor trends for the selected period</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-75 flex items-center justify-center bg-muted rounded-lg">
+              <div className="h-[300px] flex items-center justify-center bg-muted rounded-lg">
                 <p className="text-muted-foreground">Chart visualization would go here</p>
               </div>
             </CardContent>

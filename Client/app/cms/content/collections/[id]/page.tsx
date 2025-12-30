@@ -102,7 +102,7 @@ export default function CollectionItemsPage({ params }: { params: { id: string }
                 <TableHead>Price</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead className="w-12.5"></TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

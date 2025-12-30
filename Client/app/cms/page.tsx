@@ -2,71 +2,112 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BarChart3, FileText, Globe, ImageIcon, Settings, Users, Clock, AlertTriangle, Building2 } from "lucide-react"
+import {
+  BarChart3,
+  FileText,
+  Globe,
+  ImageIcon,
+  Settings,
+  Users,
+  Clock,
+  AlertTriangle,
+  Building2,
+  HardDrive,
+  Zap,
+  Activity,
+} from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/hooks/useAuth";
-
+import { useAuth } from "@/hooks/useAuth"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 export default function CMSDashboard() {
-  const router = useRouter();
-  const { user, loading, isAdmin, isImpersonating, impersonatedTenant } = useAuth();
-  console.log(user, loading, isAdmin, isImpersonating, impersonatedTenant);
-
-  const [mounted, setMounted] = useState(false);
+  const { user, isAdmin, isOwner } = useAuth()
+  const router = useRouter()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
-  if (!mounted || loading) {
-    return null; // or spinner
+  if (!mounted) {
+    return null
   }
 
-  if (!user) {
-    router.push("/");
-    return null;
+  if (isAdmin) {
+    return <AdminDashboard />
   }
 
-  if (isAdmin && !isImpersonating) {
-    return <AdminDashboard />;
-  }
-
-  return (
-    <OwnerDashboard
-      user={user}
-      tenantName={impersonatedTenant?.name || user?.tenantName}
-    />
-  );
+  return <OwnerDashboard user={user} />
 }
+
 function AdminDashboard() {
   const stats = [
-    { label: "Total Websites", value: "12", icon: Building2, change: "+2 this month", color: "text-blue-600" },
-    { label: "Total Users", value: "48", icon: Users, change: "+5 this week", color: "text-green-600" },
-    { label: "Total Pages", value: "324", icon: FileText, change: "Across all sites", color: "text-purple-600" },
-    { label: "Storage Used", value: "2.4 GB", icon: ImageIcon, change: "24% of plan", color: "text-orange-600" },
+    {
+      label: "Total Users",
+      value: "48",
+      icon: Users,
+      change: "+5 this week",
+      trend: "up",
+      color: "text-blue-600",
+    },
+    {
+      label: "Active Websites",
+      value: "12",
+      icon: Building2,
+      change: "+2 this month",
+      trend: "up",
+      color: "text-green-600",
+    },
+    {
+      label: "Total Storage",
+      value: "24.5 GB",
+      icon: HardDrive,
+      change: "48% of limit",
+      trend: "neutral",
+      color: "text-purple-600",
+    },
+    {
+      label: "API Calls",
+      value: "1.2M",
+      icon: Zap,
+      change: "+12% this week",
+      trend: "up",
+      color: "text-orange-600",
+    },
   ]
 
-  const recentTenants = [
-    { name: "ACME Corporation", domain: "acme.example.com", status: "active", users: 5, pages: 24 },
-    { name: "TechStart Inc", domain: "techstart.example.com", status: "active", users: 3, pages: 12 },
-    { name: "Green Earth Co", domain: "greenearth.example.com", status: "trial", users: 2, pages: 8 },
+  const recentUsers = [
+    {
+      name: "Sarah Johnson",
+      email: "sarah@acmecorp.com",
+      website: "ACME Corporation",
+      status: "active",
+      joinedAt: "2 days ago",
+    },
+    {
+      name: "Mike Rodriguez",
+      email: "mike@techstart.com",
+      website: "TechStart Inc",
+      status: "active",
+      joinedAt: "1 week ago",
+    },
+    {
+      name: "Emily Chen",
+      email: "emily@greenearth.com",
+      website: "Green Earth Co",
+      status: "trial",
+      joinedAt: "3 days ago",
+    },
   ]
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">Platform Dashboard</h1>
-          <p className="text-pretty text-muted-foreground mt-2">Manage all websites and platform settings</p>
-        </div>
-        <Button asChild>
-          <Link href="/cms/tenants">View All Websites</Link>
-        </Button>
+      <div>
+        <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">Platform Overview</h1>
+        <p className="text-pretty text-muted-foreground mt-2">Monitor all users and system health</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.label}>
@@ -82,43 +123,55 @@ function AdminDashboard() {
         ))}
       </div>
 
-      {/* Recent Tenants */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Building2 className="h-5 w-5" />
-            Recent Websites
-          </CardTitle>
-          <CardDescription>Latest website activity</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Users className="h-5 w-5" />
+                Recent Users
+              </CardTitle>
+              <CardDescription>Latest user registrations</CardDescription>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/cms/admin/users">View All</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentTenants.map((tenant) => (
+          <div className="space-y-3">
+            {recentUsers.map((user) => (
               <div
-                key={tenant.domain}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border"
+                key={user.email}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border hover:border-primary/50 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-medium">{tenant.name}</h3>
+                    <h3 className="font-medium">{user.name}</h3>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full ${
-                        tenant.status === "active"
+                        user.status === "active"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                           : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                       }`}
                     >
-                      {tenant.status}
+                      {user.status}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">{tenant.domain}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span>{tenant.users} users</span>
-                    <span>{tenant.pages} pages</span>
+                    <span className="flex items-center gap-1">
+                      <Building2 className="h-3 w-3" />
+                      {user.website}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {user.joinedAt}
+                    </span>
                   </div>
                 </div>
-                <Button asChild size="sm" variant="outline" className="w-full sm:w-auto bg-transparent">
-                  <Link href={`/cms/tenants/${tenant.domain}`}>Manage</Link>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/cms/admin/users/${user.email}`}>View Details</Link>
                 </Button>
               </div>
             ))}
@@ -126,36 +179,35 @@ function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base sm:text-lg">Platform Actions</CardTitle>
-          <CardDescription>Common administrative tasks</CardDescription>
+          <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+          <CardDescription>Platform management tools</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
-              <Link href="/cms/tenants">
-                <Building2 className="h-5 w-5" />
-                <span className="text-xs sm:text-sm">All Websites</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
-              <Link href="/cms/users">
+              <Link href="/cms/admin/users">
                 <Users className="h-5 w-5" />
-                <span className="text-xs sm:text-sm">All Users</span>
+                <span className="text-xs sm:text-sm">View All Users</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
-              <Link href="/cms/settings">
-                <Settings className="h-5 w-5" />
-                <span className="text-xs sm:text-sm">Platform Settings</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
-              <Link href="/cms/tenants">
+              <Link href="/cms/admin/analytics">
                 <BarChart3 className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">Analytics</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+              <Link href="/cms/admin/logs">
+                <Activity className="h-5 w-5" />
+                <span className="text-xs sm:text-sm">System Logs</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+              <Link href="/cms/admin/settings">
+                <Settings className="h-5 w-5" />
+                <span className="text-xs sm:text-sm">Settings</span>
               </Link>
             </Button>
           </div>
@@ -165,7 +217,7 @@ function AdminDashboard() {
   )
 }
 
-function OwnerDashboard({ user, tenantName }: { user: any; tenantName?: string }) {
+function OwnerDashboard({ user }: { user: any }) {
   const stats = [
     { label: "Total Pages", value: "24", icon: FileText, change: "+3 this week", color: "text-blue-600" },
     { label: "Published Posts", value: "156", icon: BarChart3, change: "+12 this week", color: "text-green-600" },
@@ -189,11 +241,9 @@ function OwnerDashboard({ user, tenantName }: { user: any; tenantName?: string }
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">
-          Welcome back, {user?.name?.split(" ")[0]}!
+          Welcome back, {user?.name.split(" ")[0]}!
         </h1>
-        <p className="text-pretty text-muted-foreground mt-2">
-          {tenantName ? `Managing ${tenantName}` : "Here's what's happening with your website."}
-        </p>
+        <p className="text-pretty text-muted-foreground mt-2">Here's what's happening with your website.</p>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -233,7 +283,7 @@ function OwnerDashboard({ user, tenantName }: { user: any; tenantName?: string }
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Globe className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <Globe className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                         <span className="font-medium text-sm">{change.name}</span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                           {change.status}
@@ -266,11 +316,11 @@ function OwnerDashboard({ user, tenantName }: { user: any; tenantName?: string }
             <div className="space-y-4">
               {recentActivity.map((activity, idx) => (
                 <div key={idx} className="flex items-start gap-3">
-                  <div className="h-2 w-2 mt-2 rounded-full bg-primary shrink-0"></div>
+                  <div className="h-2 w-2 mt-2 rounded-full bg-primary flex-shrink-0"></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
                       <span className="text-muted-foreground">{activity.action}</span>{" "}
-                      <span className="font-medium wrap-break-word">{activity.item}</span>
+                      <span className="font-medium break-words">{activity.item}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {activity.user} • {activity.time}

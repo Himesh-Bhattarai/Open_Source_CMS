@@ -118,7 +118,7 @@ export default function SEOSettingsPage() {
                       general: { ...seoData.general, siteTitleSeparator: e.target.value },
                     })
                   }
-                  className="max-w-25"
+                  className="max-w-[100px]"
                 />
                 <p className="text-xs text-muted-foreground">Character between page title and site name</p>
               </div>

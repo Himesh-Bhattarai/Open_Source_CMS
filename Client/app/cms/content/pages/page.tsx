@@ -103,7 +103,7 @@ export default function PagesPage() {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -114,7 +114,7 @@ export default function PagesPage() {
                 </SelectContent>
               </Select>
               <Select value={authorFilter} onValueChange={setAuthorFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="All authors" />
                 </SelectTrigger>
                 <SelectContent>

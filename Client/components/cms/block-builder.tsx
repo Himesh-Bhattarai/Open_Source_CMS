@@ -212,7 +212,7 @@ export function BlockBuilder({ blocks, onBlocksChange, onAddBlock }: BlockBuilde
     switch (block.type) {
       case "hero":
         return (
-          <div className="bg-linear-to-br from-primary/10 to-primary/5 p-12 rounded-lg text-center">
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-12 rounded-lg text-center">
             <h1 className="text-4xl font-bold mb-4">{block.data.title || "Hero Headline"}</h1>
             <p className="text-xl text-muted-foreground mb-6">{block.data.subtitle || "Hero subtitle text"}</p>
             {block.data.buttonText && (

@@ -37,7 +37,7 @@ export function GalleryBlock({ data }: GalleryBlockProps) {
                     className="object-cover transition-transform group-hover:scale-105"
                   />
                   {image.caption && (
-                    <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-4">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4">
                       <p className="text-white text-sm">{image.caption}</p>
                     </div>
                   )}

@@ -27,92 +27,82 @@ import {
   Activity,
   Bell,
   FormInput,
-  Shield,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth"
 
-import { NavigationItem } from "@/lib/types/navigation";
 
-export const adminNavigation: NavigationItem[] = [
-  { name: "Dashboard", href: "/cms", icon: LayoutDashboard },
+import type { ForwardRefExoticComponent, RefAttributes } from "react"
+import type { LucideProps } from "lucide-react"
+
+type IconType = ForwardRefExoticComponent<
+  Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+>
+
+interface NavLinkItem {
+  type: "link"
+  name: string
+  href: string
+  icon: IconType
+}
+
+interface NavGroupItem {
+  type: "group"
+  name: string
+  icon: IconType
+  highlight?: boolean
+  children: NavLinkItem[]
+}
+
+type NavigationItem = NavLinkItem | NavGroupItem
+const adminNavigation: NavigationItem[] = [
+  { type: "link", name: "Overview", href: "/cms", icon: LayoutDashboard },
+  { type: "link", name: "All Users", href: "/cms/admin/users", icon: Users },
+  { type: "link", name: "Platform Analytics", href: "/cms/admin/analytics", icon: BarChart3 },
+  { type: "link", name: "System Logs", href: "/cms/admin/logs", icon: Activity },
+  { type: "link", name: "Platform Settings", href: "/cms/admin/settings", icon: Settings },
+]
+
+const ownerNavigation: NavigationItem[] = [
+  { type: "link", name: "Dashboard", href: "/cms", icon: LayoutDashboard },
+  { type: "link", name: "My Website", href: "/cms/my-website", icon: Building2 },
+
   {
-    name: "Websites",
-    icon: Building2,
-    children: [
-      { name: "All Websites", href: "/cms/tenants", icon: Building2 },
-      { name: "Create New", href: "/cms/tenants/new", icon: Building2 },
-    ],
-  },
-  {
-    name: "System",
-    icon: Settings,
-    children: [
-      { name: "Platform Analytics", href: "/cms/analytics", icon: BarChart3 },
-      { name: "System Logs", href: "/cms/activity", icon: Activity },
-      { name: "All Users", href: "/cms/users", icon: Users },
-      { name: "Platform Settings", href: "/cms/settings", icon: Settings },
-    ],
-  },
-];
-
-export const getTenantNavigation = (integrations?: any): NavigationItem[] => {
-  const baseNav: NavigationItem[] = [
-    { name: "Dashboard", href: "/cms", icon: LayoutDashboard, alwaysShow: true },
-  ];
-
-  const contentChildren: NavigationItem[] = [];
-  if (integrations?.pages)
-    contentChildren.push({ name: "Pages", href: "/cms/content/pages", icon: FileText });
-  if (integrations?.blog)
-    contentChildren.push({ name: "Blog Posts", href: "/cms/content/blog", icon: Newspaper });
-
-  contentChildren.push(
-    { name: "Collections", href: "/cms/content/collections", icon: FolderOpen },
-    { name: "Content Types", href: "/cms/content/types", icon: Layers },
-  );
-
-  baseNav.push({
+    type: "group",
     name: "Content",
     icon: FileText,
-    children: contentChildren as any, // see NOTE below
-  });
+    children: [
+      { type: "link", name: "Pages", href: "/cms/content/pages", icon: FileText },
+      { type: "link", name: "Blog Posts", href: "/cms/content/blog", icon: Newspaper },
+      { type: "link", name: "Collections", href: "/cms/content/collections", icon: FolderOpen },
+      { type: "link", name: "Content Types", href: "/cms/content/types", icon: Layers },
+    ],
+  },
 
-  const globalChildren: NavigationItem[] = [];
-  if (integrations?.menu)
-    globalChildren.push({ name: "Menus", href: "/cms/global/menus", icon: MenuIcon });
-  if (integrations?.footer)
-    globalChildren.push({ name: "Footer", href: "/cms/global/footer", icon: Footprints });
-
-  globalChildren.push(
-    { name: "SEO Settings", href: "/cms/global/seo", icon: Search },
-    { name: "Layout & Theme", href: "/cms/global/layout", icon: Palette },
-  );
-
-  baseNav.push({
+  {
+    type: "group",
     name: "Global",
     icon: Globe,
     highlight: true,
-    children: globalChildren as any,
-  });
+    children: [
+      { type: "link", name: "Menus", href: "/cms/global/menus", icon: MenuIcon },
+      { type: "link", name: "Footer", href: "/cms/global/footer", icon: Footprints },
+      { type: "link", name: "SEO Settings", href: "/cms/global/seo", icon: Search },
+      { type: "link", name: "Layout & Theme", href: "/cms/global/layout", icon: Palette },
+    ],
+  },
 
-  baseNav.push(
-    { name: "Theme", href: "/cms/theme", icon: Palette, alwaysShow: true },
-    { name: "Forms", href: "/cms/forms", icon: FormInput, alwaysShow: true },
-    { name: "Media Library", href: "/cms/media", icon: ImageIcon, alwaysShow: true },
-    { name: "Backups", href: "/cms/backups", icon: Database, alwaysShow: true },
-    { name: "Analytics", href: "/cms/analytics", icon: BarChart3, alwaysShow: true },
-    { name: "Activity", href: "/cms/activity", icon: Activity, alwaysShow: true },
-    { name: "Notifications", href: "/cms/notifications", icon: Bell, alwaysShow: true },
-    { name: "Team", href: "/cms/users", icon: Users, alwaysShow: true },
-    { name: "Integrations", href: "/cms/integrations", icon: Plug, alwaysShow: true },
-  );
-
-  return baseNav;
-};
-
+  { type: "link", name: "Theme", href: "/cms/theme", icon: Palette },
+  { type: "link", name: "Forms", href: "/cms/forms", icon: FormInput },
+  { type: "link", name: "Media Library", href: "/cms/media", icon: ImageIcon },
+  { type: "link", name: "Backups", href: "/cms/backups", icon: Database },
+  { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
+  { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
+  { type: "link", name: "Notifications", href: "/cms/notifications", icon: Bell },
+  { type: "link", name: "Integrations", href: "/cms/integrations", icon: Plug },
+]
 
 interface CMSSidebarProps {
   isOpen?: boolean
@@ -121,9 +111,9 @@ interface CMSSidebarProps {
 
 export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
   const pathname = usePathname()
-  const { user, isAdmin, isOwner, isImpersonating, impersonatedTenant } = useAuth()
+  const { user, isAdmin, isOwner } = useAuth()
 
-  const navigation = isAdmin && !isImpersonating ? adminNavigation : getTenantNavigation(user?.integrations)
+  const navigation = isAdmin ? adminNavigation : ownerNavigation
 
   useEffect(() => {
     if (onClose) onClose()
@@ -153,7 +143,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           isOpen ? "translate-x-0 shadow-xl" : "-translate-x-full",
         )}
       >
-        <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border shrink-0">
+        <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border flex-shrink-0">
           <Link href="/cms" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">CF</span>
@@ -166,37 +156,15 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           </Button>
         </div>
 
-        {(isOwner || isImpersonating) && (
-          <div className="px-4 py-3 border-b border-sidebar-border shrink-0">
-            <div
-              className={cn(
-                "border rounded-lg p-3",
-                isImpersonating
-                  ? "bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900"
-                  : "bg-primary/10 border-primary/20",
-              )}
-            >
+        {isOwner && (
+          <div className="px-4 py-3 border-b border-sidebar-border flex-shrink-0">
+            <div className="border rounded-lg p-3 bg-primary/10 border-primary/20">
               <div className="flex items-center gap-2 mb-1">
-                {isImpersonating ? (
-                  <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                ) : (
-                  <Briefcase className="h-4 w-4 text-primary" />
-                )}
-                <span
-                  className={cn(
-                    "text-xs font-semibold uppercase tracking-wide",
-                    isImpersonating ? "text-amber-600 dark:text-amber-400" : "text-primary",
-                  )}
-                >
-                  {isImpersonating ? "Viewing As Owner" : "Your Website"}
-                </span>
+                <Briefcase className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-primary">Your Website</span>
               </div>
-              <p className="text-sm font-medium truncate">
-                {isImpersonating ? impersonatedTenant?.name : user?.tenantName}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {isImpersonating ? impersonatedTenant?.id : user?.tenantId}
-              </p>
+              <p className="text-sm font-medium truncate">{user?.tenantName || "My Website"}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.tenantId || "website-id"}</p>
             </div>
           </div>
         )}
@@ -205,7 +173,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           <nav className="space-y-1 p-3">
             {navigation.map((item) => (
               <div key={item.name}>
-                {item.children ? (
+                {item.type === "group" ? (
                   <div
                     className={cn(
                       "space-y-1",
@@ -214,8 +182,11 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
                   >
                     <div className="flex items-center gap-2 px-2 py-1.5">
                       <item.icon className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-semibold text-primary uppercase tracking-wide">{item.name}</span>
+                      <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+                        {item.name}
+                      </span>
                     </div>
+
                     {item.children.map((child) => (
                       <Link
                         key={child.name}
@@ -248,12 +219,13 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
                 )}
               </div>
             ))}
+
           </nav>
         </ScrollArea>
 
-        <div className="p-3 border-t border-sidebar-border shrink-0">
+        <div className="p-3 border-t border-sidebar-border flex-shrink-0">
           <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-sidebar-accent/50">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <span className="text-primary-foreground text-xs font-medium">
                 {user?.name
                   ?.split(" ")

@@ -45,7 +45,7 @@ export default function SignupPage() {
 
     try {
       const apiRequest = await registerApi(formData);
-      if(apiRequest.ok){
+      if (apiRequest.ok) {
         router.push("/login")
       }
       setIsLoading(false)

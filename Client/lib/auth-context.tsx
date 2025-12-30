@@ -1,8 +1,7 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
 
-export type UserRole = "admin" | "web-owner"
+export type UserRole = "admin" | "owner"
 
 export interface TenantIntegrations {
   menu: boolean
@@ -24,14 +23,9 @@ export interface User {
   integrations?: TenantIntegrations
 }
 
-export interface AuthContextType {
+interface AuthContextType {
   user: User | null
   setUser: (user: User | null) => void
   isAdmin: boolean
   isOwner: boolean
-  impersonatedTenant: { id: string; name: string } | null
-  startImpersonation: (tenantId: string, tenantName: string) => void
-  stopImpersonation: () => void
-  isImpersonating: boolean
 }
-

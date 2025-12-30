@@ -256,7 +256,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20">
         <CardContent className="pt-6">
           <div className="flex gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-sm">Global content - Changes affect entire site</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -298,7 +298,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-150 pr-4">
+            <ScrollArea className="h-[600px] pr-4">
               <div className="space-y-1">{menuItems.map((item) => renderMenuItem(item))}</div>
             </ScrollArea>
           </CardContent>
@@ -367,7 +367,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                           <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input placeholder="Search pages..." className="pl-10" />
                         </div>
-                        <ScrollArea className="h-50">
+                        <ScrollArea className="h-[200px]">
                           <div className="space-y-1">
                             {[
                               { title: "Homepage", path: "/" },
@@ -441,7 +441,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 </TabsContent>
               </Tabs>
             ) : (
-              <div className="h-100 flex items-center justify-center text-muted-foreground">
+              <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
                   <p>Select a menu item to edit</p>
