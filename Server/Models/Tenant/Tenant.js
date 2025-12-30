@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const TenantSchema = new Schema(
   {
-    _id: { type: String, required: true, ref:"User" },
+    tenantId: { type: String, required: true, unique: true },
+    userId: { type: String, required: true, ref: "User" },
     name: { type: String, required: true },
     domain: { type: String, required: true, unique: true },
     subdomain: String,

@@ -16,6 +16,7 @@
         "jsonwebtoken": "^9.0.3",
         "module-alias": "^2.2.3",
         "mongoose": "^8.20.4",
+        "uuid": "^13.0.0",
         "zod": "^4.2.1"
     },
     "devDependencies": {

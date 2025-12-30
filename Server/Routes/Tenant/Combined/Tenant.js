@@ -4,7 +4,7 @@ import TenantUserRoute from '../TenantUser.js';
 
 const router = express.Router();
 
-router.use('/tenant', TenantRoute);
-router.use('/tenant-user', TenantUserRoute);
+router.use('/', TenantRoute);
+router.use('/', TenantUserRoute);
 
 export default router;

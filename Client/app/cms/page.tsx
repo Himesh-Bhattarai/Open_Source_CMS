@@ -25,7 +25,7 @@ export default function CMSDashboard() {
   }
 
   if (!user) {
-    router.push("/login");
+    router.push("/");
     return null;
   }
 

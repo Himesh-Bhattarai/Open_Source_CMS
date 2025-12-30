@@ -26,10 +26,16 @@ import {
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
+import { createTenant } from "@/Api/Tenant/Create-tenant"
 
 export default function TenantsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [form, setForm] = useState({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+  const [loading, setLoading] = useState(false)
+  const { user } = useAuth()
+
+
   const { startImpersonation } = useAuth()
   const router = useRouter()
 
@@ -80,6 +86,32 @@ export default function TenantsPage() {
     router.push("/cms")
   }
 
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreateTenant = async () => {
+    if (!user) return;
+
+    setLoading(true);
+
+    try {
+      await createTenant({
+        ...form,
+        createdBy: user.id,
+      });
+
+      setIsCreateDialogOpen(false);
+      setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" });
+    } catch (err) {
+      console.error("Create tenant failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -94,39 +126,73 @@ export default function TenantsPage() {
               Create Website
             </Button>
           </DialogTrigger>
+
           <DialogContent className="sm:max-w-125">
             <DialogHeader>
               <DialogTitle>Create New Website</DialogTitle>
               <DialogDescription>
-                Set up a new tenant website with its own isolated content and users.
+                Set up a new tenant website with isolated content and users.
               </DialogDescription>
             </DialogHeader>
+
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="site-name">Website Name</Label>
-                <Input id="site-name" placeholder="Acme Corporation" />
+                <Label>Website Name</Label>
+                <Input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Acme Corporation"
+                />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="domain">Domain</Label>
-                <Input id="domain" placeholder="acme.example.com" />
-                <p className="text-xs text-muted-foreground">This will be your website's primary domain</p>
+                <Label>Domain</Label>
+                <Input
+                  name="domain"
+                  value={form.domain}
+                  onChange={handleChange}
+                  placeholder="acme.com"
+                />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="template">Starting Template</Label>
-                <select id="template" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option>Blank Website</option>
-                  <option>Business Template</option>
-                  <option>Blog Template</option>
-                  <option>E-commerce Template</option>
-                  <option>Portfolio Template</option>
-                </select>
+                <Label>API Key</Label>
+                <Input
+                  name="apiKey"
+                  value={form.apiKey}
+                  onChange={handleChange}
+                  placeholder="auto-generated or custom"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Owner Email</Label>
+                <Input
+                  name="ownerEmail"
+                  value={form.ownerEmail}
+                  onChange={handleChange}
+                  placeholder="owner@acme.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Created By</Label>
+                <Input
+                  value={user?._id || "undefined"}
+                  disabled
+                  className="bg-muted"
+                />
               </div>
             </div>
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setIsCreateDialogOpen(false)}>Create Website</Button>
+              <Button onClick={handleCreateTenant} disabled={loading}>
+                {loading ? "Creating..." : "Create Website"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

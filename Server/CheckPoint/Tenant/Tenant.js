@@ -1,11 +1,13 @@
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { logger as log } from "../../Utils/Logger/logger.js"
+import { v4 as uuidv4 } from "uuid";
 
 export const tenantCheckpoint = async (req, res, next) => {
     try {
-        const { name, domain, apiKey, ownerEmail, status, plan, settings, subdomain } = req.body;
+        console.log("tenent hit ?")
+        const { name, domain, apiKey, ownerEmail, status, plan, settings, subdomain, createdBy } = req.body;
 
-        if (!name || !domain || !subdomain || !apiKey || !ownerEmail || !status || !plan || !settings) {
+        if (!name || !domain || !apiKey || !ownerEmail) {
             const err = new Error("Missing required fields");
             err.statusCode = 400;
             throw err;
@@ -26,6 +28,8 @@ export const tenantCheckpoint = async (req, res, next) => {
 
         //create one
         const tenant = await Tenant.create({
+            tenantId: uuidv4(),
+            userId : createdBy,
             name,
             domain,
             subdomain,
