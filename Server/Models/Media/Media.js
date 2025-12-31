@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const MediaSchema = new Schema(
     {
-        _id: { type: String, required: true },
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        filename: { type: String, required: true },
-        originalName: { type: String, required: true },
-        mimeType: { type: String, required: true },
-        size: { type: Number, required: true },
+        _id: { type: String, },
+        tenantId: { type: String,  ref: "Tenant" },
+        filename: { type: String, },
+        originalName: { type: String, },
+        mimeType: { type: String, },
+        size: { type: Number, },
         width: Number,
         height: Number,
-        url: { type: String, required: true },
+        url: { type: String, },
         altText: String,
         folder: String,
         uploadedBy: { type: String, ref: "User" },

@@ -3,11 +3,11 @@ const { Schema, model, models } = mongoose;
 // Version History Schema
 const VersionSchema = new Schema(
     {
-        _id: { type: String, required: true },
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        entityType: { type: String, required: true },
-        entityId: { type: String, required: true },
-        data: { type: Schema.Types.Mixed, required: true },
+        _id: { type: String },
+        tenantId: { type: String, ref: "Tenant" },
+        entityType: { type: String },
+        entityId: { type: String },
+        data: { type: Schema.Types.Mixed },
         createdBy: { type: String, ref: "User" },
     },
     {

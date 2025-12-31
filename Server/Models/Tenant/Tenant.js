@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const TenantSchema = new Schema(
   {
-    tenantId: { type: String, required: true, unique: true },
-    userId: { type: String, required: true, ref: "User" },
-    name: { type: String, required: true },
-    domain: { type: String, required: true, unique: true },
+    tenantId: { type: String, unique: true },
+    userId: { type: String, ref: "User" },
+    name: { type: String, },
+    domain: { type: String, unique: true },
     subdomain: String,
-    apiKey: { type: String, required: true, unique: true },
-    ownerEmail: { type: String, required: true },
+    apiKey: { type: String, unique: true },
+    ownerEmail: { type: String, },
     status: { type: String, enum: ["active", "suspended", "inactive"], default: "active" },
     plan: { type: String, enum: ["free", "starter", "pro", "enterprise"], default: "free" },
     settings: {

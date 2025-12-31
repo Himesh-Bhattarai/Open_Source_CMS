@@ -36,7 +36,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/activity', activityLogRoutes)
-app.use('/api/v1/blog', blogRoutes);
+app.use('/api/v1/create-blog', blogRoutes);
 app.use('/api/v1/new', collectionRoutes);
 app.use('/api/v1/fields', combinedRoutes);
 app.use('/api/v1/create-tenant', tenantRoutes);

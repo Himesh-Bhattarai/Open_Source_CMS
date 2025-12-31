@@ -4,7 +4,7 @@ import { BlogCategoryCheckpoint } from '../../CheckPoint/Blog/BlogCategory.js';
 
 const router = express.Router();
 
-router.post("/blog-category",
+router.post("/",
     validateBlogCategory,
     BlogCategoryCheckpoint
 )

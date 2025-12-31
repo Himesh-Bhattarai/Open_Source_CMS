@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const WebhookSchema = new Schema(
     {
-        _id: { type: String, required: true },
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        url: { type: String, required: true },
+        _id: { type: String },
+        tenantId: { type: String, ref: "Tenant" },
+        url: { type: String },
         events: [
             {
                 type: String,

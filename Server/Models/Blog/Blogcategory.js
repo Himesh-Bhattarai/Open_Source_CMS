@@ -3,9 +3,9 @@ const { Schema, model, models } = mongoose;
 // Blog Category Schema
 const BlogCategorySchema = new Schema(
     {
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        name: { type: String, required: true },
-        slug: { type: String, required: true },
+        tenantId: { type: String, ref: "Tenant" },
+        name: { type: String, },
+        slug: { type: String, },
         description: String,
         postCount: { type: Number, default: 0 },
     },

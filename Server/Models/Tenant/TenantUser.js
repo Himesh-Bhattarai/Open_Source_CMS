@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const TenantUserSchema = new Schema(
     {
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        userId: { type: String, required: true, ref: "User" },
-        role: { type: String, enum: ["owner", "manager", "editor", "viewer"], required: true },
+        tenantId: { type: String,  ref: "Tenant" },
+        userId: { type: String,  ref: "User" },
+        role: { type: String, enum: ["owner", "manager", "editor", "viewer"], },
         invitedBy: { type: String, ref: "User" },
         invitedAt: { type: Date, default: Date.now },
         acceptedAt: Date,

@@ -5,8 +5,8 @@ const { Schema, model, models } = mongoose;
 export const MenuItemSchema = new Schema(
     {
         id: String,
-        label: { type: String, required: true },
-        type: { type: String, enum: ["internal", "external", "dropdown"], required: true },
+        label: { type: String },
+        type: { type: String, enum: ["internal", "external", "dropdown"] },
         link: String,
         enabled: { type: Boolean, default: true },
         order: Number,

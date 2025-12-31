@@ -3,10 +3,10 @@ const { Schema, model, models } = mongoose;
 import  {FieldSchema}  from "./Field.js"
 const ContentTypeSchema = new Schema(
     {
-        _id: { type: String, required: true },
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        name: { type: String, required: true },
-        slug: { type: String, required: true },
+        _id: { type: String,  },
+        tenantId: { type: String, ref: "Tenant" },
+        name: { type: String,  },
+        slug: { type: String,  },
         fields: [FieldSchema],
         icon: String,
         description: String,

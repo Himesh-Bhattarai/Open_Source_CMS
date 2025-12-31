@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const BlogPostSchema = new Schema(
     {
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        title: { type: String, required: true },
-        slug: { type: String, required: true },
-        content: { type: String, required: true },
+        tenantId: { type: String, ref: "Tenant" },
+        title: { type: String,  },
+        slug: { type: String,  },
+        content: { type: String,  },
         excerpt: String,
         featuredImage: String,
         authorId: { type: String, ref: "User" },

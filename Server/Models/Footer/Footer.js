@@ -4,7 +4,7 @@ import { FooterBlockSchema } from "./FooterBlock.js"
 
 const FooterSchema = new Schema(
     {
-        tenantId: { type: String, required: true, ref: "Tenant" },
+        tenantId: { type: String,  ref: "Tenant" },
         layout: { type: String, enum: ["2-column", "3-column", "4-column", "custom"] },
         blocks: [FooterBlockSchema],
         bottomBar: {

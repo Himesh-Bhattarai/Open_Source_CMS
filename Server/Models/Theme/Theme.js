@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const ThemeSchema = new Schema(
     {
-        _id: { type: String, required: true },
-        tenantId: { type: String, required: true, ref: "Tenant" },
+        _id: { type: String,},
+        tenantId: { type: String, ref: "Tenant" },
         name: String,
         colors: {
             primary: String,

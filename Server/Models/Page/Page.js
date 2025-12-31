@@ -5,8 +5,8 @@ import  {PageBlockSchema}  from "./PageBlock.js"
  export const PageSchema = new Schema(
     {
         tenantId: { type: String, ref: "Tenant" },
-        title: { type: String, required: true },
-        slug: { type: String, required: true },
+        title: { type: String, },
+        slug: { type: String, },
         blocks: [PageBlockSchema],
         seo: {
             metaTitle: String,

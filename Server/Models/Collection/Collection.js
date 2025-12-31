@@ -4,9 +4,9 @@ const { Schema, model, models } = mongoose;
 
 const CollectionSchema = new Schema(
     {
-        tenantId: { type: String, required: true, ref: "Tenant" },
-        contentTypeId: { type: String, required: true, ref: "ContentType" },
-        data: { type: Schema.Types.Mixed, required: true },
+        tenantId: { type: String,  ref: "Tenant" },
+        contentTypeId: { type: String,  ref: "ContentType" },
+        data: { type: Schema.Types.Mixed, },
         status: { type: String, enum: ["draft", "published"], default: "draft" },
         publishedAt: Date,
         authorId: { type: String, ref: "User" },
