@@ -28,7 +28,8 @@ export const BlogPostCheckpoint = async (req, res, next) => {
         log.info(`Blog Post created by: ${userId} title: ${title} Date: ${blogPost.createdAt}`);
 
         res.status(201).json({
-            message: "Blog Post created successfully"
+            message: "Blog Post created successfully",
+            blogId : blogPost._id
         })
 
 

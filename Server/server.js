@@ -13,7 +13,6 @@ import authRoutes from './Routes/Auth/Combined/Auth.js';
 import tenantRoutes from './Routes/Tenant/Combined/Tenant.js';
 import activityLogRoutes from './Routes/ActivityLog/ActivityLog.js';
 import blogRoutes from './Routes/Blog/Combined.js';
-import collectionRoutes from './Routes/Collection/Collection.js';
 import combinedRoutes from './Routes/Fields/Combined.js';
 import mediaRoutes from './Routes/Media/Media.js';
 import menuRoutes from './Routes/Menu/Combined.js';
@@ -21,6 +20,8 @@ import pageRoutes from './Routes/Page/Combined.js';
 import footerRoutes from './Routes/Footer/Combined.js';
 import themeRoutes from './Routes/Theme/Theme.js';
 import versionRoutes from './Routes/Version/Version.js';
+
+
 
 dotenv.config();
 const app = express();
@@ -37,7 +38,6 @@ app.use(cookieParser());
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/activity', activityLogRoutes)
 app.use('/api/v1/create-blog', blogRoutes);
-app.use('/api/v1/new', collectionRoutes);
 app.use('/api/v1/fields', combinedRoutes);
 app.use('/api/v1/create-tenant', tenantRoutes);
 app.use('/api/v1/create-footer', footerRoutes);
@@ -46,6 +46,9 @@ app.use('/api/v1/create-menu', menuRoutes);
 app.use('/api/v1/create-page', pageRoutes);
 app.use('/api/v1/create-theme', themeRoutes);
 app.use('/api/v1/create-version', versionRoutes);
+
+//fetch routes
+app.use('/api/v1/tenants', tenantRoutes);
 
 // Error handler
 app.use(errorHandler);
