@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -22,6 +22,7 @@ import { Globe } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createTenant } from "@/Api/Tenant/Create-tenant";
+import { getUserTenants } from "@/Api/Fetch/allFetch";
 
 export default function MyWebsitePage() {
   const { user } = useAuth()
@@ -32,8 +33,10 @@ export default function MyWebsitePage() {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [tenants, setTenants] = useState<any[]>([]);
 
-  const hasWebsite = user?.tenantId
+  const hasWebsite = tenants.length > 0;
+
 
 
   const [form, setForm] = useState({
@@ -47,6 +50,26 @@ export default function MyWebsitePage() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchData = async () => {
+      try {
+        const data = await getUserTenants(); // ✅ get returned data
+        setTenants(data.tenants);                    // 🔥 STORE IN STATE
+      } catch (err) {
+        console.error("Failed to fetch tenants", err);
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  useEffect(() => {
+    console.log("TENANTS 👉", tenants);
+  }, [tenants]);
+
 
   const handleCreateTenant = async () => {
     if (!user) return;
@@ -70,41 +93,58 @@ export default function MyWebsitePage() {
 
   if (hasWebsite) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Website</h1>
-          <p className="text-muted-foreground mt-2">Manage your website settings</p>
-        </div>
+      <>
+    
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">My Website</h1>
+              <p className="text-muted-foreground mt-2">
+                Manage your website settings
+              </p>
+            </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              Website Active
-            </CardTitle>
-            <CardDescription>Your website is live and ready to manage</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Website Name</Label>
-              <p className="text-lg font-medium mt-1">{user?.tenantName}</p>
-            </div>
-            <div>
-              <Label>Domain</Label>
-              <p className="text-lg font-medium mt-1">{user?.tenantId}.contentflow.site</p>
-            </div>
-            <div className="flex gap-2">
-              <Button asChild>
-                <a href={`https://${user?.tenantId}.contentflow.site`} target="_blank" rel="noopener noreferrer">
-                  <Globe className="h-4 w-4 mr-2" />
-                  Visit Website
-                </a>
-              </Button>
-              <Button variant="outline">Edit Settings</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          {tenants.map((tenant: any) => ( <Card key={tenant._id}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  Website Active
+                </CardTitle>
+                <CardDescription>
+                  Your website is live and ready to manage
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Website Name</Label>
+                  <p className="text-lg font-medium mt-1">{tenant.name}</p>
+                </div>
+
+                <div>
+                  <Label>Domain</Label>
+                  <p className="text-lg font-medium mt-1">{tenant.domain}</p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button asChild>
+                    <a
+                      href={`https://${tenant.domain}.contentflow.site`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      Visit Website
+                    </a>
+                  </Button>
+                  <Button variant="outline">Edit Settings</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+          }
+          </div>
+       
+      </>
     )
   }
 

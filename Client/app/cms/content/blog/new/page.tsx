@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Save, ImageIcon } from "lucide-react"
-
+import { blogPostApi } from "@/Api/Blog/createBlog"
 export default function NewBlogPost() {
   const router = useRouter()
   const [blogData, setBlogData] = useState({
@@ -21,9 +21,25 @@ export default function NewBlogPost() {
     status: "draft",
   })
 
-  const handleCreate = () => {
-    console.log("[v0] Creating new blog post:", blogData)
-    router.push("/cms/content/blog")
+  const handleCreate = async () => {
+    try {
+      const blogPost = await blogPostApi(blogData);
+      if (blogPost.ok) {
+        setBlogData({
+          title: "",
+          slug: "",
+          excerpt: "",
+          category: "Development",
+          status: "draft",
+        })
+      }
+
+      router.push(`/cms/content/blog/${blogPost.data.blogId}`)
+
+    } catch (err) {
+      console.error(err)
+    }
+
   }
 
   return (

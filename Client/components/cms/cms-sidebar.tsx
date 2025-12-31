@@ -76,8 +76,6 @@ const ownerNavigation: NavigationItem[] = [
     children: [
       { type: "link", name: "Pages", href: "/cms/content/pages", icon: FileText },
       { type: "link", name: "Blog Posts", href: "/cms/content/blog", icon: Newspaper },
-      { type: "link", name: "Collections", href: "/cms/content/collections", icon: FolderOpen },
-      { type: "link", name: "Content Types", href: "/cms/content/types", icon: Layers },
     ],
   },
 

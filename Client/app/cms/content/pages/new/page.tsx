@@ -15,11 +15,23 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { createPage } from "@/Api/Page/CreatePage"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   ArrowLeft,
   Save,
   Plus,
   Trash,
 } from "lucide-react"
+
+import { useTenant } from "@/context/TenantContext";
+
+
 
 /* =========================
    TYPES (MATCH DB MODELS)
@@ -94,6 +106,7 @@ export default function NewPageEditor() {
     }))
   }
 
+
   const updateBlock = (id: string, data: any) => {
     setPage(prev => ({
       ...prev,
@@ -119,7 +132,8 @@ export default function NewPageEditor() {
   const handleCreate = async () => {
     try {
       const data = {
-        tenantId: "null for now" , 
+        tenantId: selectedTenantId,
+
         title: page.title,
         slug: page.slug,
         blocks: page.blocks.map(block => ({
@@ -142,6 +156,10 @@ export default function NewPageEditor() {
       console.error("Failed to create page:", error)
     }
   }
+  const { tenants } = useTenant();
+
+  const [selectedTenantId, setSelectedTenantId] = useState("");
+
 
 
   /* =========================
@@ -165,7 +183,11 @@ export default function NewPageEditor() {
           </p>
         </div>
 
-        <Button onClick={handleCreate} disabled={!page.title}>
+        <Button
+          onClick={handleCreate}
+          disabled={!page.title || !selectedTenantId}
+        >
+
           <Save className="h-4 w-4 mr-2" />
           Create
         </Button>
@@ -176,22 +198,59 @@ export default function NewPageEditor() {
         <CardHeader>
           <CardTitle>Page Details</CardTitle>
         </CardHeader>
+
         <CardContent className="space-y-4">
+          {/* Tenant selection */}
+          <div className="space-y-2">
+            <Label>Choose Website</Label>
+
+            <Select
+              value={selectedTenantId}
+              onValueChange={(value) => setSelectedTenantId(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a website" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {tenants.map((tenant) => (
+                  <SelectItem key={tenant._id} value={tenant._id}>
+                    {tenant.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
+          {/* Lock notice */}
+          {selectedTenantId && (
+            <p className="text-xs text-muted-foreground">
+              Pages will be created for the selected website.
+            </p>
+          )}
+
+          {/* Title */}
           <div>
             <Label>Title</Label>
             <Input
               value={page.title}
-              onChange={e => handleTitleChange(e.target.value)}
+              disabled={!selectedTenantId}
+              onChange={(e) => handleTitleChange(e.target.value)}
+
             />
           </div>
 
+          {/* Slug */}
           <div>
             <Label>Slug</Label>
             <Input
               value={page.slug}
-              onChange={e =>
+              disabled={!selectedTenantId}
+              onChange={(e) =>
                 setPage({ ...page, slug: e.target.value })
               }
+
             />
           </div>
         </CardContent>
