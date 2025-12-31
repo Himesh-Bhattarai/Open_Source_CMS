@@ -6,7 +6,7 @@ export const pageBlockCheckpoint = (req, res, next)=>{
 
         const{userId, type, order, data} = req.body;
         
-        if(!userId || !type){
+        if(!userId){
         const err = new Error("Missing required fields");
         err.statusCode = 400;
         throw err;
@@ -15,7 +15,7 @@ export const pageBlockCheckpoint = (req, res, next)=>{
     log.info(`Page Block Creation Attempt by: ${userId}`)
     
     const pageBlock = PageBlock.create({
-        _id: userId,
+        userId,
         type,
         order,
         data

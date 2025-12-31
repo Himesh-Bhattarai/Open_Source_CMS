@@ -1,36 +1,47 @@
 import { Page } from "../../Models/Page/Page.js";
+import { PageBlock } from "../../Models/Page/PageBlock.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
-export const pageCheckpoint = (req, res, next) => {
+export const pageCheckpoint = async (req, res, next) => {
     try {
-        const { tenantId, title, slug, blocks, seo, status} = req.body;
-        const userId = req.user._id;
-        if (!userId || !tenantId) {
-            const err = new Error("Missing required fields");
-            err.statusCode = 400;
-            throw err;
-        };
+        const {title, slug, blocks = [] } = req.body;
+        const userId = req.user?.userId;
+        console.log("I am user", userId);
 
-        log.info(`Page Creation Attempt by: ${userId} name: ${title}`)
+        // ✅ only user verification
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
 
-        const page = Page.create({
-            tenantId,
-            title,
-            slug,
-            blocks,
-            seo,
-            status,
-            publishedAt: Date.now(),
-            authorId : userId
+        // 1️⃣ create page (no blocks inside page yet)
+        const page = await Page.create({
+            title: title || "",
+            slug: slug || "",
+            authorId: userId,
+            blocks: []
         });
 
-        log.info(`Page created by: ${userId} name: ${title} Date: ${page.createdAt}`);
+        // 2️⃣ create blocks if provided
+        if (blocks.length > 0) {
+            const pageBlocks = await PageBlock.insertMany(
+                blocks.map((block, index) => ({
+                    ...block,
+                    pageId: page._id,
+                    order: index
+                }))
+            );
 
-        res.status(200).json({
-            message: "Page created successfully by " + userId,
-        })
+            page.blocks = pageBlocks.map(b => b._id);
+            await page.save();
+        }
+
+        log.info(`Page created | user: ${userId} | page: ${page._id}`);
+
+        res.status(201).json({
+            pageId: page._id
+        });
+
     } catch (err) {
-        err.statusCode = err.statusCode || 400;
         next(err);
     }
-}
+};

@@ -6,11 +6,11 @@ export const createPage = async (data)=>{
 
     const response = await fetch(CREATE_PAGE_URL,{
         method: "POST",
-        credentials: "include",
         headers:{
             "Content-Type": "application/json"
-
+            
         },
+        credentials: "include",
         body: JSON.stringify(data)
 
 

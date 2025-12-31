@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const PageSchema = z.object({
-    tenantId: z.string(),
+    tenantId: z.string().optional(),
     title: z.string().min(3).max(50),
     slug: z.string().min(3).max(50),
     seo: z.object({

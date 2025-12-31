@@ -1,7 +1,6 @@
-import { User } from '../../../Models/Client/User.js';
 import { Session } from '../../../Models/Client/Session.js';
 import { logger as log } from '../../../Utils/Logger/logger.js';
-import { verifyAccessToken } from '../../../Utils/JWT/jwt.js';
+import { verifyAccessToken } from '../../../Utils/Jwt/Jwt.js';
 
 export const logoutCheckpoint = async (req, res, next) => {
     try {
