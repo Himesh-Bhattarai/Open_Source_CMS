@@ -24,6 +24,7 @@ export default function NewBlogPost() {
   const handleCreate = async () => {
     try {
       const blogPost = await blogPostApi(blogData);
+      console.log(blogPost, "Did i get blog?")
       if (blogPost.ok) {
         setBlogData({
           title: "",
@@ -34,7 +35,7 @@ export default function NewBlogPost() {
         })
       }
 
-      router.push(`/cms/content/blog/${blogPost.data.blogId}`)
+      router.push(`/cms/content/blog/${blogPost?.blogId}`)
 
     } catch (err) {
       console.error(err)
