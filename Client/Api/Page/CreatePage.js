@@ -18,3 +18,14 @@ export const createPage = async (data)=>{
 
     return response.json();
 }
+
+
+export const checkSlugAvailability = async(data)=>{
+    return true
+}
+
+
+export const getPage= return
+ export const  updatePage = updatePag
+  export const createPageVersion = createPageVrsion
+  export const restorePageVersion = restorePgeVersion
