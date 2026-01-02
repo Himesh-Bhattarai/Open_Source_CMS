@@ -1,9 +1,8 @@
 import {z} from 'zod';
  const MenuSchema = z.object({
-    tenantId: z.string(),
-    name: z.string().min(3).max(50),
-    location: z.enum(["header", "footer", "mobile", "sidebar"]),
-    items: z.array(z.any()),
+    tenantId: z.string().optional(),
+    title: z.string().min(3).max(50),
+    menuLocation: z.enum(["header", "footer", "mobile", "sidebar"]).optional(),
     status: z.enum(["draft", "published"]).default("draft"),
 })
 

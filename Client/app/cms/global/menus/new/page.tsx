@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { createMenu } from "@/Api/Menu/Combined"
 
 export default function NewMenuPage() {
   const router = useRouter()
@@ -16,10 +17,27 @@ export default function NewMenuPage() {
   const [menuDescription, setMenuDescription] = useState("")
   const [menuLocation, setMenuLocation] = useState("")
 
-  const handleCreate = () => {
-    console.log("[v0] Creating new menu:", { menuName, menuDescription, menuLocation })
-    // In real app: save to database
-    router.push("/cms/global/menus")
+  const handleCreate = async() => {
+    const data = {
+      title: menuName,
+      description: menuDescription,
+      location: menuLocation
+    }
+    try{
+      const response = await createMenu(data);
+      if(response.ok){
+        router.push(`/cms/global/menus/${response?.menuId}`)
+      }
+    } catch (err) {
+      console.error(err);
+    }finally{
+      {
+        setMenuName("")
+        setMenuDescription("")
+        setMenuLocation("")
+    }
+    }
+   
   }
 
   return (

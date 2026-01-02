@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
-import { MenuItemSchema } from "./MenuItem.js"
-
 
 const MenuSchema = new Schema(
     {
-        _id: { type: String, },
+        userId: {type: String, ref: "User"},
         tenantId: { type: String, ref: "Tenant" },
-        name: { type: String },
-        location: { type: String, enum: ["header", "footer", "mobile", "sidebar"] },
-        items: [MenuItemSchema],
+        title: { type: String , required: true},
+        description: {type: String},
+        menuLocation: { type: String, enum: ["header", "sidebar"] },
+        items: [{ type: Schema.Types.ObjectId, ref: "MenuItem" }]
+,
         status: { type: String, enum: ["draft", "published"], default: "draft" },
         publishedAt: Date,
         publishedBy: { type: String, ref: "User" },

@@ -1,33 +1,48 @@
+import { Menu } from "../../Models/Menu/Menu.js";
 import { MenuItem } from "../../Models/Menu/MenuItem.js";
-
-import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const menuItemCheckpoint = async (req, res, next) => {
     try {
-        const { userId, label, link, order, type } = req.body
-        if (!userId) {
-            const err = new Error("User Id is required");
+        const userId = req.user?.userId;
+        const { menuId, ...itemData } = req.body;
+
+        if (!userId || !menuId) {
+            const err = new Error("Missing required fields");
             err.statusCode = 400;
             throw err;
-        };
+        }
 
-        log.info(`Menu Item Creation Attempt by: ${userId}`)
-
-        const menuItem = await MenuItem.create({
-            _id: userId,
-            label,
-            link,
-            order,
-            type
+        // 1️⃣ Ensure menu exists
+        const menu = await Menu.findOne({
+            _id: menuId,
+            userId,
         });
 
-        log.info(`Menu Item created by: ${userId} Date: ${menuItem.createdAt}`)
+        if (!menu) {
+            const err = new Error("Menu not found");
+            err.statusCode = 404;
+            throw err;
+        }
 
-        res.status(200).json({
-            message: "Menu Item created successfully by " + userId,
-        })
+        // 2️⃣ Create menu item
+        const newMenuItem = await MenuItem.create({
+            ...itemData,
+            userId,
+            menuId,
+        });
+
+        // 3️⃣ Attach menu item to menu
+        await Menu.findByIdAndUpdate(menuId, {
+            $push: { items: newMenuItem._id },
+        });
+
+        // 4️⃣ Respond
+        res.status(201).json({
+            success: true,
+            item: newMenuItem,
+        });
     } catch (err) {
         err.statusCode = err.statusCode || 400;
         next(err);
     }
-}
+};

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,6 +36,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { createMenuItem } from "@/Api/Menu/Combined"
 
 // ==================== FIXED TYPE DEFINITIONS ====================
 type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb"
@@ -589,6 +590,21 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   }
 
   // FIXED: Save function with validation
+  const normalizeMenuItemsForDB = (items: any[]): any[] => {
+    return items.map((item, index) => ({
+      id: item.id,
+      label: item.label,
+      type: item.linkType ?? "internal", // map
+      link: item.slug ?? "",
+      enabled: item.enabled ?? true,
+      order: index,
+      children: item.children
+        ? normalizeMenuItemsForDB(item.children)
+        : [],
+    }));
+  };
+
+
   const handleSave = async () => {
     // Validate menu structure based on type
     const validationErrors: string[] = []
@@ -628,19 +644,31 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       return
     }
 
-    // Prepare data for saving
-    const menuData = {
+    const menuDataForDB = {
       id: menuId,
       config,
-      items: menuItems,
+      items: normalizeMenuItemsForDB(menuItems),
       createdAt: new Date().toISOString()
-    }
+    };
+
+
+    // Prepare data for saving
+    // const menuData = {
+    //   id: menuId,
+    //   config,
+    //   items: menuItems,
+    //   createdAt: new Date().toISOString()
+    // }
 
     try {
       // This would be your actual save function
       // await createMenu(menuData)
-      console.log("Saving menu:", menuData)
-      alert("Menu saved successfully!")
+      const response = await createMenuItem(menuDataForDB);
+      if(response.ok){
+        alert("Menu saved Successfully!");
+      }else{
+        alert("Failed to save menu");
+      }
     } catch (error) {
       console.error("Failed to save menu:", error)
       alert("Failed to save menu")
