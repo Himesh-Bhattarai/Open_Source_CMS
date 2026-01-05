@@ -21,7 +21,7 @@ export default function NewMenuPage() {
     const data = {
       title: menuName,
       description: menuDescription,
-      location: menuLocation
+      menuLocation: menuLocation
     }
     try{
       const response = await createMenu(data);

@@ -1,48 +1,39 @@
 import { Menu } from "../../Models/Menu/Menu.js";
-import { MenuItem } from "../../Models/Menu/MenuItem.js";
+import createMenuItemsRecursively from "./createMenuItemsRecursively.js";
 
 export const menuItemCheckpoint = async (req, res, next) => {
     try {
         const userId = req.user?.userId;
-        const { menuId, ...itemData } = req.body;
+        const { menuId, items } = req.body;
 
-        if (!userId || !menuId) {
-            const err = new Error("Missing required fields");
-            err.statusCode = 400;
-            throw err;
+        if (!userId || !menuId || !Array.isArray(items)) {
+            return res.status(400).json({ message: "Invalid payload" });
         }
 
-        // 1️⃣ Ensure menu exists
-        const menu = await Menu.findOne({
-            _id: menuId,
-            userId,
-        });
-
+        const menu = await Menu.findOne({ _id: menuId, userId });
         if (!menu) {
-            const err = new Error("Menu not found");
-            err.statusCode = 404;
-            throw err;
+            return res.status(404).json({ message: "Menu not found" });
         }
 
-        // 2️⃣ Create menu item
-        const newMenuItem = await MenuItem.create({
-            ...itemData,
-            userId,
+        // Remove previous menu items (safe replace)
+        menu.items = [];
+        await menu.save();
+
+        const rootItemIds = await createMenuItemsRecursively({
+            items,
             menuId,
+            userId,
         });
 
-        // 3️⃣ Attach menu item to menu
-        await Menu.findByIdAndUpdate(menuId, {
-            $push: { items: newMenuItem._id },
-        });
+        menu.items = rootItemIds;
+        await menu.save();
 
-        // 4️⃣ Respond
         res.status(201).json({
             success: true,
-            item: newMenuItem,
+            menuId,
+            items: rootItemIds,
         });
     } catch (err) {
-        err.statusCode = err.statusCode || 400;
         next(err);
     }
 };

@@ -27,7 +27,7 @@ export const createMenuItem = async (data)=>{
     try{
         const response = await fetch(MENU_ITEM_URL,{
             method : "POST",
-            credential: "include",
+            credentials: "include",
             headers: {
                 "Content-Type" : "application/json"
             },

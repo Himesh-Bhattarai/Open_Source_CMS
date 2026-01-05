@@ -592,7 +592,6 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   // FIXED: Save function with validation
   const normalizeMenuItemsForDB = (items: any[]): any[] => {
     return items.map((item, index) => ({
-      id: item.id,
       label: item.label,
       type: item.linkType ?? "internal", // map
       link: item.slug ?? "",
@@ -645,8 +644,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     }
 
     const menuDataForDB = {
-      id: menuId,
-      config,
+     menuId,
       items: normalizeMenuItemsForDB(menuItems),
       createdAt: new Date().toISOString()
     };
