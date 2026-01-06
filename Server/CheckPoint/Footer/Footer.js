@@ -1,35 +1,33 @@
 import { Footer } from "../../Models/Footer/Footer.js";
-import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const footerCheckpoint = async (req, res, next) => {
     try {
-        const { tenantId, layout, blocks, bottomBar, status, userId } = req.body;
-        if (!tenantId || !userId) {
-            const err = new Error("Missing required fields");
-            err.statusCode = 400;
-            throw err;
+        const userId = req.user?.userId;
+        const { tenantId, websiteId, ...payload } = req.body;
+
+        if (!userId || !tenantId || !websiteId) {
+            return res.status(400).json({
+                message: "userId, tenantId and websiteId are required",
+            });
         }
 
-        log.info(`Footer Creation Attempt by: ${userId}`)
-
-        const newFooter = await Footer.create({
-            tenantId,
-            layout,
-            blocks,
-            bottomBar,
-            status,
-            publishedBy: userId,
-            publishedAt: new Date(),
-
-        });
-
-        log.info(`Footer created by: ${userId} Date: ${newFooter.createdAt}`)
+        const footer = await Footer.findOneAndUpdate(
+            { tenantId, websiteId },
+            {
+                ...payload,
+                tenantId,
+                websiteId,
+                publishedBy: userId,
+                publishedAt: new Date(),
+            },
+            { upsert: true, new: true }
+        );
 
         res.status(200).json({
-            message: "Footer created successfully by " + userId,
-        })
+            success: true,
+            footer,
+        });
     } catch (err) {
-        err.statusCode = err.statusCode || 400;
         next(err);
     }
-}
+};

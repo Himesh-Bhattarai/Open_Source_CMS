@@ -16,6 +16,12 @@ import {
   Mail,
   Trash2,
   Edit,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Github,
 } from "lucide-react"
 import {
   Dialog,
@@ -27,6 +33,8 @@ import {
 } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
+import { createFooter } from "@/Api/Footer/Create";
 
 // Data Models
 interface MenuLink {
@@ -68,20 +76,83 @@ interface FooterBlock {
   data: BlockData
 }
 
-interface Footer {
+interface SocialLink {
+  id: string
+  platform: string
+  url: string
+  icon: string
+  label?: string
+  slug?: string
+}
+
+interface FooterCMSData {
   tenantId: string
   websiteId: string
   layout: "4-column" | "3-column" | "custom"
   blocks: FooterBlock[]
+  bottomBar: {
+    copyrightText: string
+    socialLinks: SocialLink[]
+  }
+  metadata?: {
+    createdAt?: string
+    updatedAt?: string
+    status?: "draft" | "published"
+  }
 }
 
 export default function FooterBuilder() {
   const [blocks, setBlocks] = useState<FooterBlock[]>([])
   const [layout, setLayout] = useState<"4-column" | "3-column" | "custom">("4-column")
   const [editOpen, setEditOpen] = useState(false)
+  const [socialLinksOpen, setSocialLinksOpen] = useState(false)
   const [activeBlock, setActiveBlock] = useState<FooterBlock | null>(null)
   const [tenantId, setTenantId] = useState("")
   const [websiteId, setWebsiteId] = useState("")
+  const [copyrightText, setCopyrightText] = useState("")
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
+    {
+      id: "1",
+      platform: "facebook",
+      url: "",
+      icon: "facebook",
+      label: "Facebook",
+      slug: "facebook"
+    },
+    {
+      id: "2",
+      platform: "twitter",
+      url: "",
+      icon: "twitter",
+      label: "Twitter",
+      slug: "twitter"
+    },
+    {
+      id: "3",
+      platform: "instagram",
+      url: "",
+      icon: "instagram",
+      label: "Instagram",
+      slug: "instagram"
+    },
+    {
+      id: "4",
+      platform: "linkedin",
+      url: "",
+      icon: "linkedin",
+      label: "LinkedIn",
+      slug: "linkedin"
+    },
+    {
+      id: "5",
+      platform: "youtube",
+      url: "",
+      icon: "youtube",
+      label: "YouTube",
+      slug: "youtube"
+    },
+  ])
+  const { toast } = useToast()
 
   const blockTypes = [
     { type: "text", label: "Text Block", icon: Type },
@@ -89,6 +160,15 @@ export default function FooterBuilder() {
     { type: "logo", label: "Logo", icon: Image },
     { type: "newsletter", label: "Newsletter", icon: Mail },
   ]
+
+  const platformIcons: Record<string, React.ElementType> = {
+    facebook: Facebook,
+    twitter: Twitter,
+    instagram: Instagram,
+    linkedin: Linkedin,
+    youtube: Youtube,
+    github: Github,
+  }
 
   function createEmptyBlock(type: FooterBlock["type"]): FooterBlock {
     const base = {
@@ -202,6 +282,29 @@ export default function FooterBuilder() {
     })
   }
 
+  // Social Links Functions
+  function updateSocialLink(id: string, field: keyof SocialLink, value: string) {
+    setSocialLinks(prev => prev.map(link =>
+      link.id === id ? { ...link, [field]: value } : link
+    ))
+  }
+
+  function addNewSocialLink() {
+    const newLink: SocialLink = {
+      id: crypto.randomUUID(),
+      platform: "custom",
+      url: "",
+      icon: "link",
+      label: "",
+      slug: ""
+    }
+    setSocialLinks(prev => [...prev, newLink])
+  }
+
+  function removeSocialLink(id: string) {
+    setSocialLinks(prev => prev.filter(link => link.id !== id))
+  }
+
   function getBlockTitle(block: FooterBlock): string {
     switch (block.type) {
       case "logo":
@@ -239,6 +342,210 @@ export default function FooterBuilder() {
     }
   }
 
+  // Function to gather all data for backend
+  function gatherFooterData(): FooterCMSData {
+    return {
+      tenantId,
+      websiteId,
+      layout,
+      blocks: blocks.map(block => ({
+        id: block.id,
+        type: block.type,
+        data: block.data
+      })),
+      bottomBar: {
+        copyrightText,
+        socialLinks: socialLinks.filter(link => link.url.trim() !== "") // Only include links with URLs
+      },
+      metadata: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: "draft"
+      }
+    }
+  }
+
+  // Function to validate data before sending
+  function validateFooterData(data: FooterCMSData): boolean {
+    if (!data.tenantId || !data.websiteId) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a tenant and website",
+        variant: "destructive",
+      })
+      return false
+    }
+
+    if (data.blocks.length === 0) {
+      toast({
+        title: "No Blocks Added",
+        description: "Please add at least one footer block",
+        variant: "destructive",
+      })
+      return false
+    }
+
+    // Validate blocks have required data
+    for (const block of data.blocks) {
+      switch (block.type) {
+        case "logo":
+          const logoData = block.data as LogoBlockData
+          if (!logoData.imageUrl || !logoData.altText) {
+            toast({
+              title: "Invalid Logo Block",
+              description: "Logo blocks require an image URL and alt text",
+              variant: "destructive",
+            })
+            return false
+          }
+          break
+        case "menu":
+          const menuData = block.data as MenuBlockData
+          if (menuData.links.length === 0) {
+            toast({
+              title: "Invalid Menu Block",
+              description: "Menu blocks require at least one link",
+              variant: "destructive",
+            })
+            return false
+          }
+          for (const link of menuData.links) {
+            if (!link.label.trim() || !link.slug.trim()) {
+              toast({
+                title: "Invalid Menu Link",
+                description: "All menu links must have both label and slug",
+                variant: "destructive",
+              })
+              return false
+            }
+          }
+          break
+        case "text":
+          const textData = block.data as TextBlockData
+          if (!textData.content.trim()) {
+            toast({
+              title: "Invalid Text Block",
+              description: "Text blocks require content",
+              variant: "destructive",
+            })
+            return false
+          }
+          break
+        case "newsletter":
+          const newsletterData = block.data as NewsletterBlockData
+          if (!newsletterData.title || !newsletterData.description || !newsletterData.buttonText) {
+            toast({
+              title: "Invalid Newsletter Block",
+              description: "Newsletter blocks require title, description, and button text",
+              variant: "destructive",
+            })
+            return false
+          }
+          if (newsletterData.buttonAction === "redirect" && !newsletterData.redirectUrl) {
+            toast({
+              title: "Invalid Newsletter Block",
+              description: "Redirect action requires a redirect URL",
+              variant: "destructive",
+            })
+            return false
+          }
+          break
+      }
+    }
+
+    return true
+  }
+
+  // Function to handle save draft
+  async function handleSaveDraft() {
+    const footerData = gatherFooterData()
+
+    if (!validateFooterData(footerData)) {
+      return
+    }
+
+    try {
+      // Call the createFooter function with structured data
+      await createFooter(footerData)
+
+      toast({
+        title: "Success",
+        description: "Footer saved as draft successfully",
+      })
+
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save footer. Please try again.",
+        variant: "destructive",
+      })
+      console.error("Error saving footer:", error)
+    }
+  }
+
+  // Function to handle preview
+  function handlePreview() {
+    const footerData = gatherFooterData()
+    console.log("Preview Data:", footerData)
+    toast({
+      title: "Preview Mode",
+      description: "Check console for footer data",
+    })
+  }
+
+  // Function to handle discard changes
+  function handleDiscardChanges() {
+    setBlocks([])
+    setCopyrightText("")
+    setSocialLinks([
+      {
+        id: "1",
+        platform: "facebook",
+        url: "",
+        icon: "facebook",
+        label: "Facebook",
+        slug: "facebook"
+      },
+      {
+        id: "2",
+        platform: "twitter",
+        url: "",
+        icon: "twitter",
+        label: "Twitter",
+        slug: "twitter"
+      },
+      {
+        id: "3",
+        platform: "instagram",
+        url: "",
+        icon: "instagram",
+        label: "Instagram",
+        slug: "instagram"
+      },
+      {
+        id: "4",
+        platform: "linkedin",
+        url: "",
+        icon: "linkedin",
+        label: "LinkedIn",
+        slug: "linkedin"
+      },
+      {
+        id: "5",
+        platform: "youtube",
+        url: "",
+        icon: "youtube",
+        label: "YouTube",
+        slug: "youtube"
+      },
+    ])
+
+    toast({
+      title: "Changes Discarded",
+      description: "All changes have been reset",
+    })
+  }
+
   const gridCols =
     layout === "3-column"
       ? "grid-cols-3"
@@ -246,7 +553,7 @@ export default function FooterBuilder() {
         ? "grid-cols-2"
         : "grid-cols-4"
 
-  const visibleBlocks = blocks // No slicing - show all blocks
+  const visibleBlocks = blocks
 
   return (
     <div className="space-y-6">
@@ -258,9 +565,13 @@ export default function FooterBuilder() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Discard Changes</Button>
-          <Button variant="outline">Preview</Button>
-          <Button>
+          <Button variant="outline" onClick={handleDiscardChanges}>
+            Discard Changes
+          </Button>
+          <Button variant="outline" onClick={handlePreview}>
+            Preview
+          </Button>
+          <Button onClick={handleSaveDraft}>
             <Save className="h-4 w-4 mr-2" />
             Save Draft
           </Button>
@@ -362,7 +673,7 @@ export default function FooterBuilder() {
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button  size="sm">
+                <Button size="sm">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Block
                 </Button>
@@ -512,14 +823,115 @@ export default function FooterBuilder() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="copyright">Copyright Text</Label>
-              <Input id="copyright" placeholder="© 2025 Your Company" />
+              <Input
+                id="copyright"
+                placeholder="© 2025 Your Company"
+                value={copyrightText}
+                onChange={(e) => setCopyrightText(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Social Links</Label>
-              <Button variant="outline" className="w-full bg-transparent">
-                <Settings className="h-4 w-4 mr-2" />
-                Manage Social Links
-              </Button>
+              <Dialog open={socialLinksOpen} onOpenChange={setSocialLinksOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full bg-transparent">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Social Links
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Manage Social Links</DialogTitle>
+                    <DialogDescription>
+                      Add and configure social media links for the footer
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      {socialLinks.map((link) => {
+                        const IconComponent = platformIcons[link.icon] || Settings
+                        return (
+                          <div key={link.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                            <div className="flex items-center justify-center w-10 h-10 bg-muted rounded">
+                              <IconComponent className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1 grid grid-cols-2 gap-2">
+                              <div>
+                                <Label className="text-xs">Platform</Label>
+                                <Input
+                                  value={link.platform}
+                                  onChange={(e) => updateSocialLink(link.id, "platform", e.target.value)}
+                                  placeholder="Platform name"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Icon</Label>
+                                <Input
+                                  value={link.icon}
+                                  onChange={(e) => updateSocialLink(link.id, "icon", e.target.value)}
+                                  placeholder="Icon name"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                              <div className="col-span-2">
+                                <Label className="text-xs">URL</Label>
+                                <Input
+                                  value={link.url}
+                                  onChange={(e) => updateSocialLink(link.id, "url", e.target.value)}
+                                  placeholder="https://example.com/username"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Label (Optional)</Label>
+                                <Input
+                                  value={link.label || ""}
+                                  onChange={(e) => updateSocialLink(link.id, "label", e.target.value)}
+                                  placeholder="Display label"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Slug (Optional)</Label>
+                                <Input
+                                  value={link.slug || ""}
+                                  onChange={(e) => updateSocialLink(link.id, "slug", e.target.value)}
+                                  placeholder="URL slug"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeSocialLink(link.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={addNewSocialLink}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New Social Link
+                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setSocialLinksOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={() => setSocialLinksOpen(false)}>
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </CardContent>
