@@ -20,6 +20,7 @@ import pageRoutes from './Routes/Page/Combined.js';
 import footerRoutes from './Routes/Footer/Combined.js';
 import themeRoutes from './Routes/Theme/Theme.js';
 import versionRoutes from './Routes/Version/Version.js';
+import seoRoutes from "./Routes/Seo/Seo.js";
 
 
 
@@ -46,6 +47,7 @@ app.use('/api/v1/create-menu', menuRoutes);
 app.use('/api/v1/create-page', pageRoutes);
 app.use('/api/v1/create-theme', themeRoutes);
 app.use('/api/v1/create-version', versionRoutes);
+app.use('/api/v1/create-seo', seoRoutes);
 
 //fetch routes
 app.use('/api/v1/tenants', tenantRoutes);

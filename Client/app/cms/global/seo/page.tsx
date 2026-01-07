@@ -47,8 +47,21 @@ import {
 } from "@/components/ui/accordion"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {createSeo} from "@/Api/Seo/Create"
 // Types
+interface Website {
+  id: string
+  name: string
+  domain: string
+}
+
+interface Page {
+  id: string
+  title: string
+  slug: string
+}
+
 interface PageSEO {
   title?: string
   metaDescription?: string
@@ -288,6 +301,27 @@ const getImageFallback = (
   return pageImage || pageOgImage || globalOgImage || ''
 }
 
+// Backend API functions (mock implementations)
+const fetchWebsites = async (): Promise<Website[]> => {
+  // Mock implementation - replace with actual API call
+  return [
+    { id: "website-1", name: "Main Website", domain: "https://example.com" },
+    { id: "website-2", name: "Blog", domain: "https://blog.example.com" },
+    { id: "website-3", name: "E-commerce", domain: "https://shop.example.com" },
+  ]
+}
+
+const fetchPages = async (websiteId: string): Promise<Page[]> => {
+  // Mock implementation - replace with actual API call
+  return [
+    { id: "page-1", title: "Home Page", slug: "/" },
+    { id: "page-2", title: "About Us", slug: "/about" },
+    { id: "page-3", title: "Contact", slug: "/contact" },
+    { id: "page-4", title: "Blog Post Example", slug: "/blog/example-post" },
+  ]
+}
+
+
 export default function SEOSettingsPage() {
   const [activePage, setActivePage] = useState<PageData>({
     id: 'page-1',
@@ -367,6 +401,17 @@ export default function SEOSettingsPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [environment, setEnvironment] = useState<'production' | 'staging'>('production')
 
+  // New state for website and scope management
+  const [websites, setWebsites] = useState<Website[]>([])
+  const [selectedWebsite, setSelectedWebsite] = useState<string>("")
+  const [seoScope, setSeoScope] = useState<"global" | "page">("global")
+  const [pages, setPages] = useState<Page[]>([])
+  const [selectedPage, setSelectedPage] = useState<string>("")
+  const [isLoading, setIsLoading] = useState({
+    websites: false,
+    pages: false
+  })
+
   // Generate auto canonical
   const autoCanonical = useMemo(() => {
     return generateCanonical(globalSEO.general.siteUrl, activePage.slug)
@@ -393,6 +438,69 @@ export default function SEOSettingsPage() {
     setValidation(result)
   }, [pageSEO, globalSEO, activePage])
 
+  // Fetch websites on component mount
+  useEffect(() => {
+    const loadWebsites = async () => {
+      setIsLoading(prev => ({ ...prev, websites: true }))
+      try {
+        const fetchedWebsites = await fetchWebsites()
+        setWebsites(fetchedWebsites)
+        if (fetchedWebsites.length > 0) {
+          setSelectedWebsite(fetchedWebsites[0].id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch websites:", error)
+      } finally {
+        setIsLoading(prev => ({ ...prev, websites: false }))
+      }
+    }
+    loadWebsites()
+  }, [])
+
+  // Fetch pages when website is selected and scope is page
+  useEffect(() => {
+    const loadPages = async () => {
+      if (seoScope === "page" && selectedWebsite) {
+        setIsLoading(prev => ({ ...prev, pages: true }))
+        try {
+          const fetchedPages = await fetchPages(selectedWebsite)
+          setPages(fetchedPages)
+          if (fetchedPages.length > 0) {
+            setSelectedPage(fetchedPages[0].id)
+            // Update activePage with selected page data
+            const selectedPageData = fetchedPages[0]
+            setActivePage(prev => ({
+              ...prev,
+              id: selectedPageData.id,
+              slug: selectedPageData.slug,
+              title: selectedPageData.title
+            }))
+          }
+        } catch (error) {
+          console.error("Failed to fetch pages:", error)
+        } finally {
+          setIsLoading(prev => ({ ...prev, pages: false }))
+        }
+      }
+    }
+    loadPages()
+  }, [selectedWebsite, seoScope])
+
+  // Update activePage when selectedPage changes
+  useEffect(() => {
+    if (seoScope === "page" && selectedPage) {
+      const page = pages.find(p => p.id === selectedPage)
+      if (page) {
+        setActivePage(prev => ({
+          ...prev,
+          id: page.id,
+          slug: page.slug,
+          title: page.title
+        }))
+      }
+    }
+  }, [selectedPage, pages, seoScope])
+
   // Normalize and prepare data for saving
   const prepareSeoData = () => {
     const normalizedPageSEO: PageSEO = {
@@ -406,17 +514,23 @@ export default function SEOSettingsPage() {
       }
     }
 
-    return {
-      global: globalSEO,
-      page: normalizedPageSEO,
-      pageId: activePage.id,
-      timestamp: new Date().toISOString(),
-      validation: {
-        ...validation,
-        finalCanonical,
-        finalRobotsMeta
+    // Build payload for backend
+    const payload: any = {
+      websiteId: selectedWebsite,
+      scope: seoScope,
+      globalSEO: globalSEO,
+      meta: {
+        environment,
+        timestamp: new Date().toISOString()
       }
     }
+
+    if (seoScope === "page") {
+      payload.pageId = selectedPage
+      payload.pageSEO = normalizedPageSEO
+    }
+
+    return payload
   }
 
   const handleSave = async () => {
@@ -434,13 +548,42 @@ export default function SEOSettingsPage() {
     }
 
     try {
-      // This is where you would call your backend function
-      // await createSeo(seoData)
-      console.log('Saving SEO data:', seoData)
-      alert('SEO settings saved successfully!')
+      const response = await createSeo(seoData)
+
+      if (response?.ok && response?.status === 200) {
+        // Reset only the specified state on successful save
+        setSelectedWebsite(websites.length > 0 ? websites[0].id : "")
+        setSeoScope("global")
+        setSelectedPage("")
+        setPageSEO({
+          title: "",
+          metaDescription: "",
+          canonicalUrl: "",
+          robots: {
+            index: true,
+            follow: true,
+            maxImagePreview: "standard",
+            maxSnippet: -1,
+            maxVideoPreview: -1
+          },
+          ogImage: "",
+          ogTitle: "",
+          ogDescription: "",
+          twitterCard: "summary_large_image",
+          twitterTitle: "",
+          twitterDescription: "",
+          twitterImage: "",
+          schemaType: "WebPage",
+          breadcrumbs: []
+        })
+        alert('SEO settings saved successfully!')
+      } else {
+        throw new Error('Failed to save SEO settings')
+      }
     } catch (error) {
       console.error('Error saving SEO data:', error)
       alert('Failed to save SEO settings')
+      // Keep state intact on error
     }
   }
 
@@ -461,12 +604,118 @@ export default function SEOSettingsPage() {
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={isLoading.websites || !selectedWebsite}>
             <Save className="h-4 w-4 mr-2" />
             Save Changes
           </Button>
         </div>
       </div>
+
+      {/* Website Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Website Selection</CardTitle>
+          <CardDescription>Select the website to configure SEO for</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="website-select">Website</Label>
+              <Select
+                value={selectedWebsite}
+                onValueChange={setSelectedWebsite}
+                disabled={isLoading.websites}
+              >
+                <SelectTrigger id="website-select">
+                  <SelectValue placeholder={isLoading.websites ? "Loading websites..." : "Select a website"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {websites.map(website => (
+                    <SelectItem key={website.id} value={website.id}>
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        <span>{website.name}</span>
+                        <span className="text-muted-foreground text-sm">({website.domain})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedWebsite && (
+                <p className="text-sm text-muted-foreground">
+                  Selected: {websites.find(w => w.id === selectedWebsite)?.domain}
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <Label>Apply SEO to:</Label>
+              <RadioGroup
+                value={seoScope}
+                onValueChange={(value: "global" | "page") => setSeoScope(value)}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="global" id="global-scope" />
+                  <Label htmlFor="global-scope" className="cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      <span>Global (entire website)</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground font-normal mt-1">
+                      Apply SEO settings to all pages on the website
+                    </p>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="page" id="page-scope" />
+                  <Label htmlFor="page-scope" className="cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Individual page</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground font-normal mt-1">
+                      Apply SEO settings to a specific page only
+                    </p>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {seoScope === "page" && (
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="page-select">Select Page</Label>
+                <Select
+                  value={selectedPage}
+                  onValueChange={setSelectedPage}
+                  disabled={isLoading.pages || pages.length === 0}
+                >
+                  <SelectTrigger id="page-select">
+                    <SelectValue placeholder={isLoading.pages ? "Loading pages..." : "Select a page"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pages.map(page => (
+                      <SelectItem key={page.id} value={page.id}>
+                        <div className="flex flex-col">
+                          <span>{page.title}</span>
+                          <span className="text-xs text-muted-foreground">{page.slug}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedPage && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {pages.find(p => p.id === selectedPage)?.slug}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Warning Banner */}
       <Card className="border-primary/50 bg-primary/5">
@@ -483,46 +732,66 @@ export default function SEOSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Page Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Page Settings</CardTitle>
-          <CardDescription>Configure SEO for the current page</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Current Page</Label>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">{activePage.title}</p>
-                  <p className="text-sm text-muted-foreground">/{activePage.slug}</p>
+      {/* Page Settings - Only show when scope is page */}
+      {seoScope === "page" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Page Settings</CardTitle>
+            <CardDescription>Configure SEO for the current page</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Current Page</Label>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{activePage.title}</p>
+                    <p className="text-sm text-muted-foreground">/{activePage.slug}</p>
+                  </div>
+                  <Badge variant={activePage.status === 'published' ? 'default' : 'secondary'}>
+                    {activePage.status}
+                  </Badge>
                 </div>
-                <Badge variant={activePage.status === 'published' ? 'default' : 'secondary'}>
-                  {activePage.status}
-                </Badge>
+              </div>
+              <div className="space-y-2">
+                <Label>Environment</Label>
+                <Select value={environment} onValueChange={(value: any) => setEnvironment(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select environment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="production">Production</SelectItem>
+                    <SelectItem value="staging">Staging</SelectItem>
+                  </SelectContent>
+                </Select>
+                {environment === 'staging' && (
+                  <p className="text-xs text-amber-600">
+                    Staging environment: Pages may be set to noindex
+                  </p>
+                )}
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Environment</Label>
-              <Select value={environment} onValueChange={(value: any) => setEnvironment(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select environment" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="production">Production</SelectItem>
-                  <SelectItem value="staging">Staging</SelectItem>
-                </SelectContent>
-              </Select>
-              {environment === 'staging' && (
-                <p className="text-xs text-amber-600">
-                  Staging environment: Pages may be set to noindex
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Global Settings</CardTitle>
+            <CardDescription>These settings will apply to the entire website</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/50">
+              <Globe className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-medium">Applying to entire website</p>
+                <p className="text-sm text-muted-foreground">
+                  SEO settings will affect all pages on {websites.find(w => w.id === selectedWebsite)?.domain}
                 </p>
-              )}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Validation Warnings */}
       {validation.warnings.length > 0 && (
@@ -569,174 +838,176 @@ export default function SEOSettingsPage() {
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
 
-        {/* Page SEO Overrides */}
-        <TabsContent value="page" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Page-Level SEO Overrides</CardTitle>
-              <CardDescription>
-                These settings override global SEO for this specific page
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="pageTitle">Page Title Override</Label>
-                <Input
-                  id="pageTitle"
-                  value={pageSEO.title}
-                  onChange={(e) => handlePageSEOChange({ title: e.target.value })}
-                  placeholder={activePage.title}
-                />
-                <p className="text-xs text-muted-foreground">
-                  If empty, uses page title: "{activePage.title}"
-                </p>
-                <div className="text-sm">
-                  Preview: <span className="font-medium">
-                    {pageSEO.title || activePage.title} {globalSEO.general.siteTitleSeparator} {globalSEO.general.siteTitle}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pageDescription">Meta Description Override</Label>
-                <Textarea
-                  id="pageDescription"
-                  value={pageSEO.metaDescription}
-                  onChange={(e) => handlePageSEOChange({ metaDescription: e.target.value })}
-                  placeholder={globalSEO.general.metaDescription}
-                  rows={3}
-                />
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>If empty, uses global description</span>
-                  <span>{pageSEO.metaDescription?.length || 0} / 160 characters</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="canonicalUrl">Canonical URL</Label>
+        {/* Page SEO Overrides - Only show when scope is page */}
+        {seoScope === "page" && (
+          <TabsContent value="page" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Page-Level SEO Overrides</CardTitle>
+                <CardDescription>
+                  These settings override global SEO for this specific page
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+                  <Label htmlFor="pageTitle">Page Title Override</Label>
+                  <Input
+                    id="pageTitle"
+                    value={pageSEO.title}
+                    onChange={(e) => handlePageSEOChange({ title: e.target.value })}
+                    placeholder={activePage.title}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    If empty, uses page title: "{activePage.title}"
+                  </p>
+                  <div className="text-sm">
+                    Preview: <span className="font-medium">
+                      {pageSEO.title || activePage.title} {globalSEO.general.siteTitleSeparator} {globalSEO.general.siteTitle}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="pageDescription">Meta Description Override</Label>
+                  <Textarea
+                    id="pageDescription"
+                    value={pageSEO.metaDescription}
+                    onChange={(e) => handlePageSEOChange({ metaDescription: e.target.value })}
+                    placeholder={globalSEO.general.metaDescription}
+                    rows={3}
+                  />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>If empty, uses global description</span>
+                    <span>{pageSEO.metaDescription?.length || 0} / 160 characters</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="canonicalUrl">Canonical URL</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="canonicalUrl"
+                        value={pageSEO.canonicalUrl || ''}
+                        onChange={(e) => handlePageSEOChange({ canonicalUrl: e.target.value })}
+                        placeholder={autoCanonical}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageSEOChange({ canonicalUrl: '' })}
+                      >
+                        Auto
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Auto-generated: {autoCanonical}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Final canonical: {finalCanonical}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <Label>Robots Directives</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="pageIndex">Index</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {activePage.status === 'draft' || (environment === 'staging' && globalSEO.robots.stagingNoIndex)
+                            ? "Forced noindex due to status/environment"
+                            : "Allow search engines to index this page"}
+                        </p>
+                      </div>
+                      <Switch
+                        id="pageIndex"
+                        checked={pageSEO.robots.index}
+                        onCheckedChange={(checked) =>
+                          handlePageSEOChange({
+                            robots: { ...pageSEO.robots, index: checked }
+                          })
+                        }
+                        disabled={activePage.status === 'draft' || (environment === 'staging' && globalSEO.robots.stagingNoIndex)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="pageFollow">Follow</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Allow search engines to follow links on this page
+                        </p>
+                      </div>
+                      <Switch
+                        id="pageFollow"
+                        checked={pageSEO.robots.follow}
+                        onCheckedChange={(checked) =>
+                          handlePageSEOChange({
+                            robots: { ...pageSEO.robots, follow: checked }
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm">
+                    Final robots meta: <code className="bg-muted px-2 py-1 rounded">{finalRobotsMeta}</code>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label htmlFor="ogImage">Open Graph Image Override</Label>
+                  <div className="flex gap-2">
                     <Input
-                      id="canonicalUrl"
-                      value={pageSEO.canonicalUrl || ''}
-                      onChange={(e) => handlePageSEOChange({ canonicalUrl: e.target.value })}
-                      placeholder={autoCanonical}
+                      id="ogImage"
+                      value={pageSEO.ogImage || ''}
+                      onChange={(e) => handlePageSEOChange({ ogImage: e.target.value })}
+                      placeholder="Leave empty for global/default"
                     />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageSEOChange({ canonicalUrl: '' })}
-                    >
-                      Auto
+                    <Button variant="outline">
+                      <ImageIcon className="h-4 w-4" />
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Auto-generated: {autoCanonical}
+                    Image fallback chain: Page featured image → Page OG image → Global OG image
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Final canonical: {finalCanonical}
+                    Final image: {finalOgImage || 'No image set'}
                   </p>
                 </div>
-              </div>
 
-              <Separator />
-
-              <div className="space-y-4">
-                <Label>Robots Directives</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="pageIndex">Index</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {activePage.status === 'draft' || (environment === 'staging' && globalSEO.robots.stagingNoIndex)
-                          ? "Forced noindex due to status/environment"
-                          : "Allow search engines to index this page"}
-                      </p>
-                    </div>
-                    <Switch
-                      id="pageIndex"
-                      checked={pageSEO.robots.index}
-                      onCheckedChange={(checked) =>
-                        handlePageSEOChange({
-                          robots: { ...pageSEO.robots, index: checked }
-                        })
-                      }
-                      disabled={activePage.status === 'draft' || (environment === 'staging' && globalSEO.robots.stagingNoIndex)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="pageFollow">Follow</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Allow search engines to follow links on this page
-                      </p>
-                    </div>
-                    <Switch
-                      id="pageFollow"
-                      checked={pageSEO.robots.follow}
-                      onCheckedChange={(checked) =>
-                        handlePageSEOChange({
-                          robots: { ...pageSEO.robots, follow: checked }
-                        })
-                      }
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="schemaType">Schema Type</Label>
+                  <Select
+                    value={pageSEO.schemaType}
+                    onValueChange={(value: any) => handlePageSEOChange({ schemaType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select schema type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="WebPage">WebPage</SelectItem>
+                      <SelectItem value="Article">Article</SelectItem>
+                      <SelectItem value="BlogPosting">BlogPosting</SelectItem>
+                      <SelectItem value="Product">Product</SelectItem>
+                      <SelectItem value="Event">Event</SelectItem>
+                      <SelectItem value="Person">Person</SelectItem>
+                      <SelectItem value="None">None</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Schema type helps search engines understand your content
+                  </p>
                 </div>
-                <div className="text-sm">
-                  Final robots meta: <code className="bg-muted px-2 py-1 rounded">{finalRobotsMeta}</code>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Label htmlFor="ogImage">Open Graph Image Override</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="ogImage"
-                    value={pageSEO.ogImage || ''}
-                    onChange={(e) => handlePageSEOChange({ ogImage: e.target.value })}
-                    placeholder="Leave empty for global/default"
-                  />
-                  <Button variant="outline">
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Image fallback chain: Page featured image → Page OG image → Global OG image
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Final image: {finalOgImage || 'No image set'}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="schemaType">Schema Type</Label>
-                <Select
-                  value={pageSEO.schemaType}
-                  onValueChange={(value: any) => handlePageSEOChange({ schemaType: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select schema type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="WebPage">WebPage</SelectItem>
-                    <SelectItem value="Article">Article</SelectItem>
-                    <SelectItem value="BlogPosting">BlogPosting</SelectItem>
-                    <SelectItem value="Product">Product</SelectItem>
-                    <SelectItem value="Event">Event</SelectItem>
-                    <SelectItem value="Person">Person</SelectItem>
-                    <SelectItem value="None">None</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Schema type helps search engines understand your content
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
         {/* General Settings (Existing - Modified) */}
         <TabsContent value="general" className="space-y-6">
