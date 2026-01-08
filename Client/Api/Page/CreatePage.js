@@ -24,8 +24,12 @@ export const checkSlugAvailability = async(data)=>{
     return true
 }
 
-
-export const getPage= return
- export const  updatePage = updatePag
-  export const createPageVersion = createPageVrsion
-  export const restorePageVersion = restorePgeVersion
+const GET_PAGE_URL = "http://localhost:5000/api/v1/get-page/page";
+export const getPage = async()=>{
+    try{
+        const response = await fetch(GET_PAGE_URL);
+        return response.json();
+    }catch(err){
+        console.error(err);
+    }
+}
