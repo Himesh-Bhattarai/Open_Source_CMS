@@ -21,6 +21,7 @@ import footerRoutes from './Routes/Footer/Combined.js';
 import themeRoutes from './Routes/Theme/Theme.js';
 import versionRoutes from './Routes/Version/Version.js';
 import seoRoutes from "./Routes/Seo/Seo.js";
+import formRoutes from "./Routes/Form/Form.js";
 
 
 
@@ -40,6 +41,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/activity', activityLogRoutes)
 app.use('/api/v1/create-blog', blogRoutes);
 app.use('/api/v1/fields', combinedRoutes);
+app.use('/api/v1/create-form', formRoutes);
 app.use('/api/v1/create-tenant', tenantRoutes);
 app.use('/api/v1/create-footer', footerRoutes);
 app.use('/api/v1/create-media', mediaRoutes);
