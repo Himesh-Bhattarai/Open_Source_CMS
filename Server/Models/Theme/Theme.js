@@ -1,10 +1,21 @@
 import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
+
 const ThemeSchema = new Schema(
     {
-        _id: { type: String,},
-        tenantId: { type: String, ref: "Tenant" },
-        name: String,
+        // tenantId = websiteId (for now)
+        tenantId: {
+            type: String,
+            required: true,
+            index: true,
+        },
+
+        name: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+
         colors: {
             primary: String,
             secondary: String,
@@ -12,31 +23,65 @@ const ThemeSchema = new Schema(
             text: String,
             accent: String,
         },
+
         typography: {
-            bodyFont: String,
             headingFont: String,
+            bodyFont: String,
             fontSize: String,
         },
+
         layout: {
-            containerWidth: String,
-            spacing: String,
-            borderRadius: String,
+            containerWidth: {
+                type: String,
+                enum: ["full", "boxed"],
+            },
+            borderRadius: {
+                type: String,
+                enum: ["none", "small", "medium", "large"],
+            },
+            sectionSpacing: {
+                type: String,
+                enum: ["compact", "normal", "spacious"],
+            },
+            headerStyle: {
+                type: String,
+                enum: ["fixed", "sticky", "standard"],
+            },
         },
-        header: {
-            style: { type: String, enum: ["fixed", "sticky", "standard"] },
-            variant: { type: String, enum: ["centered", "left", "split"] },
+
+        customCss: {
+            type: String,
+            default: "",
         },
-        footer: {
-            variant: { type: String, enum: ["multi-column", "minimal", "centered"] },
+
+        metadata: {
+            scope: {
+                type: String,
+                enum: ["global"],
+                default: "global",
+            },
+            version: {
+                type: Number,
+                default: 1,
+            },
+            lastUpdated: {
+                type: Date,
+                default: Date.now,
+            },
         },
-        customCss: String,
+
+        createdBy: {
+            type: String, // userId
+            required: true,
+        },
     },
     {
         timestamps: true,
         collection: "themes",
-    },
-)
+    }
+);
 
-ThemeSchema.index({ tenantId: 1 })
+// One global theme per website
+ThemeSchema.index({ tenantId: 1, "metadata.scope": 1 }, { unique: true });
 
-export const Theme = models.Theme || model("Theme", ThemeSchema)
+export const Theme = models.Theme || model("Theme", ThemeSchema);

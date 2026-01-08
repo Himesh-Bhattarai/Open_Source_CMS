@@ -1,37 +1,70 @@
 import { Theme } from "../../Models/Theme/Theme.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
-export const themeCheckpoint = (req, res, next) => {
+export const themeCheckpoint = async (req, res, next) => {
     try {
-        const { userId, tenantId, name, color, typography, layout, header, footer } = req.body;
+        // userId comes from auth middleware
+        const userId = req.user?.userId;
+        const { websiteId, theme } = req.body;
+
+        // tenantId = websiteId (for now)
+        const tenantId = websiteId;
 
         if (!userId || !tenantId) {
-            const err = new Error("Missing required fields");
+            const err = new Error("Missing required authentication context");
+            err.statusCode = 401;
+            throw err;
+        }
+
+        if (!theme || !theme.name) {
+            const err = new Error("Invalid theme payload");
             err.statusCode = 400;
             throw err;
         }
 
-        log.info(`Theme Creation Attempt by: ${userId} name: ${name}`)
+        log.info(
+            `Theme upsert attempt | user=${userId} | tenant=${tenantId} | theme=${theme.name}`
+        );
 
-        const theme = Theme.create({
-            _id: userId,
-            tenantId,
-            name,
-            color,
-            typography,
-            layout,
-            header,
-            footer
-        });
+        const updatedTheme = await Theme.findOneAndUpdate(
+            {
+                tenantId,
+                "metadata.scope": "global",
+            },
+            {
+                tenantId,
+                name: theme.name,
+                colors: theme.colors,
+                typography: theme.typography,
+                layout: theme.layout,
+                metadata: {
+                    scope: "global",
+                    version: (theme.metadata?.version || 0) + 1,
+                    lastUpdated: new Date(),
+                },
+                createdBy: userId,
+            },
+            {
+                new: true,
+                upsert: true,
+                setDefaultsOnInsert: true,
+            }
+        );
 
-        log.info(`Theme created by: ${userId} name: ${name} Date: ${theme.createdAt}`);
+        log.info(
+            `Theme saved | tenant=${tenantId} | version=${updatedTheme.metadata.version}`
+        );
 
         res.status(200).json({
-            message: "Theme created successfully by " + userId
-        })
-
+            message: "Global theme saved successfully",
+            data: {
+                tenantId,
+                themeId: updatedTheme._id,
+                version: updatedTheme.metadata.version,
+            },
+        });
     } catch (err) {
-        err.statusCode = err.statusCode || 400;
+        err.statusCode = err.statusCode || 500;
         next(err);
     }
-}
+};
