@@ -47,7 +47,7 @@ import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
-import { getPage, updatePage, createPageVersion, restorePageVersion, checkSlugAvailability } from "@/Api/Page"
+import { getPage, updatePage, createPageVersion, restorePageVersion } from "@/Api/Page/fetch"
 import type { Page, PageVersion, BlockType, Visibility, PageType } from "@/lib/types/page"
 
 // Add this interface for slug history tracking
@@ -167,18 +167,6 @@ export default function PageEditor() {
     }
   }, [isDirty, pageData])
 
-  // Check slug availability when slug changes
-  useEffect(() => {
-    if (pageData.slug && pageData.slug !== "about") { // Don't check default slug
-      checkSlugAvailability(pageData.tenantId, pageData.slug).then((available) => {
-        setSlugValidation({
-          isValid: available,
-          message: available ? "" : "This slug is already in use",
-          isChecking: false
-        })
-      })
-    }
-  }, [pageData.slug, pageData.tenantId])
 
   const loadPageData = async (pageId: string) => {
     try {

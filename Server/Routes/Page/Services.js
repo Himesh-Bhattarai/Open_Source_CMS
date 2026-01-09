@@ -1,12 +1,13 @@
-import { verificationMiddleware } from "../../Utils/Jwt/Jwt";
-import { Page } from "../../Models/Page/Page";
-import express from express;
+import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
+import { Page } from "../../Models/Page/Page.js";
+import express from "express";
 
 const router = express.Router();
-router.get("/slug", verificationMiddleware, async (req, res, next) => {
+router.get("/", verificationMiddleware, async (req, res, next) => {
     try {
         const { tenantId, slug } = req.query;
         const userId = req.user?.userId;
+        console.log("Slug check", tenantId, slug, userId);
 
         if (!tenantId || !slug || !userId) {
             throw new Error("Missing required fields");

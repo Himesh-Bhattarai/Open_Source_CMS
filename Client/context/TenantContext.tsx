@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { getUserTenants } from "@/Api/Fetch/allFetch";
+import { getUserTenants } from "@/Api/Tenant/Fetch";
 import { useAuth } from "@/hooks/useAuth";
 
 type Tenant = {
@@ -27,8 +27,9 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     const refreshTenants = async () => {
         if (!user) return;
         const data = await getUserTenants();
-        setTenants(data.tenants);
-        setActiveTenant(data.tenants[0] ?? null);
+        console.log("Tenant Context", data);
+        setTenants(data?.tenants);
+        setActiveTenant(data?.tenants[0] ?? null);
     };
 
     useEffect(() => {

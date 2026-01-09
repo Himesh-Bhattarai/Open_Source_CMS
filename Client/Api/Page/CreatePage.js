@@ -17,16 +17,3 @@ export const createPage = async (data)=>{
 
     return response.json();
 }
-
-
-
-
-const GET_PAGE_URL = "http://localhost:5000/api/v1/get-page/page";
-export const getPage = async()=>{
-    try{
-        const response = await fetch(GET_PAGE_URL);
-        return response.json();
-    }catch(err){
-        console.error(err);
-    }
-}

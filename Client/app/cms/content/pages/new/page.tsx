@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -171,6 +171,8 @@ export default function NewPageEditor() {
     isChecking: false
   })
 
+  const slugCheckId = useRef(0)
+
   // Updated state with proper typing
   const [page, setPage] = useState<{
     title: string
@@ -259,51 +261,57 @@ export default function NewPageEditor() {
       isHomepage: false,
     }
   })
-  const handleTitleChange = async (title: string) => {
-    const newSlug = title
+
+  const formatSlug = (value: string) =>
+    value
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9\-_]/g, "")
+
+  const handleTitleChange = async (title: string) => {
+    const newSlug = formatSlug(title)
 
     setPage(prev => ({ ...prev, title, slug: newSlug }))
 
-    if (selectedTenantId && newSlug) {
-      setSlugValidation(prev => ({ ...prev, isChecking: true }))
+    if (!selectedTenantId || !newSlug) return
 
-      const result = await checkSlugAvailability(newSlug, selectedTenantId)
+    const currentId = ++slugCheckId.current
+    setSlugValidation(prev => ({ ...prev, isChecking: true }))
 
-      setSlugValidation({
-        isValid: result.available,
-        message: result.available ? "" : result.message,
-        isChecking: false
-      })
-    }
+    const result = await checkSlugAvailability(newSlug, selectedTenantId)
+
+    if (currentId !== slugCheckId.current) return
+
+    setSlugValidation({
+      isValid: result.available,
+      message: result.available ? "" : result.message || "This slug is already in use",
+      isChecking: false
+    })
   }
+
 
 
   const handleSlugChange = async (newSlug: string) => {
-    const formattedSlug = newSlug
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9\-_]/g, "")
+    const formattedSlug = formatSlug(newSlug)
 
-    setPage(prev => ({
-      ...prev,
-      slug: formattedSlug
-    }))
+    setPage(prev => ({ ...prev, slug: formattedSlug }))
 
-    if (selectedTenantId && formattedSlug) {
-      setSlugValidation(prev => ({ ...prev, isChecking: true }))
+    if (!selectedTenantId || !formattedSlug) return
 
-      const result = await checkSlugAvailability(formattedSlug, selectedTenantId)
+    const currentId = ++slugCheckId.current
+    setSlugValidation(prev => ({ ...prev, isChecking: true }))
 
-      setSlugValidation({
-        isValid: result.available,
-        message: result.available ? "" : result.message,
-        isChecking: false
-      })
-    }
+    const result = await checkSlugAvailability(formattedSlug, selectedTenantId)
+
+    if (currentId !== slugCheckId.current) return
+
+    setSlugValidation({
+      isValid: result.available,
+      message: result.available ? "" : result.message || "This slug is already in use",
+      isChecking: false
+    })
   }
+
 
 
   // Add section to pageTree
@@ -810,6 +818,9 @@ export default function NewPageEditor() {
       <Card>
         <CardHeader>
           <CardTitle>Page Details</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Page Details are only for internal reference.
+          </p>
         </CardHeader>
 
         <CardContent className="space-y-4">
