@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, Loader2, Check, Chrome, Facebook } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { registerApi } from "@/Api/Auth/Signup"
-import { set } from "date-fns"
+
 export default function SignupPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)

@@ -54,6 +54,10 @@ app.use('/api/v1/create-seo', seoRoutes);
 //fetch routes
 app.use('/api/v1/tenants', tenantRoutes);
 
+
+//helper / services
+app.use('/api/v1/check-slug', pageRoutes);
+
 // Error handler
 app.use(errorHandler);
 

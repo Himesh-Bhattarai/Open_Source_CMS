@@ -1,4 +1,4 @@
-# STATUS Commit System - inspired by HTTP,start to use and create code by HIMESHCHANCHAL BHATTARAI
+# STATUS Commit System - inspired by HTTP, start to use and create code by HIMESHCHANCHAL BHATTARAI
 
 This project uses a **STATUS-based commit convention**
 to describe the **state and reliability of the codebase** at each commit.
@@ -64,3 +64,18 @@ Each commit answers:
 ### ∞ — Final
 
 - STATUS(infinity): Fully stable, tested, and trusted
+
+### 404 — Human State (Non-Functional)
+### 404 -- Fun one, bored, irritation, out of mind, wasted, busted, angry, motivation, custom
+- STATUS(404) : I am death || I have no idea, why my code works || I FOUND A BUG WHICH I AM RESPONSIBLE FOR AND NOW I FIX THAT BUG , I CANNOT TELL HOW SMART I AM . || 
+
+Used when the commit represents **human emotion, chaos, or debugging madness**.
+Does NOT indicate code quality or system health.
+
+- STATUS(404): brain not found
+- STATUS(404): no idea why it works, but it works
+- STATUS(404): found the bug, I caused the bug, I fixed the bug
+- STATUS(404): everything is broken except me
+- STATUS(404): after 24 hrs of debugging i am still alive. Do I ?
+- STATUS(404): powered by coffee and regret
+- STATUS(404): do not ask, just merge
