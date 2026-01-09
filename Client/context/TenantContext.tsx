@@ -13,8 +13,10 @@ type Tenant = {
 type TenantContextType = {
     tenants: Tenant[];
     activeTenant: Tenant | null;
+    selectedTenantId: string | null;   // 👈 add this
     setActiveTenant: (t: Tenant) => void;
     refreshTenants: () => Promise<void>;
+
 };
 
 const TenantContext = createContext<TenantContextType | null>(null);
@@ -38,7 +40,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <TenantContext.Provider
-            value={{ tenants, activeTenant, setActiveTenant, refreshTenants }}
+            value={{ tenants, activeTenant, setActiveTenant, refreshTenants, selectedTenantId: activeTenant?._id ?? null, }}
         >
             {children}
         </TenantContext.Provider>

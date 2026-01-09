@@ -1,4 +1,6 @@
-const CHECK_SLUG_AVAILABILITY_URL = "http://localhost:5000/api/v1/check-slug/slug"
+const CHECK_SLUG_AVAILABILITY_URL = "http://localhost:5000/api/v1/check-slug/slug";
+const RESTORE_PAGE_VERSION_URL = "http://localhost:5000/api/v1/restore-page-version/page-version";
+
 
 export const checkSlugAvailability = async (slug, tenantId) => {
     try {
@@ -24,3 +26,21 @@ export const checkSlugAvailability = async (slug, tenantId) => {
         return { ok: false, available: false, message: "Network error" }
     }
 }
+
+
+export const restorePageVersion = async(versionId) =>{
+    try{
+        const response = await fetch(`${RESTORE_PAGE_VERSION_URL}/${versionId}`,{
+            method: "GET",
+            credentials: "include"
+        });
+
+        const request = response.json();
+        if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return request;
+    }catch(err){
+        console.log(err);
+        const error = new Error(`HTTP error! status: ${response.status}`);
+    }
+}
+

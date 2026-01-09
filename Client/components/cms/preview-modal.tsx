@@ -6,19 +6,26 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Monitor, Tablet, Smartphone, RefreshCw, ExternalLink } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {PageContent} from "@/lib/types/page"
 
-interface PreviewModalProps {
+export interface PreviewModalProps {
   isOpen: boolean
   onClose: () => void
-  content: {
-    title: string
-    slug: string
-    status: string
-  }
-  previewUrl?: string
+  content: PageContent
+  previewUrl: string
+  environment: string
+  seoPreview?: string   // ← ADD THIS
 }
 
-export function PreviewModal({ isOpen, onClose, content, previewUrl = "/" }: PreviewModalProps) {
+export function PreviewModal({
+  isOpen,
+  onClose,
+  content,
+  previewUrl = "/",
+  environment,
+  seoPreview,       // <-- accept it even if you don't render yet
+}: PreviewModalProps) {
+
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop")
   const [isRefreshing, setIsRefreshing] = useState(false)
 

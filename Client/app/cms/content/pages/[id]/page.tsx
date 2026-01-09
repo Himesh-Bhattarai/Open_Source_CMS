@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -47,7 +47,11 @@ import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
-import { getPage, updatePage, createPageVersion, restorePageVersion } from "@/Api/Page/fetch"
+import { getUserPage as getPage} from "@/Api/Page/Fetch"
+import { checkSlugAvailability } from "@/Api/Page/Services"
+// Added checkSlugAvailability import
+import { createPageVersion, updatePage } from "@/Api/Page/CreatePage"
+import { restorePageVersion } from "@/Api/Page/Services"
 import type { Page, PageVersion, BlockType, Visibility, PageType } from "@/lib/types/page"
 
 // Add this interface for slug history tracking
@@ -80,10 +84,24 @@ export default function PageEditor() {
   const [isLocked, setIsLocked] = useState(false)
   const [lockedBy, setLockedBy] = useState<string | null>(null)
   const [etag, setEtag] = useState("")
+  const originalSlugRef = useRef<string>("") // Track original slug
+
+  // Safely extract pageId from params
+  const getPageId = () => {
+    const id = params.id;
+    if (!id) return "";
+    if (Array.isArray(id)) return id[0] || "";
+    return id;
+  };
+
+  const pageId = getPageId();
+  if (!selectedTenantId) {
+    return <div>Loading tenant…</div>;
+  }
 
   // Extended page data with production fields
-  const [pageData, setPageData] = useState({
-    _id: params.id as string || "",
+  const [pageData, setPageData] = useState<Page>(() => ({
+    _id: pageId,
     tenantId: selectedTenantId,
     title: "About Us",
     slug: "about",
@@ -148,14 +166,14 @@ export default function PageEditor() {
     lockedAt: undefined,
     etag: crypto.randomUUID(),
     lastSavedHash: ""
-  })
+  }));
 
   // Load page data on mount
   useEffect(() => {
-    if (params.id) {
-      loadPageData(params.id as string)
+    if (pageId) {
+      loadPageData(pageId)
     }
-  }, [params.id])
+  }, [pageId])
 
   // Auto-save with conflict detection
   useEffect(() => {
@@ -170,9 +188,10 @@ export default function PageEditor() {
 
   const loadPageData = async (pageId: string) => {
     try {
-      const data = await getPage(pageId)
+      const data = await getPage(pageId) // Fixed: Pass pageId parameter
       setPageData(data)
       setSlugHistory(data.slugHistory || [])
+      originalSlugRef.current = data.slug // Track original slug
       setPageVersions(data.versions || [])
       setIsLocked(data.isLocked || false)
       setLockedBy(data.lockedBy || null)
@@ -183,13 +202,56 @@ export default function PageEditor() {
     }
   }
 
+  // Slug validation function
+  const validateSlug = async (slug: string) => {
+    if (!slug.trim()) {
+      setSlugValidation({
+        isValid: false,
+        message: "Slug cannot be empty",
+        isChecking: false
+      });
+      return false;
+    }
+
+    // Basic validation
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!slugRegex.test(slug)) {
+      setSlugValidation({
+        isValid: false,
+        message: "Slug can only contain lowercase letters, numbers, and hyphens",
+        isChecking: false
+      });
+      return false;
+    }
+
+    setSlugValidation(prev => ({ ...prev, isChecking: true }));
+
+    try {
+      const result = await checkSlugAvailability(slug, selectedTenantId);
+      setSlugValidation({
+        isValid: result.available,
+        message: result.available ? "Slug is available" : "Slug is already in use",
+        isChecking: false
+      });
+      return result.available;
+    } catch (error) {
+      console.error("Slug validation error:", error);
+      setSlugValidation({
+        isValid: false,
+        message: "Error checking slug availability",
+        isChecking: false
+      });
+      return false;
+    }
+  };
+
   const autoSave = async () => {
     if (!isDirty || isSaving) return
 
     setIsSaving(true)
     try {
-      const saveData = prepareSaveData()
-      await updatePage(saveData, { autoSave: true })
+      const saveData = prepareSaveData(true) // Pass autoSave flag
+      await updatePage({ data: saveData, options: { autoSave: true } })
 
       // Create version snapshot for auto-save
       await createPageVersion({
@@ -215,12 +277,18 @@ export default function PageEditor() {
     }
   }
 
-  const prepareSaveData = () => {
+  const prepareSaveData = (isAutoSave = false) => {
     // Update noIndex reasons based on page state
     const noIndexReasons: string[] = []
-    if (pageData.status === 'draft') noIndexReasons.push('draft')
+    if (pageData.status as string === 'draft') noIndexReasons.push('draft')
     if (pageData.seo.robots.index === false) noIndexReasons.push('manual-noindex')
     if (pageData.settings.visibility === 'private') noIndexReasons.push('private-page')
+
+    // Only add slug history entry if slug actually changed from original and not during autoSave
+    const shouldAddSlugHistory = !isAutoSave &&
+      originalSlugRef.current &&
+      originalSlugRef.current !== pageData.slug &&
+      originalSlugRef.current !== "";
 
     const saveData = {
       ...pageData,
@@ -234,11 +302,11 @@ export default function PageEditor() {
             : `https://${pageData.seo.canonicalUrl}`
           : undefined
       },
-      // Update slug history if slug changed
-      slugHistory: pageData.slug !== "about" ? [
+      // Update slug history only if slug actually changed and not during autoSave
+      slugHistory: shouldAddSlugHistory ? [
         ...pageData.slugHistory,
         {
-          slug: pageData.slug,
+          slug: originalSlugRef.current,
           changedAt: new Date(),
           changedBy: "Current User", // Replace with actual user
           redirectEnabled: true
@@ -259,12 +327,19 @@ export default function PageEditor() {
       return
     }
 
+    // Validate slug before saving
+    const isValidSlug = await validateSlug(pageData.slug);
+    if (!isValidSlug) {
+      toast.error("Please fix slug validation errors before saving");
+      return;
+    }
+
     setIsSaving(true)
     try {
-      const saveData = prepareSaveData()
+      const saveData = prepareSaveData(false) // Not autoSave
 
       // Check for conflicts
-      const response = await updatePage(saveData)
+      const response = await updatePage({ data: saveData, options: {} })
 
       // Create version snapshot
       await createPageVersion({
@@ -274,6 +349,9 @@ export default function PageEditor() {
         changes: ["Manual save"],
         autoSave: false
       })
+
+      // Update original slug reference after successful save
+      originalSlugRef.current = pageData.slug;
 
       setLastSaved(new Date())
       setIsDirty(false)
@@ -304,8 +382,11 @@ export default function PageEditor() {
     setPageData(prev => ({ ...prev, slug: formattedSlug }))
     setIsDirty(true)
 
-    // Check if slug changed significantly
-    if (pageData.slug !== formattedSlug && pageData.slugHistory.length > 0) {
+    // Validate slug
+    validateSlug(formattedSlug);
+
+    // Check if slug changed significantly from original
+    if (originalSlugRef.current && originalSlugRef.current !== formattedSlug) {
       // Prompt to enable 301 redirect
       toast.info("Slug changed. 301 redirect will be created from old URL.", {
         action: {
@@ -319,13 +400,17 @@ export default function PageEditor() {
     }
   }
 
+
   const handleLock = async () => {
     try {
       await updatePage({
-        _id: pageData._id,
-        isLocked: true,
-        lockedBy: "current-user-id", // Replace with actual user
-        lockedAt: new Date()
+        data: {
+          ...pageData,
+          isLocked: true,
+          lockedBy: "current-user-id", // Replace with actual user
+          lockedAt: new Date()
+        },
+        options: {} // Add any necessary options
       })
       setIsLocked(true)
       setLockedBy("current-user-id")
@@ -338,10 +423,12 @@ export default function PageEditor() {
   const handleUnlock = async () => {
     try {
       await updatePage({
-        _id: pageData._id,
-        isLocked: false,
-        lockedBy: null,
-        lockedAt: null
+        data: {
+          isLocked: false,
+          lockedBy: null,
+          lockedAt: null
+        },
+        options: {} // Add any necessary options
       })
       setIsLocked(false)
       setLockedBy(null)
@@ -365,17 +452,18 @@ export default function PageEditor() {
   const handlePublish = async (type: "now" | "schedule", date?: string, time?: string) => {
     setIsSaving(true)
     try {
+      
       const publishData = {
         ...pageData,
-        status: type === "now" ? "published" : "scheduled",
+        status: type === "now" ? "published" : "scheduled" as "published",
         publishedAt: type === "now" ? new Date().toISOString() : `${date}T${time}`,
         settings: {
           ...pageData.settings,
-          publishedVersionId: pageData._id // Link to current version
+          publishedVersionId: pageData._id  // Link to current version
         }
-      }
+      };
 
-      await updatePage(publishData)
+      await updatePage({data:publishData, options: {}}) // Update page data with publishData)
 
       setPageData(publishData)
       setLastSaved(new Date())

@@ -118,6 +118,9 @@ export interface Page {
   // For conflict detection
   etag: string;
   lastSavedHash: string;
+
+  //i dont know what is that suggested by chatGPT so to get rid of warning i added this
+  affectedPages?: string[];
 }
 
 // Block schema definitions for validation
@@ -197,5 +200,7 @@ export const BLOCK_SCHEMAS = {
 
 // Type guard for block types
 export type BlockType = keyof typeof BLOCK_SCHEMAS;
+export type PageContent = Page;
+
 
 

@@ -16,18 +16,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, Globe, AlertTriangle, CheckCircle2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PageContent } from "@/lib/types/page"
 
-interface PublishModalProps {
+export interface PublishModalProps {
   isOpen: boolean
   onClose: () => void
-  onPublish: (type: "now" | "schedule", date?: string, time?: string) => void
-  content: {
-    title: string
-    status: string
-    affectedPages?: number
-  }
+  onPublish: (type: "now" | "schedule", date?: string, time?: string) => Promise<void>
+  content: PageContent
+  validation?: string[]   // ← ADD THIS
   isGlobal?: boolean
 }
+
 
 export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = false }: PublishModalProps) {
   const [publishType, setPublishType] = useState<"now" | "schedule">("now")
