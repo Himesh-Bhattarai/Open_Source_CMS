@@ -94,15 +94,13 @@ export default function PageEditor() {
     return id;
   };
 
+  
+  
   const pageId = getPageId();
-  if (!selectedTenantId) {
-    return <div>Loading tenant…</div>;
-  }
-
   // Extended page data with production fields
   const [pageData, setPageData] = useState<Page>(() => ({
     _id: pageId,
-    tenantId: selectedTenantId,
+    tenantId: selectedTenantId || "",
     title: "About Us",
     slug: "about",
     content: "Welcome to our company. We are dedicated to providing excellent service...",
@@ -521,8 +519,10 @@ export default function PageEditor() {
     return errors
   }
 
-  // Render function continues with existing JSX, but extended...
-  // I'll show the critical additions
+  if (!selectedTenantId) {
+    return <div>Loading tenant…</div>;
+  }
+
 
   return (
     <div className="space-y-6">
@@ -535,8 +535,8 @@ export default function PageEditor() {
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-balance text-2xl font-bold tracking-tight">{pageData.title}</h1>
-            <Badge variant={pageData.status === "published" ? "default" : "secondary"}>{pageData.status}</Badge>
+            <h1 className="text-balance text-2xl font-bold tracking-tight">{pageData?.title}</h1>
+            <Badge variant={pageData?.status === "published" ? "default" : "secondary"}>{pageData?.status}</Badge>
             {isLocked && (
               <Badge variant="destructive">
                 <Lock className="h-3 w-3 mr-1" />
