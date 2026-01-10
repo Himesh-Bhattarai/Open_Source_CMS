@@ -22,6 +22,7 @@ import themeRoutes from './Routes/Theme/Theme.js';
 import versionRoutes from './Routes/Version/Version.js';
 import seoRoutes from "./Routes/Seo/Seo.js";
 import formRoutes from "./Routes/Form/Form.js";
+import FetchPageRoutes from "./Routes/Page/Services.js"
 
 
 
@@ -53,10 +54,11 @@ app.use('/api/v1/create-seo', seoRoutes);
 
 //fetch routes
 app.use('/api/v1/tenants', tenantRoutes);
+app.use('/api/v1/page', FetchPageRoutes);
 
 
 //helper / services
-app.use('/api/v1/check-slug', pageRoutes);
+app.use('/api/v1/check-slug', FetchPageRoutes);
 
 // Error handler
 app.use(errorHandler);

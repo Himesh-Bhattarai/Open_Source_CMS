@@ -2,9 +2,9 @@ const GET_PAGE_URL = "http://localhost:5000/api/v1/page/get-page";
 const GET_PAGE_BY_ID = "http://localhost:5000/api/v1/page/selected-page";
 const GET_ALL_PAGES_URL = "http://localhost:5000/api/v1/page/all-pages";
 
-export const getUserPage = async(pageId)=>{
+export const getUserPages = async()=>{
     try{
-        const response = await fetch(`${GET_PAGE_URL}/${pageId}`,{
+        const response = await fetch(`${GET_PAGE_URL}}`,{
             method: "GET",
             credentials: "include"
         });
@@ -19,7 +19,8 @@ export const getUserPage = async(pageId)=>{
 //Get User page By Id
 export const getPageById = async(pageId)=>{
     try{
-        const response = await fetch(`${GET_PAGE_BY_ID}/${pageId}`,{
+        console.log("Page Id", pageId);
+        const response = await fetch(`${GET_PAGE_BY_ID}?pageId=${pageId}`,{
             method: "GET",
             credentials: "include"
         });

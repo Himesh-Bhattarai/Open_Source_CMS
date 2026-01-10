@@ -34,6 +34,7 @@ export function PreviewModal({
     setTimeout(() => setIsRefreshing(false), 500)
   }
 
+
   const deviceSizes = {
     desktop: "w-full h-full",
     tablet: "w-[768px] h-[1024px]",
