@@ -45,26 +45,24 @@ export const createPageVersion = async (data) => {
 
 
 
-export const updatePage = async (pageId, { data, options }) => {
-    try {
-        const response = await fetch(`${UPDATA_PAGE_URL}/${pageId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify({ data, options })
-        });
+export const updatePage = async (pageId, { data, etag, options }) => {
+    const response = await fetch(`${UPDATA_PAGE_URL}/${pageId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ data, etag, options })
+    })
 
-        const result = await response.json();
+    const result = await response.json()
 
-        if (!response.ok) {
-            throw new Error(result.message || "Update failed");
-        }
-
-        return result;   // THIS is what contains etag, _id, etc
-    } catch (err) {
-        console.error(err);
-        throw err;
+    if (!response.ok) {
+        const err = new Error(result.message || "Update failed")
+        err.status = response.status
+        throw err
     }
-};
+
+    return result
+}
+

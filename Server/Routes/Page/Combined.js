@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.use('/page', Page);
 router.use('/page-block', PageBlock);
-router.use('/page/:pageId', updatePage);
+router.use('/page', updatePage);
 
 export default router

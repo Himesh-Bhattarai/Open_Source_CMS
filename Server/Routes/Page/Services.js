@@ -36,26 +36,44 @@ router.get("/slug", verificationMiddleware, async (req, res, next) => {
     }
 });
 
+//Ger user pages 
+router.get("/user-pages",
+    verificationMiddleware,
+    async (req, res, next) => {
+        try {
+            const userId = req.user?.userId;
+            console.log("Fetching pages for user", userId);
+            if (!userId) throw new Error("Unauthorized Access");
+
+            const pages = await Page.find({ authorId: userId });
+            if (!pages) throw new Error("No pages found for this user");
+            res.status(200).json(pages);
+        } catch (err) {
+            next(err);
+        }
+    }
+)
+
 // Get user page  and return page 
 router.get("/selected-page",
-     verificationMiddleware,
-     async (req, res, next) =>{
-        try{
+    verificationMiddleware,
+    async (req, res, next) => {
+        try {
             const userId = req.user?.userId;
             const pageId = req.query?.pageId;
             console.log("Did i am here ?")
             console.log("Let me see i get Page Id", pageId);
 
-            if(!pageId) throw new Error("Missing fields required");
+            if (!pageId) throw new Error("Missing fields required");
 
-            const page = await Page.findById({_id: pageId})
-            if(!page) throw new Error("Page Not Found");
+            const page = await Page.findById({ _id: pageId })
+            if (!page) throw new Error("Page Not Found");
             console.log("Returning Page", page)
             res.status(200).json(page);
-        }catch(err){
+        } catch (err) {
             next(err);
         }
-     }
+    }
 
 )
 

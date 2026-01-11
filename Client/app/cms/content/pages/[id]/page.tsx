@@ -377,10 +377,12 @@ export default function PageEditor() {
       const payload = buildPhase2Payload()
 
       // CRITICAL: Send ONLY Phase-2 fields to backend
-      const response = await updatePage(pageId,{
-        data: payload as any,
+      const response = await updatePage(pageId, {
+        data: payload,
+        etag,
         options: { autoSave: true }
       })
+
 
       setLastSaved(new Date())
       setIsDirty(false)
@@ -403,47 +405,27 @@ export default function PageEditor() {
 
   // Manual save with PHASE-2 ONLY payload
   const handleManualSave = async () => {
-    if (isLocked && lockedBy !== user?.id) {
-      toast.error(`Page is locked by ${lockedBy} and cannot be edited`)
-      return
-    }
-
-    const structuredDataJson = JSON.stringify(phase2Data.seo.structuredData || {})
-    if (!validateStructuredData(structuredDataJson)) {
-      toast.error("Please fix structured data JSON errors before saving")
-      return
-    }
-
-    setIsSaving(true)
     try {
       const payload = buildPhase2Payload()
 
-      // CRITICAL: Send ONLY Phase-2 fields to backend
-      const response = await updatePage({
-        data: payload as any,
-        options: {}
+      const response = await updatePage(pageId, {
+        data: payload,
+        etag,
+        options: { autoSave: false }
       })
 
       setLastSaved(new Date())
       setIsDirty(false)
       setEtag(response.etag)
 
-      toast.success("Page saved successfully")
-    } catch (error: any) {
-      if (error.status === 409) {
-        toast.error("Conflict detected. Page was modified by someone else.")
-        await loadPageData(pageId)
-      } else if (error.status === 423) {
-        toast.error("Page is locked by another user")
-        await loadPageData(pageId)
-      } else {
-        console.error("Save failed:", error)
-        toast.error("Failed to save page")
-      }
-    } finally {
-      setIsSaving(false)
+      toast.success("Saved")
+      router.refresh();
+      router.push("/cms/content/pages")
+    } catch (err) {
+      toast.error("Save failed")
     }
   }
+
 
   // Real locking with server enforcement
   const handleLock = async () => {
