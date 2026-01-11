@@ -26,6 +26,7 @@ export const getPageById = async(pageId)=>{
         });
 
         const request = await response.json();
+        console.log("Page By Id Response", request);
         return request;
     }catch(err){
         console.error(err);

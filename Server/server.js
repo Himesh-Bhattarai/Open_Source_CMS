@@ -60,6 +60,10 @@ app.use('/api/v1/page', FetchPageRoutes);
 //helper / services
 app.use('/api/v1/check-slug', FetchPageRoutes);
 
+
+//Edit / modification routes
+app.use('/api/v1/update-page', pageRoutes);
+
 // Error handler
 app.use(errorHandler);
 

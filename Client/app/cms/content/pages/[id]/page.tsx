@@ -39,8 +39,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { getPageById } from "@/Api/Page/Fetch"
-import { checkSlugAvailability, restorePageVersion } from "@/Api/Page/Services"
-import { createPageVersion, updatePage } from "@/Api/Page/CreatePage"
+import {  restorePageVersion } from "@/Api/Page/Services"
+import {  updatePage } from "@/Api/Page/CreatePage"
 import type { Page, PageVersion, Visibility, PageType } from "@/lib/types/page"
 
 interface SlugHistoryItem {
@@ -53,10 +53,56 @@ interface SlugHistoryItem {
 // Declare missing APIs that are required for production
 import { useAuth } from "@/hooks/useAuth"   // adjust path to your project
 
+// ====================================
+// PHASE-1 IMMUTABLE FIELDS (READ-ONLY)
+// ====================================
+interface Phase1Data {
+  title: string;
+  slug: string;
+  tenantId: string;
+  pageTree: any;
+  authorId: string;
+  content: string;
+  blocks: any[];
+}
+
+// ====================================
+// PHASE-2 EDITABLE FIELDS (ONLY THESE)
+// ====================================
+interface Phase2Payload {
+  seo: {
+    metaTitle: string;
+    metaDescription: string;
+    canonicalUrl: string;
+    openGraph: {
+      title: string;
+      description: string;
+      image: string;
+      type: string;
+    };
+    twitter: {
+      card: string;
+      title: string;
+      description: string;
+      image: string;
+      site: string;
+    };
+    structuredData: any;
+  };
+  settings: {
+    pageType: PageType;
+    visibility: Visibility;
+    featured: boolean;
+    allowComments: boolean;
+    template: string;
+    isHomepage: boolean;
+  };
+  status: Page["status"];
+  publishedAt?: string;
+}
 
 export default function PageEditor() {
   const { user, loading } = useAuth()
-
 
   const params = useParams()
   const router = useRouter()
@@ -72,11 +118,6 @@ export default function PageEditor() {
   const [showPreview, setShowPreview] = useState(false)
   const [showPublish, setShowPublish] = useState(false)
   const [slugHistory, setSlugHistory] = useState<SlugHistoryItem[]>([])
-  const [slugValidation, setSlugValidation] = useState({
-    isValid: true,
-    message: "",
-    isChecking: false
-  })
   const [pageVersions, setPageVersions] = useState<PageVersion[]>([])
   const [isLocked, setIsLocked] = useState(false)
   const [lockedBy, setLockedBy] = useState<string | null>(null)
@@ -84,45 +125,22 @@ export default function PageEditor() {
   const [structuredDataError, setStructuredDataError] = useState<string | null>(null)
 
   // Refs
-  const originalSlugRef = useRef<string>("")
   const saveTimerRef = useRef<NodeJS.Timeout>(null)
-  const initialLoadRef = useRef(false)
   const saveDataRef = useRef<any>(null)
 
-  // Get page ID from params safely - NEVER use slug in routing
-  const getPageId = useCallback(() => {
-    const id = params.id
-    if (!id) return ""
-    if (Array.isArray(id)) return id[0] || ""
-    return id
-  }, [params.id])
+  // ====================================
+  // PHASE-1 IMMUTABLE DATA STORAGE
+  // ====================================
+  const [phase1Data, setPhase1Data] = useState<Phase1Data | null>(null)
 
-  const pageId = getPageId()
-
-  // Initialize with empty page structure - NEVER undefined
-  const [pageData, setPageData] = useState<Page>({
-    _id: pageId,
-    tenantId: selectedTenantId || "",
-    title: "",
-    slug: "",
-    content: "",
-    blocks: [],
-    status: "draft",
-    publishedAt: "",
-    authorId: "",
-    author: "",
+  // ====================================
+  // PHASE-2 EDITABLE DATA STORAGE
+  // ====================================
+  const [phase2Data, setPhase2Data] = useState<Phase2Payload>({
     seo: {
       metaTitle: "",
       metaDescription: "",
-      focusKeyword: "",
       canonicalUrl: "",
-      robots: {
-        index: true,
-        follow: true,
-        maxImagePreview: "standard",
-        maxSnippet: -1,
-        maxVideoPreview: -1
-      },
       openGraph: {
         title: "",
         description: "",
@@ -136,39 +154,31 @@ export default function PageEditor() {
         image: "",
         site: ""
       },
-      structuredData: {},
-      sitemapInclusion: true,
-      noIndexReasons: []
+      structuredData: {}
     },
     settings: {
+      pageType: "default",
+      visibility: "public",
       featured: false,
       allowComments: true,
       template: "default",
-      pageType: "default",
-      visibility: "public",
-      locked: undefined,
-      authorId: "",
-      parentId: undefined,
-      redirectFrom: [],
-      isHomepage: false,
-      order: 0,
-      publishedVersionId: undefined
+      isHomepage: false
     },
-    slugHistory: [],
-    currentVersion: 1,
-    versions: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastModifiedBy: "",
-    lastModifiedAt: new Date(),
-    isLocked: false,
-    lockedBy: undefined,
-    lockedAt: undefined,
-    etag: "",
-    lastSavedHash: ""
+    status: "draft",
+    publishedAt: ""
   })
 
-  // Load page data - fixed to prevent multiple loads
+  // Get page ID from params safely - NEVER use slug in routing
+  const getPageId = useCallback(() => {
+    const id = params.id
+    if (!id) return ""
+    if (Array.isArray(id)) return id[0] || ""
+    return id
+  }, [params.id])
+
+  const pageId = getPageId()
+
+  // Load page data - SEPARATE Phase-1 and Phase-2
   useEffect(() => {
     if (!pageId) return
 
@@ -181,10 +191,9 @@ export default function PageEditor() {
     }
   }, [pageId])
 
-
   // Auto-save effect with validation
   useEffect(() => {
-    if (isDirty && !isSaving && !isLocked && slugValidation.isValid && !structuredDataError) {
+    if (isDirty && !isSaving && !isLocked && !structuredDataError) {
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current)
       }
@@ -199,7 +208,7 @@ export default function PageEditor() {
         clearTimeout(saveTimerRef.current)
       }
     }
-  }, [isDirty, isSaving, isLocked, slugValidation.isValid, structuredDataError])
+  }, [isDirty, isSaving, isLocked, structuredDataError])
 
   const loadPageData = async (pageId: string) => {
     try {
@@ -216,73 +225,65 @@ export default function PageEditor() {
         throw new Error("Invalid page data from server")
       }
 
-      setPageData(data)
+      // ====================================
+      // SPLIT: Phase-1 (IMMUTABLE) vs Phase-2 (EDITABLE)
+      // ====================================
+
+      // Phase-1: Store as READ-ONLY
+      setPhase1Data({
+        title: data.title,
+        slug: data.slug,
+        tenantId: data.tenantId,
+        pageTree: data.pageTree || {},
+        authorId: data.settings?.authorId || data.authorId || "",
+        content: data.content || "",
+        blocks: data.blocks || []
+      })
+
+      // Phase-2: Store as EDITABLE
+      setPhase2Data({
+        seo: {
+          metaTitle: data.seo?.metaTitle || "",
+          metaDescription: data.seo?.metaDescription || "",
+          canonicalUrl: data.seo?.canonicalUrl || "",
+          openGraph: {
+            title: data.seo?.openGraph?.title || "",
+            description: data.seo?.openGraph?.description || "",
+            image: data.seo?.openGraph?.image || "",
+            type: data.seo?.openGraph?.type || "website"
+          },
+          twitter: {
+            card: data.seo?.twitter?.card || "summary_large_image",
+            title: data.seo?.twitter?.title || "",
+            description: data.seo?.twitter?.description || "",
+            image: data.seo?.twitter?.image || "",
+            site: data.seo?.twitter?.site || ""
+          },
+          structuredData: data.seo?.structuredData || {}
+        },
+        settings: {
+          pageType: data.settings?.pageType || "default",
+          visibility: data.settings?.visibility || "public",
+          featured: data.settings?.featured || false,
+          allowComments: data.settings?.allowComments !== undefined ? data.settings.allowComments : true,
+          template: data.settings?.template || "default",
+          isHomepage: data.settings?.isHomepage || false
+        },
+        status: data.status || "draft",
+        publishedAt: data.publishedAt || ""
+      })
+
       setSlugHistory(data.slugHistory || [])
-      originalSlugRef.current = data.slug || ""
       setPageVersions(data.versions || [])
       const lock = data.settings?.locked
       setIsLocked(!!lock)
       setLockedBy(lock?.byUserId || null)
-
-      setEtag(data.etag || "") // Store REAL server etag
+      setEtag(data.etag || "")
       setIsDirty(false)
 
     } catch (error) {
       console.error("Failed to load page:", error)
       toast.error("Failed to load page data")
-    }
-  }
-
-  // Validate slug with tenant context
-  const validateSlug = async (slug: string): Promise<boolean> => {
-    if (!slug.trim()) {
-      setSlugValidation({
-        isValid: false,
-        message: "Slug cannot be empty",
-        isChecking: false
-      })
-      return false
-    }
-
-    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-    if (!slugRegex.test(slug)) {
-      setSlugValidation({
-        isValid: false,
-        message: "Slug can only contain lowercase letters, numbers, and hyphens",
-        isChecking: false
-      })
-      return false
-    }
-
-    // Don't check if slug hasn't changed
-    if (slug === originalSlugRef.current) {
-      setSlugValidation({
-        isValid: true,
-        message: "Slug unchanged",
-        isChecking: false
-      })
-      return true
-    }
-
-    setSlugValidation(prev => ({ ...prev, isChecking: true }))
-
-    try {
-      // MUST include tenantId
-      const result = await checkSlugAvailability(slug, selectedTenantId)
-      setSlugValidation({
-        isValid: result.available,
-        message: result.available ? "Slug is available" : "Slug is already in use",
-        isChecking: false
-      })
-      return result.available
-    } catch (error) {
-      console.error("Slug validation error:", error)
-      setSlugValidation({
-        isValid: false,
-        message: "Error checking slug availability",
-        isChecking: false
-      })
-      return false
     }
   }
 
@@ -296,126 +297,102 @@ export default function PageEditor() {
 
       const parsed = JSON.parse(jsonString)
 
-      // Basic JSON-LD validation
       if (typeof parsed !== "object" || parsed === null) {
-        setStructuredDataError("Structured data must be a valid JSON object")
+        setStructuredDataError("Structured data must be a JSON object")
         return false
       }
 
-      if (!parsed["@context"] && !parsed["@type"]) {
-        setStructuredDataError("Structured data should include @context and @type properties")
+      // Phase-2 rule: allow empty object or partial object
+      // Only validate @context/@type if they exist
+      if (
+        ("@context" in parsed && !parsed["@context"]) ||
+        ("@type" in parsed && !parsed["@type"])
+      ) {
+        setStructuredDataError("@context and @type cannot be empty if provided")
         return false
       }
 
       setStructuredDataError(null)
       return true
-    } catch (error) {
+    } catch {
       setStructuredDataError("Invalid JSON format")
       return false
     }
   }
 
-  // Prepare save data - EXACT SAME object for both update and version
-  const prepareSaveData = useCallback((isAutoSave = false): Page => {
-    // Compute noIndexReasons
-    const noIndexReasons: string[] = []
-    if (pageData.status === 'draft') noIndexReasons.push('draft')
-    if (pageData.seo.robots.index === false) noIndexReasons.push('manual-noindex')
-    if (pageData.settings.visibility === 'private') noIndexReasons.push('private-page')
 
-    // Determine if slug changed and should add history
-    const shouldAddSlugHistory = !isAutoSave &&
-      originalSlugRef.current &&
-      originalSlugRef.current !== pageData.slug &&
-      originalSlugRef.current !== ""
-
+  // ====================================
+  // BUILD PHASE-2 ONLY PAYLOAD
+  // ====================================
+  const buildPhase2Payload = useCallback((): Phase2Payload => {
     // Normalize canonical URL
-    let canonicalUrl = pageData.seo.canonicalUrl || ""
+    let canonicalUrl = phase2Data.seo.canonicalUrl || ""
     if (canonicalUrl && !canonicalUrl.startsWith('http')) {
       canonicalUrl = canonicalUrl.startsWith('/')
         ? `https://example.com${canonicalUrl}`
         : `https://${canonicalUrl}`
     }
 
-    // Build the save object
-    const saveData: Page = {
-      ...pageData,
-      tenantId: selectedTenantId || pageData.tenantId,
+    return {
       seo: {
-        ...pageData.seo,
-        noIndexReasons,
-        canonicalUrl,
-        structuredData: pageData.seo.structuredData || {}
+        metaTitle: phase2Data.seo.metaTitle,
+        metaDescription: phase2Data.seo.metaDescription,
+        canonicalUrl: canonicalUrl,
+        openGraph: {
+          title: phase2Data.seo.openGraph.title,
+          description: phase2Data.seo.openGraph.description,
+          image: phase2Data.seo.openGraph.image,
+          type: phase2Data.seo.openGraph.type
+        },
+        twitter: {
+          card: phase2Data.seo.twitter.card,
+          title: phase2Data.seo.twitter.title,
+          description: phase2Data.seo.twitter.description,
+          image: phase2Data.seo.twitter.image,
+          site: phase2Data.seo.twitter.site
+        },
+        structuredData: phase2Data.seo.structuredData
       },
-      slugHistory: shouldAddSlugHistory
-        ? [
-          ...pageData.slugHistory,
-          {
-            slug: originalSlugRef.current,
-            changedAt: new Date(),
-            changedBy: user?.name || "System",
-            redirectEnabled: true
-          }
-        ]
-        : pageData.slugHistory,
-      updatedAt: new Date(),
-      lastModifiedAt: new Date(),
-      lastModifiedBy: user?.name || "System",
-      etag // Always send current etag for conflict detection
+      settings: {
+        pageType: phase2Data.settings.pageType,
+        visibility: phase2Data.settings.visibility,
+        featured: phase2Data.settings.featured,
+        allowComments: phase2Data.settings.allowComments,
+        template: phase2Data.settings.template,
+        isHomepage: phase2Data.settings.isHomepage
+      },
+      status: phase2Data.status,
+      publishedAt: phase2Data.publishedAt
     }
+  }, [phase2Data])
 
-    // Store reference for version creation
-    saveDataRef.current = saveData
-    return saveData
-  }, [pageData, selectedTenantId, user, etag])
-
-  // Auto-save with validation
+  // Auto-save with PHASE-2 ONLY payload
   const autoSave = async () => {
-    // Block auto-save if conditions are not met
-    if (!isDirty || isSaving || isLocked || !slugValidation.isValid || structuredDataError) {
-      return
-    }
-
-    // Validate slug before auto-save
-    const isValidSlug = await validateSlug(pageData.slug)
-    if (!isValidSlug) {
-      console.log("Auto-save blocked: invalid slug")
+    if (!isDirty || isSaving || isLocked || structuredDataError) {
       return
     }
 
     setIsSaving(true)
     try {
-      // Prepare data - same for update and version
-      const saveData = prepareSaveData(true)
+      const payload = buildPhase2Payload()
 
-      // Update with server etag
-      const response = await updatePage({
-        data: saveData,
+      // CRITICAL: Send ONLY Phase-2 fields to backend
+      const response = await updatePage(pageId,{
+        data: payload as any,
         options: { autoSave: true }
       })
 
-      // Create version with EXACT same data
-      await createPageVersion({
-        pageId: pageData._id,
-        data: saveDataRef.current, // Same object
-        createdBy: user?.id || "auto-save",
-        changes: ["Auto-save"],
-        autoSave: true
-      })
-
-      // Update local state with server response
       setLastSaved(new Date())
       setIsDirty(false)
-      setEtag(response.etag) // Use REAL server etag
+      setEtag(response.etag || "")
 
     } catch (error: any) {
       if (error.status === 409) {
         toast.error("Conflict detected. Page was modified by someone else.")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else if (error.status === 423) {
-        // Locked by another user
         toast.error("Page is locked by another user")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else {
         console.error("Auto-save failed:", error)
       }
@@ -424,28 +401,14 @@ export default function PageEditor() {
     }
   }
 
-  // Manual save with full validation
+  // Manual save with PHASE-2 ONLY payload
   const handleManualSave = async () => {
-    // Check locking - real enforcement
     if (isLocked && lockedBy !== user?.id) {
       toast.error(`Page is locked by ${lockedBy} and cannot be edited`)
       return
     }
 
-    // Validate slug
-    if (!slugValidation.isValid) {
-      toast.error("Please fix slug validation errors before saving")
-      return
-    }
-
-    const isValidSlug = await validateSlug(pageData.slug)
-    if (!isValidSlug) {
-      toast.error("Please fix slug validation errors before saving")
-      return
-    }
-
-    // Validate structured data
-    const structuredDataJson = JSON.stringify(pageData.seo.structuredData || {})
+    const structuredDataJson = JSON.stringify(phase2Data.seo.structuredData || {})
     if (!validateStructuredData(structuredDataJson)) {
       toast.error("Please fix structured data JSON errors before saving")
       return
@@ -453,73 +416,32 @@ export default function PageEditor() {
 
     setIsSaving(true)
     try {
-      // Prepare data
-      const saveData = prepareSaveData(false)
+      const payload = buildPhase2Payload()
 
-      // Update with server etag
+      // CRITICAL: Send ONLY Phase-2 fields to backend
       const response = await updatePage({
-        data: saveData,
+        data: payload as any,
         options: {}
       })
 
-      // Create version with EXACT same data
-      await createPageVersion({
-        pageId: pageData._id,
-        data: saveDataRef.current, // Same object
-        createdBy: user?.id || "user-save",
-        changes: ["Manual save"],
-        autoSave: false
-      })
-
-      // Update original slug reference
-      originalSlugRef.current = pageData.slug
-
-      // Update state
       setLastSaved(new Date())
       setIsDirty(false)
-      setEtag(response.etag) // Use REAL server etag
+      setEtag(response.etag)
 
       toast.success("Page saved successfully")
     } catch (error: any) {
       if (error.status === 409) {
         toast.error("Conflict detected. Page was modified by someone else.")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else if (error.status === 423) {
         toast.error("Page is locked by another user")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else {
         console.error("Save failed:", error)
         toast.error("Failed to save page")
       }
     } finally {
       setIsSaving(false)
-    }
-  }
-
-  // Handle slug change with proper validation
-  const handleSlugChange = (newSlug: string) => {
-    const formattedSlug = newSlug.toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9\-]/g, "") // Removed _ from allowed characters
-
-    setPageData(prev => ({ ...prev, slug: formattedSlug }))
-    setIsDirty(true)
-
-    // Validate slug
-    validateSlug(formattedSlug)
-
-    // Show redirect notification if slug changed
-    if (originalSlugRef.current && originalSlugRef.current !== formattedSlug) {
-      toast.info("Slug changed. 301 redirect will be created from old URL.", {
-        duration: 5000,
-        action: {
-          label: "Configure",
-          onClick: () => {
-            // Open redirect settings modal
-            console.log("Open redirect configuration")
-          }
-        }
-      })
     }
   }
 
@@ -532,15 +454,14 @@ export default function PageEditor() {
 
     try {
       const lockData = {
-        ...pageData,
         isLocked: true,
         lockedBy: user.id,
         lockedAt: new Date(),
-        etag // Send current etag
+        etag
       }
 
       const response = await updatePage({
-        data: lockData,
+        data: lockData as any,
         options: {}
       })
 
@@ -551,7 +472,7 @@ export default function PageEditor() {
     } catch (error: any) {
       if (error.status === 409) {
         toast.error("Page was modified while trying to lock")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else {
         toast.error("Failed to lock page")
       }
@@ -564,7 +485,6 @@ export default function PageEditor() {
       return
     }
 
-    // Only allow unlock if locked by current user
     if (lockedBy !== user.id) {
       toast.error(`Only ${lockedBy} can unlock this page`)
       return
@@ -572,7 +492,6 @@ export default function PageEditor() {
 
     try {
       const unlockData = {
-        ...pageData,
         isLocked: false,
         lockedBy: null,
         lockedAt: null,
@@ -580,7 +499,7 @@ export default function PageEditor() {
       }
 
       const response = await updatePage({
-        data: unlockData,
+        data: unlockData as any,
         options: {}
       })
 
@@ -591,14 +510,14 @@ export default function PageEditor() {
     } catch (error: any) {
       if (error.status === 409) {
         toast.error("Page was modified while trying to unlock")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else {
         toast.error("Failed to unlock page")
       }
     }
   }
 
-  // Version restore with full object
+  // Version restore
   const handleRestoreVersion = async (versionId: string) => {
     if (isLocked && lockedBy !== user?.id) {
       toast.error(`Page is locked by ${lockedBy}`)
@@ -608,15 +527,43 @@ export default function PageEditor() {
     try {
       const restoredData = await restorePageVersion(versionId)
 
-      // Validate restored data
       if (!restoredData._id || restoredData._id !== pageId) {
         throw new Error("Invalid restored page data")
       }
 
-      // Update all state from restored data
-      setPageData(restoredData)
+      // Re-split into Phase-1 and Phase-2
+      setPhase1Data({
+        title: restoredData.title,
+        slug: restoredData.slug,
+        tenantId: restoredData.tenantId,
+        pageTree: restoredData.pageTree || {},
+        authorId: restoredData.settings?.authorId || restoredData.authorId || "",
+        content: restoredData.content || "",
+        blocks: restoredData.blocks || []
+      })
+
+      setPhase2Data({
+        seo: {
+          metaTitle: restoredData.seo?.metaTitle || "",
+          metaDescription: restoredData.seo?.metaDescription || "",
+          canonicalUrl: restoredData.seo?.canonicalUrl || "",
+          openGraph: restoredData.seo?.openGraph || { title: "", description: "", image: "", type: "website" },
+          twitter: restoredData.seo?.twitter || { card: "summary_large_image", title: "", description: "", image: "", site: "" },
+          structuredData: restoredData.seo?.structuredData || {}
+        },
+        settings: {
+          pageType: restoredData.settings?.pageType || "default",
+          visibility: restoredData.settings?.visibility || "public",
+          featured: restoredData.settings?.featured || false,
+          allowComments: restoredData.settings?.allowComments !== undefined ? restoredData.settings.allowComments : true,
+          template: restoredData.settings?.template || "default",
+          isHomepage: restoredData.settings?.isHomepage || false
+        },
+        status: restoredData.status || "draft",
+        publishedAt: restoredData.publishedAt || ""
+      })
+
       setSlugHistory(restoredData.slugHistory || [])
-      originalSlugRef.current = restoredData.slug || ""
       setPageVersions(restoredData.versions || [])
       setIsLocked(!!restoredData.isLocked)
       setLockedBy(restoredData.lockedBy || null)
@@ -630,56 +577,34 @@ export default function PageEditor() {
     }
   }
 
-  // Publish with validation
+  // Publish with PHASE-2 payload
   const handlePublish = async (type: "now" | "schedule", date?: string, time?: string) => {
     if (isLocked && lockedBy !== user?.id) {
       toast.error(`Page is locked by ${lockedBy}`)
       return
     }
 
-    // Validate before publishing
-    const isValidSlug = await validateSlug(pageData.slug)
-    if (!isValidSlug) {
-      toast.error("Please fix slug validation errors before publishing")
-      return
-    }
-
     setIsSaving(true)
     try {
-      const publishData = {
-        ...pageData,
-        status: type === "now" ? "published" : "scheduled",
+      const payload = buildPhase2Payload()
+
+      const publishPayload = {
+        ...payload,
+        status: type === "now" ? "published" as const : "scheduled" as const,
         publishedAt: type === "now"
           ? new Date().toISOString()
-          : new Date(`${date}T${time}:00`).toISOString(),
-        settings: {
-          ...pageData.settings,
-          publishedVersionId: pageData._id
-        },
-        etag
+          : new Date(`${date}T${time}:00`).toISOString()
       }
 
       const response = await updatePage({
-        data: publishData,
+        data: publishPayload as any,
         options: {}
       })
 
-      // Create publish version
-      await createPageVersion({
-        pageId: pageData._id,
-        data: publishData,
-        createdBy: user?.id || "system",
-        changes: [type === "now" ? "Published" : "Scheduled for publish"],
-        autoSave: false
-      })
-
-      const newStatus: Page["status"] = "published"
-
-      setPageData(prev => ({
-        ...prev!,
-        status: newStatus,
-        etag: response.etag,
-        publishedAt: new Date().toISOString()
+      setPhase2Data(prev => ({
+        ...prev,
+        status: publishPayload.status,
+        publishedAt: publishPayload.publishedAt
       }))
 
       setLastSaved(new Date())
@@ -690,7 +615,7 @@ export default function PageEditor() {
     } catch (error: any) {
       if (error.status === 409) {
         toast.error("Conflict detected during publish")
-        await loadPageData(pageData._id)
+        await loadPageData(pageId)
       } else {
         console.error("Publish failed:", error)
         toast.error("Failed to publish page")
@@ -704,14 +629,13 @@ export default function PageEditor() {
   const handleStructuredDataChange = (value: string) => {
     try {
       const data = value.trim() ? JSON.parse(value) : {}
-      setPageData(prev => ({
+      setPhase2Data(prev => ({
         ...prev,
         seo: { ...prev.seo, structuredData: data }
       }))
       setIsDirty(true)
       setStructuredDataError(null)
     } catch (error) {
-      // Keep the text but show error
       setStructuredDataError("Invalid JSON format")
       setIsDirty(true)
     }
@@ -719,51 +643,38 @@ export default function PageEditor() {
 
   // Generate SEO preview
   const generateSEOPreview = () => {
-    const title = pageData.seo?.metaTitle || pageData.title
-    const description = pageData.seo?.metaDescription || pageData.content.substring(0, 160)
-    const canonical = pageData.seo?.canonicalUrl || `/${pageData.slug}`
+    if (!phase1Data) return "{}"
+
+    const title = phase2Data.seo.metaTitle || phase1Data.title
+    const description = phase2Data.seo.metaDescription || phase1Data.content.substring(0, 160)
+    const canonical = phase2Data.seo.canonicalUrl || `/${phase1Data.slug}`
 
     const seo = {
       title,
       description,
       canonical,
-      robots: `${pageData.seo?.robots?.index ? 'index' : 'noindex'},${pageData.seo?.robots?.follow ? 'follow' : 'nofollow'}`,
-      openGraph: {
-        title: pageData.seo?.openGraph?.title || title,
-        description: pageData.seo?.openGraph?.description || description,
-        image: pageData.seo?.openGraph?.image || '',
-        type: pageData.seo?.openGraph?.type || 'website'
-      },
-      twitter: {
-        card: pageData.seo?.twitter?.card || 'summary_large_image',
-        title: pageData.seo?.twitter?.title || title,
-        description: pageData.seo?.twitter?.description || description,
-        image: pageData.seo?.twitter?.image || '',
-        site: pageData.seo?.twitter?.site || ''
-      },
-      structuredData: pageData.seo?.structuredData || {}
+      openGraph: phase2Data.seo.openGraph,
+      twitter: phase2Data.seo.twitter,
+      structuredData: phase2Data.seo.structuredData
     }
 
     return JSON.stringify(seo, null, 2)
   }
 
-
   // Check if page is locked by another user
   const isLockedByOtherUser = isLocked && lockedBy !== user?.id
 
-
-  // Conditional rendering instead of early return
-  if (!selectedTenantId) {
+  // Guard: wait for Phase-1 data to load
+  if (!phase1Data) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4">Loading tenant...</p>
+          <p className="mt-4">Loading page data...</p>
         </div>
       </div>
     )
   }
-
 
   return (
     <div className="space-y-6">
@@ -777,10 +688,10 @@ export default function PageEditor() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-balance text-2xl font-bold tracking-tight">
-              {pageData.title || "Untitled Page"}
+              {phase1Data.title || "Untitled Page"}
             </h1>
-            <Badge variant={pageData.status === "published" ? "default" : "secondary"}>
-              {pageData.status}
+            <Badge variant={phase2Data.status === "published" ? "default" : "secondary"}>
+              {phase2Data.status}
             </Badge>
             {isLocked && (
               <Badge variant={isLockedByOtherUser ? "destructive" : "default"}>
@@ -788,22 +699,27 @@ export default function PageEditor() {
                 {isLockedByOtherUser ? `Locked by ${lockedBy}` : "Locked by you"}
               </Badge>
             )}
-            {pageData.settings.pageType !== "default" && (
+            {phase2Data.settings.pageType !== "default" && (
               <Badge variant="outline">
-                {pageData.settings.pageType}
+                {phase2Data.settings.pageType}
               </Badge>
             )}
-            {pageData.settings.visibility !== "public" && (
+            {phase2Data.settings.visibility !== "public" && (
               <Badge variant="outline">
                 <Shield className="h-3 w-3 mr-1" />
-                {pageData.settings.visibility}
+                {phase2Data.settings.visibility}
               </Badge>
             )}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              <span>Phase-1 content is locked</span>
+            </div>
+
           </div>
           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-            <span>/{pageData.slug || "untitled"}</span>
+            <span>/{phase1Data.slug || "untitled"}</span>
             <span>•</span>
-            <span>Last edited by {pageData.lastModifiedBy || pageData.author}</span>
+            <span>Tenant: {phase1Data.tenantId}</span>
             {lastSaved && (
               <>
                 <span>•</span>
@@ -859,10 +775,10 @@ export default function PageEditor() {
               Lock
             </Button>
           )}
-          {pageData.status === "draft" ? (
+          {phase2Data.status === "draft" ? (
             <Button
               onClick={() => setShowPublish(true)}
-              disabled={isSaving || isLockedByOtherUser || !slugValidation.isValid}
+              disabled={isSaving || isLockedByOtherUser}
             >
               <Globe className="h-4 w-4 mr-2" />
               Publish
@@ -871,7 +787,7 @@ export default function PageEditor() {
             <Button
               variant="outline"
               onClick={handleManualSave}
-              disabled={isSaving || isLockedByOtherUser || !slugValidation.isValid}
+              disabled={isSaving || isLockedByOtherUser}
             >
               <Save className="h-4 w-4 mr-2" />
               Save
@@ -880,15 +796,13 @@ export default function PageEditor() {
         </div>
       </div>
 
-      {/* Validation alerts */}
-      {!slugValidation.isValid && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Slug validation failed: {slugValidation.message}
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Phase-1 Immutability Warning */}
+      <Alert>
+        <Shield className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Phase-1 fields are locked:</strong> Title, Slug, Content, Tenant ID, and Page Tree cannot be edited in Phase-2. Only SEO and publishing settings are editable.
+        </AlertDescription>
+      </Alert>
 
       {structuredDataError && (
         <Alert variant="destructive">
@@ -911,79 +825,71 @@ export default function PageEditor() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Content</CardTitle>
+
+          {/* PHASE-1 READONLY DISPLAY */}
+          <Card className="border border-muted bg-background shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  Phase-1 Content
+                </CardTitle>
+                <CardDescription>
+                  This content was created in Phase-1 and cannot be edited
+                </CardDescription>
+              </div>
+
+              <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">
+                Locked
+              </span>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={pageData.title}
-                  onChange={(e) => {
-                    setPageData(prev => ({ ...prev, title: e.target.value }))
-                    setIsDirty(true)
-                  }}
-                  className="text-lg font-medium"
-                  disabled={isLockedByOtherUser}
-                />
+
+            <CardContent className="space-y-6">
+              {/* Title */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Title</p>
+                <p className="text-lg font-semibold">{phase1Data.title}</p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="slug">URL Slug</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">yoursite.com/</span>
-                  <Input
-                    id="slug"
-                    value={pageData.slug}
-                    onChange={(e) => handleSlugChange(e.target.value)}
-                    disabled={isLockedByOtherUser}
-                  />
-                  <Button variant="ghost" size="icon" asChild>
-                    <a href={`/${pageData.slug}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
-                {slugValidation.isChecking && (
-                  <p className="text-xs text-muted-foreground">Checking slug availability...</p>
-                )}
-                {slugHistory.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    Previous slugs: {slugHistory.map(s => s.slug).join(", ")}
+              {/* Slug */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">URL Slug</p>
+                <code className="text-sm bg-muted px-2 py-1 rounded">
+                  /{phase1Data.slug}
+                </code>
+              </div>
+
+              {/* Content Preview */}
+              {phase1Data.content && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Text Content</p>
+                  <div className="border rounded-md p-4 bg-muted/40 text-sm leading-relaxed">
+                    {phase1Data.content}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="content">Content</Label>
-                <Textarea
-                  id="content"
-                  value={pageData.content}
-                  onChange={(e) => {
-                    setPageData(prev => ({ ...prev, content: e.target.value }))
-                    setIsDirty(true)
-                  }}
-                  rows={12}
-                  className="font-mono text-sm"
-                  disabled={isLockedByOtherUser}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {pageData.content.length} characters • {pageData.content.split(" ").length} words
-                </p>
-              </div>
+              {/* Page Tree Preview */}
+              {phase1Data.pageTree && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Page Structure</p>
+                  <div className="border rounded-md bg-muted/30 p-3 text-xs font-mono max-h-48 overflow-auto">
+                    {JSON.stringify(phase1Data.pageTree, null, 2)}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* SEO Section */}
+
+          {/* SEO Section - PHASE-2 EDITABLE */}
           <Card>
             <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
               <CardHeader className="cursor-pointer">
                 <CollapsibleTrigger className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-2">
-                    <CardTitle>SEO Settings</CardTitle>
-                    {pageData.seo.metaTitle && pageData.seo.metaDescription ? (
+                    <CardTitle>SEO Settings (Phase-2 Editable)</CardTitle>
+                    {phase2Data.seo.metaTitle && phase2Data.seo.metaDescription ? (
                       <Badge variant="default" className="bg-green-600">
                         <Check className="h-3 w-3 mr-1" />
                         Optimized
@@ -1014,9 +920,9 @@ export default function PageEditor() {
                         <Label htmlFor="metaTitle">Meta Title</Label>
                         <Input
                           id="metaTitle"
-                          value={pageData.seo?.metaTitle ?? ""}
+                          value={phase2Data.seo.metaTitle}
                           onChange={(e) => {
-                            setPageData(prev => ({
+                            setPhase2Data(prev => ({
                               ...prev,
                               seo: { ...prev.seo, metaTitle: e.target.value }
                             }))
@@ -1026,7 +932,7 @@ export default function PageEditor() {
                           disabled={isLockedByOtherUser}
                         />
                         <p className="text-xs text-muted-foreground">
-                          {pageData.seo?.metaTitle?.length ?? ""} /60 characters (optimal: 50-60)
+                          {phase2Data.seo.metaTitle.length}/60 characters (optimal: 50-60)
                         </p>
                       </div>
 
@@ -1034,9 +940,9 @@ export default function PageEditor() {
                         <Label htmlFor="metaDescription">Meta Description</Label>
                         <Textarea
                           id="metaDescription"
-                          value={pageData.seo?.metaDescription ?? ""}
+                          value={phase2Data.seo.metaDescription}
                           onChange={(e) => {
-                            setPageData(prev => ({
+                            setPhase2Data(prev => ({
                               ...prev,
                               seo: { ...prev.seo, metaDescription: e.target.value }
                             }))
@@ -1047,25 +953,8 @@ export default function PageEditor() {
                           disabled={isLockedByOtherUser}
                         />
                         <p className="text-xs text-muted-foreground">
-                          {pageData.seo?.metaDescription?.length ?? ""}/160 characters (optimal: 150-160)
+                          {phase2Data.seo.metaDescription.length}/160 characters (optimal: 150-160)
                         </p>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="focusKeyword">Focus Keyword</Label>
-                        <Input
-                          id="focusKeyword"
-                          value={pageData.seo.focusKeyword}
-                          onChange={(e) => {
-                            setPageData(prev => ({
-                              ...prev,
-                              seo: { ...prev.seo, focusKeyword: e.target.value }
-                            }))
-                            setIsDirty(true)
-                          }}
-                          placeholder="e.g., content management system"
-                          disabled={isLockedByOtherUser}
-                        />
                       </div>
 
                       <Separator />
@@ -1074,84 +963,14 @@ export default function PageEditor() {
                         <p className="text-sm font-medium mb-2">Search Preview</p>
                         <div className="space-y-1">
                           <p className="text-sm text-primary font-medium">
-                            {pageData.seo.metaTitle || pageData.title || "No title set"}
+                            {phase2Data.seo.metaTitle || phase1Data.title || "No title set"}
                           </p>
                           <p className="text-xs text-green-700 dark:text-green-400">
-                            yoursite.com/{pageData.slug || "untitled"}
+                            yoursite.com/{phase1Data.slug || "untitled"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {pageData.seo.metaDescription || "No meta description set"}
+                            {phase2Data.seo.metaDescription || "No meta description set"}
                           </p>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="robots" className="space-y-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label>Index in Search</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Allow search engines to index this page
-                            </p>
-                          </div>
-                          <Switch
-                            checked={pageData.seo.robots.index}
-                            onCheckedChange={(checked) => {
-                              setPageData(prev => ({
-                                ...prev,
-                                seo: {
-                                  ...prev.seo,
-                                  robots: { ...prev.seo.robots, index: checked }
-                                }
-                              }))
-                              setIsDirty(true)
-                            }}
-                            disabled={isLockedByOtherUser}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label>Follow Links</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Allow search engines to follow links on this page
-                            </p>
-                          </div>
-                          <Switch
-                            checked={pageData.seo.robots.follow}
-                            onCheckedChange={(checked) => {
-                              setPageData(prev => ({
-                                ...prev,
-                                seo: {
-                                  ...prev.seo,
-                                  robots: { ...prev.seo.robots, follow: checked }
-                                }
-                              }))
-                              setIsDirty(true)
-                            }}
-                            disabled={isLockedByOtherUser}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-0.5">
-                            <Label>Include in Sitemap</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Include this page in the sitemap
-                            </p>
-                          </div>
-                          <Switch
-                            checked={pageData.seo.sitemapInclusion}
-                            onCheckedChange={(checked) => {
-                              setPageData(prev => ({
-                                ...prev,
-                                seo: { ...prev.seo, sitemapInclusion: checked }
-                              }))
-                              setIsDirty(true)
-                            }}
-                            disabled={isLockedByOtherUser}
-                          />
                         </div>
                       </div>
                     </TabsContent>
@@ -1162,9 +981,9 @@ export default function PageEditor() {
                         <div className="space-y-2">
                           <Label>OG Title</Label>
                           <Input
-                            value={pageData.seo.openGraph?.title || ""}
+                            value={phase2Data.seo.openGraph.title}
                             onChange={(e) => {
-                              setPageData(prev => ({
+                              setPhase2Data(prev => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
@@ -1180,9 +999,9 @@ export default function PageEditor() {
                         <div className="space-y-2">
                           <Label>OG Description</Label>
                           <Textarea
-                            value={pageData.seo.openGraph?.description || ""}
+                            value={phase2Data.seo.openGraph.description}
                             onChange={(e) => {
-                              setPageData(prev => ({
+                              setPhase2Data(prev => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
@@ -1199,13 +1018,72 @@ export default function PageEditor() {
                         <div className="space-y-2">
                           <Label>OG Image URL</Label>
                           <Input
-                            value={pageData.seo.openGraph?.image || ""}
+                            value={phase2Data.seo.openGraph.image}
                             onChange={(e) => {
-                              setPageData(prev => ({
+                              setPhase2Data(prev => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
                                   openGraph: { ...prev.seo.openGraph, image: e.target.value }
+                                }
+                              }))
+                              setIsDirty(true)
+                            }}
+                            placeholder="https://example.com/image.jpg"
+                            disabled={isLockedByOtherUser}
+                          />
+                        </div>
+
+                        <Separator />
+
+                        <h4 className="font-medium">Twitter Card</h4>
+                        <div className="space-y-2">
+                          <Label>Twitter Title</Label>
+                          <Input
+                            value={phase2Data.seo.twitter.title}
+                            onChange={(e) => {
+                              setPhase2Data(prev => ({
+                                ...prev,
+                                seo: {
+                                  ...prev.seo,
+                                  twitter: { ...prev.seo.twitter, title: e.target.value }
+                                }
+                              }))
+                              setIsDirty(true)
+                            }}
+                            placeholder="Twitter title"
+                            disabled={isLockedByOtherUser}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Twitter Description</Label>
+                          <Textarea
+                            value={phase2Data.seo.twitter.description}
+                            onChange={(e) => {
+                              setPhase2Data(prev => ({
+                                ...prev,
+                                seo: {
+                                  ...prev.seo,
+                                  twitter: { ...prev.seo.twitter, description: e.target.value }
+                                }
+                              }))
+                              setIsDirty(true)
+                            }}
+                            placeholder="Twitter description"
+                            rows={2}
+                            disabled={isLockedByOtherUser}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Twitter Image URL</Label>
+                          <Input
+                            value={phase2Data.seo.twitter.image}
+                            onChange={(e) => {
+                              setPhase2Data(prev => ({
+                                ...prev,
+                                seo: {
+                                  ...prev.seo,
+                                  twitter: { ...prev.seo.twitter, image: e.target.value }
                                 }
                               }))
                               setIsDirty(true)
@@ -1223,9 +1101,9 @@ export default function PageEditor() {
                           <Label htmlFor="canonicalUrl">Canonical URL</Label>
                           <Input
                             id="canonicalUrl"
-                            value={pageData.seo.canonicalUrl || ""}
+                            value={phase2Data.seo.canonicalUrl}
                             onChange={(e) => {
-                              setPageData(prev => ({
+                              setPhase2Data(prev => ({
                                 ...prev,
                                 seo: { ...prev.seo, canonicalUrl: e.target.value }
                               }))
@@ -1242,7 +1120,7 @@ export default function PageEditor() {
                         <div className="space-y-2">
                           <Label>Structured Data (JSON-LD)</Label>
                           <Textarea
-                            value={JSON.stringify(pageData.seo.structuredData || {}, null, 2)}
+                            value={JSON.stringify(phase2Data.seo.structuredData, null, 2)}
                             onChange={(e) => handleStructuredDataChange(e.target.value)}
                             rows={6}
                             className="font-mono text-sm"
@@ -1262,12 +1140,12 @@ export default function PageEditor() {
             </Collapsible>
           </Card>
 
-          {/* Advanced Settings */}
+          {/* Advanced Settings - PHASE-2 EDITABLE */}
           <Card>
             <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
               <CardHeader className="cursor-pointer">
                 <CollapsibleTrigger className="flex items-center justify-between w-full">
-                  <CardTitle>Advanced Settings</CardTitle>
+                  <CardTitle>Advanced Settings (Phase-2 Editable)</CardTitle>
                   {settingsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </CollapsibleTrigger>
               </CardHeader>
@@ -1277,9 +1155,9 @@ export default function PageEditor() {
                     <div className="space-y-2">
                       <Label htmlFor="pageType">Page Type</Label>
                       <Select
-                        value={pageData.settings.pageType}
+                        value={phase2Data.settings.pageType}
                         onValueChange={(value: PageType) => {
-                          setPageData(prev => ({
+                          setPhase2Data(prev => ({
                             ...prev,
                             settings: { ...prev.settings, pageType: value }
                           }))
@@ -1302,9 +1180,9 @@ export default function PageEditor() {
                     <div className="space-y-2">
                       <Label htmlFor="visibility">Visibility</Label>
                       <Select
-                        value={pageData.settings.visibility}
+                        value={phase2Data.settings.visibility}
                         onValueChange={(value: Visibility) => {
-                          setPageData(prev => ({
+                          setPhase2Data(prev => ({
                             ...prev,
                             settings: { ...prev.settings, visibility: value }
                           }))
@@ -1332,9 +1210,9 @@ export default function PageEditor() {
                       <p className="text-xs text-muted-foreground">Show in featured sections</p>
                     </div>
                     <Switch
-                      checked={pageData.settings.featured}
+                      checked={phase2Data.settings.featured}
                       onCheckedChange={(checked) => {
-                        setPageData(prev => ({
+                        setPhase2Data(prev => ({
                           ...prev,
                           settings: { ...prev.settings, featured: checked }
                         }))
@@ -1350,9 +1228,9 @@ export default function PageEditor() {
                       <p className="text-xs text-muted-foreground">Enable user comments</p>
                     </div>
                     <Switch
-                      checked={pageData.settings.allowComments}
+                      checked={phase2Data.settings.allowComments}
                       onCheckedChange={(checked) => {
-                        setPageData(prev => ({
+                        setPhase2Data(prev => ({
                           ...prev,
                           settings: { ...prev.settings, allowComments: checked }
                         }))
@@ -1365,9 +1243,9 @@ export default function PageEditor() {
                   <div className="space-y-2">
                     <Label htmlFor="template">Page Template</Label>
                     <Select
-                      value={pageData.settings.template}
+                      value={phase2Data.settings.template}
                       onValueChange={(value: string) => {
-                        setPageData(prev => ({
+                        setPhase2Data(prev => ({
                           ...prev,
                           settings: { ...prev.settings, template: value }
                         }))
@@ -1386,6 +1264,24 @@ export default function PageEditor() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">Set as Homepage</p>
+                      <p className="text-xs text-muted-foreground">Make this the site homepage</p>
+                    </div>
+                    <Switch
+                      checked={phase2Data.settings.isHomepage}
+                      onCheckedChange={(checked) => {
+                        setPhase2Data(prev => ({
+                          ...prev,
+                          settings: { ...prev.settings, isHomepage: checked }
+                        }))
+                        setIsDirty(true)
+                      }}
+                      disabled={isLockedByOtherUser}
+                    />
+                  </div>
                 </CardContent>
               </CollapsibleContent>
             </Collapsible>
@@ -1402,13 +1298,13 @@ export default function PageEditor() {
               <div className="space-y-2">
                 <Label>Status</Label>
                 <div className="flex items-center gap-2">
-                  <Badge variant={pageData.status === "published" ? "default" : "secondary"} className="capitalize">
-                    {pageData.status}
+                  <Badge variant={phase2Data.status === "published" ? "default" : "secondary"} className="capitalize">
+                    {phase2Data.status}
                   </Badge>
-                  {pageData.status === "scheduled" && (
+                  {phase2Data.status === "scheduled" && phase2Data.publishedAt && (
                     <Badge variant="outline">
                       <Calendar className="h-3 w-3 mr-1" />
-                      {new Date(pageData.publishedAt ?? "").toLocaleDateString()}
+                      {new Date(phase2Data.publishedAt).toLocaleDateString()}
                     </Badge>
                   )}
                 </div>
@@ -1421,22 +1317,29 @@ export default function PageEditor() {
                 <Input
                   id="publishDate"
                   type="datetime-local"
-                  value={pageData.publishedAt ? new Date(pageData.publishedAt).toISOString().slice(0, 16) : ""}
+                  value={phase2Data.publishedAt ? new Date(phase2Data.publishedAt).toISOString().slice(0, 16) : ""}
                   onChange={(e) => {
-                    setPageData(prev => ({ ...prev, publishedAt: e.target.value }))
+                    setPhase2Data(prev => ({ ...prev, publishedAt: e.target.value }))
                     setIsDirty(true)
                   }}
                   disabled={isLockedByOtherUser}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Author</Label>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{pageData.author}</span>
+              <div className="rounded-lg border bg-muted/30 px-3 py-2">
+                <div className="flex items-center justify-between text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <span>Author</span>
+                  <span className="flex items-center gap-1">
+                    <Lock className="h-3 w-3" />
+                    Phase-1
+                  </span>
+                </div>
+
+                <div className="mt-1 text-sm font-medium truncate">
+                  {phase1Data.authorId}
                 </div>
               </div>
+
             </CardContent>
           </Card>
 
@@ -1492,7 +1395,7 @@ export default function PageEditor() {
             </CardHeader>
             <CardContent className="space-y-2">
               <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href={`/${pageData.slug}`} target="_blank">
+                <Link href={`/${phase1Data.slug}`} target="_blank">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View Live Page
                 </Link>
@@ -1510,19 +1413,10 @@ export default function PageEditor() {
                 variant="outline"
                 className="w-full justify-start"
                 onClick={handleManualSave}
-                disabled={isSaving || isLockedByOtherUser || !slugValidation.isValid || !!structuredDataError}
+                disabled={isSaving || isLockedByOtherUser || !!structuredDataError}
               >
                 <Save className="h-4 w-4 mr-2" />
                 Save Now
-              </Button>
-              <Separator />
-              <Button
-                variant="outline"
-                className="w-full justify-start text-destructive hover:text-destructive"
-                disabled={isLockedByOtherUser}
-              >
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Delete Page
               </Button>
             </CardContent>
           </Card>
@@ -1532,8 +1426,8 @@ export default function PageEditor() {
       <PreviewModal
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
-        content={pageData}
-        previewUrl={`/${pageData.slug}`}
+        content={{ ...phase1Data, ...phase2Data } as any}
+        previewUrl={`/${phase1Data.slug}`}
         seoPreview={generateSEOPreview()}
         environment="draft"
       />
@@ -1542,7 +1436,7 @@ export default function PageEditor() {
         isOpen={showPublish}
         onClose={() => setShowPublish(false)}
         onPublish={handlePublish}
-        content={pageData}
+        content={{ ...phase1Data, ...phase2Data } as any}
         validation={[]}
       />
     </div>
