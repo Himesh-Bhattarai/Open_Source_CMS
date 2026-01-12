@@ -4,6 +4,7 @@ const { Schema, model, models } = mongoose
 const BlogPostSchema = new Schema(
     {
         tenantId: { type: String, required: true, index: true },
+        authorId: { type: String, required: true },
 
         title: { type: String, default: "" },
         slug: { type: String, default: "" },

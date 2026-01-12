@@ -15,6 +15,13 @@ interface BulkActionsBarProps {
   selectedCount: number
   onAction: (action: string) => void
   onCancel: () => void
+  onPublish?: () => void;
+  onUnpublish?: () => void;
+  onDuplicate?: () => void;
+  onExport?: () => void;
+  onChangeAuthor?: () => void;
+  onAddTags?: () => void;
+  onDelete?: () => void;
 }
 
 export function BulkActionsBar({ selectedCount, onAction, onCancel }: BulkActionsBarProps) {

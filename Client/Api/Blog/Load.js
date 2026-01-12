@@ -1,4 +1,4 @@
-const ALL_BLOG_LOAD_API = "http://localhost:5000/api/v1/blog/load-all";
+const ALL_BLOG_LOAD_API = "http://localhost:5000/api/v1/user-blog/load-all";
 const BLOG_LOAD_BY_ID_API = "http://localhost:5000/api/v1/blog/load";
 
 export const loadAllBlogs = async() =>{

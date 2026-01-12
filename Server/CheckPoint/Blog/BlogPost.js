@@ -1,5 +1,4 @@
 import { BlogPost } from "../../Models/Blog/Blogpost.js"
-import { logger as log } from "../../Utils/Logger/logger.js"
 
 export const BlogPostCheckpoint = async (req, res, next) => {
     try {
@@ -25,6 +24,7 @@ export const BlogPostCheckpoint = async (req, res, next) => {
 
         const blogPost = await BlogPost.create({
             tenantId,
+            authorId: userId,
             title,
             slug,
             excerpt,

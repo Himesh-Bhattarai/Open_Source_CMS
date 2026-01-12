@@ -74,6 +74,7 @@ app.use('/api/v1/delete', deleteRoutes);
 //Edit / modification routes
 app.use('/api/v1/update-page', pageRoutes);
 app.use('/api/v1/blog', blogRoutes);
+app.use('/api/v1/user-blog', loadRoutes);
 
 // Error handler
 app.use(errorHandler);
