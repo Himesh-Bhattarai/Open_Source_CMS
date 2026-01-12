@@ -1,8 +1,8 @@
 import {z} from 'zod';
 
 const BlogSchema = z.object({
-    title: z.string().min(3).max(50),
-    slug: z.string().min(3).max(50),
+    title: z.string().min(3).max(50).optional(),
+    slug: z.string().min(3).max(50).optional(),
     description: z.string().optional(),
     body: z.string().optional(),
     image: z.string().optional(),

@@ -25,7 +25,7 @@ import formRoutes from "./Routes/Form/Form.js";
 import FetchPageRoutes from "./Routes/Page/Services.js"
 import deleteRoutes from "./Routes/Delete/pageDelete.js"
 import slugServices from './Services/slugServices.js';
-
+import loadRoutes from "./Routes/Load/blog.js"
 
 
 dotenv.config();
@@ -58,6 +58,7 @@ app.use('/api/v1/create-seo', seoRoutes);
 //fetch routes
 app.use('/api/v1/tenants', tenantRoutes);
 app.use('/api/v1/page', FetchPageRoutes);
+app.use('/api/v1/blog', loadRoutes);
 
 
 //helper / services
@@ -72,6 +73,7 @@ app.use('/api/v1/delete', deleteRoutes);
 
 //Edit / modification routes
 app.use('/api/v1/update-page', pageRoutes);
+app.use('/api/v1/blog', blogRoutes);
 
 // Error handler
 app.use(errorHandler);

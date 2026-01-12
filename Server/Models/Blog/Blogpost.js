@@ -1,35 +1,47 @@
-import mongoose from "mongoose";
-const { Schema, model, models } = mongoose;
+import mongoose from "mongoose"
+const { Schema, model, models } = mongoose
+
 const BlogPostSchema = new Schema(
     {
-        tenantId: { type: String, ref: "Tenant" },
-        title: { type: String,  },
-        slug: { type: String,  },
-        content: { type: String,  },
-        excerpt: String,
-        featuredImage: String,
-        authorId: { type: String, ref: "User" },
-        categoryId: { type: String, ref: "BlogCategory" },
-        tags: [String],
-        seo: {
-            metaTitle: String,
-            metaDescription: String,
-            keywords: [String],
-            ogImage: String,
+        tenantId: { type: String, required: true, index: true },
+
+        title: { type: String, default: "" },
+        slug: { type: String, default: "" },
+        excerpt: { type: String, default: "" },
+        content: { type: String, default: "" },
+
+        featuredImage: { type: String, default: null },
+
+        category: { type: String, default: "Development" },
+        tags: { type: [String], default: [] },
+
+        author: { type: String, default: "Admin" },
+
+        status: {
+            type: String,
+            enum: ["draft", "published", "scheduled"],
+            default: "draft",
         },
-        status: { type: String, enum: ["draft", "published", "scheduled"], default: "draft" },
-        publishedAt: Date,
-        scheduledAt: Date,
+
+        publishDate: { type: Date, default: null },
+
+        seo: {
+            metaTitle: { type: String, default: "" },
+            metaDescription: { type: String, default: "" },
+            focusKeyword: { type: String, default: "" },
+        },
+
+        settings: {
+            featured: { type: Boolean, default: false },
+            allowComments: { type: Boolean, default: true },
+            showAuthor: { type: Boolean, default: true },
+        },
+
         views: { type: Number, default: 0 },
     },
-    {
-        timestamps: true,
-        collection: "blog_posts",
-    },
+    { timestamps: true, collection: "blog_posts" }
 )
 
 BlogPostSchema.index({ tenantId: 1, slug: 1 }, { unique: true })
-BlogPostSchema.index({ tenantId: 1, status: 1 })
-BlogPostSchema.index({ tenantId: 1, publishedAt: -1 })
 
 export const BlogPost = models.BlogPost || model("BlogPost", BlogPostSchema)

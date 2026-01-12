@@ -1,40 +1,52 @@
-import { BlogPost } from "../../Models/Blog/Blogpost.js";
-import { logger as log } from "../../Utils/Logger/logger.js";
+import { BlogPost } from "../../Models/Blog/Blogpost.js"
+import { logger as log } from "../../Utils/Logger/logger.js"
 
 export const BlogPostCheckpoint = async (req, res, next) => {
     try {
-        const { title, slug, excerpt, category, status } = req.body
-        const userId = req.user?.userId;
-        if (!userId) {
-            const err = new Error("Missing required fields");
-            err.statusCode = 400;
-            throw err;
+        const { blogData } = req.body
+        const userId = req.user?.userId
+
+        if (!blogData || !userId) {
+            return res.status(400).json({ message: "Missing blogData" })
         }
 
-        log.info(`Blog Post Creation Attempt by: ${userId} name: ${title}`)
-
-        const blogPost = await BlogPost.create({
-
+        const {
+            tenantId,
             title,
             slug,
             excerpt,
             category,
             status,
-            publishedAt: null || Date.now(),
+        } = blogData
 
+        if (!tenantId) {
+            return res.status(400).json({ message: "tenantId missing" })
+        }
 
-        });
-
-        log.info(`Blog Post created by: ${userId} title: ${title} Date: ${blogPost.createdAt}`);
-
-        res.status(201).json({
-            blogId : blogPost._id
+        const blogPost = await BlogPost.create({
+            tenantId,
+            title,
+            slug,
+            excerpt,
+            category,
+            status,
+            content: "",
+            featuredImage: null,
+            tags: [],
+            seo: {
+                metaTitle: "",
+                metaDescription: "",
+                focusKeyword: "",
+            },
+            settings: {
+                featured: false,
+                allowComments: true,
+                showAuthor: true,
+            },
         })
 
-
+        res.status(201).json({ blogId: blogPost._id })
     } catch (err) {
-        err.statusCode = err.statusCode || 400;
         next(err)
-
     }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,15 +10,78 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { ArrowLeft, Save, Eye, ChevronDown, ChevronUp, Calendar, Tag, ImageIcon } from "lucide-react"
+import { updateBlogApi } from "@/Api/Blog/createBlog"
+import { loadBlogById } from "@/Api/Blog/Load.js"
+
+type BlogSEO = {
+  metaTitle: string
+  metaDescription: string
+  focusKeyword: string
+}
+
+type BlogSettings = {
+  featured: boolean
+  allowComments: boolean
+  showAuthor: boolean
+}
+
+type BlogPost = {
+  _id: string
+  tenantId: string
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  featuredImage: string | null
+  category: string
+  tags: string[]
+  author: string
+  publishDate: string
+  status: "draft" | "published" | "scheduled"
+  seo: BlogSEO
+  settings: BlogSettings
+}
+
+const emptyBlog: BlogPost = {
+  _id: "",
+  tenantId: "",
+  title: "",
+  slug: "",
+  excerpt: "",
+  content: "",
+  featuredImage: null,
+  category: "",
+  tags: [],
+  author: "",
+  publishDate: "",
+  status: "draft",
+  seo: {
+    metaTitle: "",
+    metaDescription: "",
+    focusKeyword: "",
+  },
+  settings: {
+    featured: false,
+    allowComments: true,
+    showAuthor: true,
+  },
+}
+
+
 
 export default function BlogPostEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter();
 
-  const [blogData, setBlogData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [blogData, setBlogData] = useState<BlogPost>(emptyBlog)
+
+  
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState<string | null>(null);
 
   const [seoOpen, setSeoOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -46,6 +109,60 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
   //     showDate: true,
   //   },
   // })
+  const handleSave = async () => {
+    setMessage(null);
+
+    try {
+      const data = await updateBlogApi(id, blogData);
+
+      if (data?.ok) {
+        setMessage("Blog post updated successfully.");
+
+        // Hide the message after 4 seconds
+        setTimeout(() => {
+          setMessage(null);
+          router.refresh();
+          router.push('/cms/content/blog'); // optional redirect
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Error updating blog post:", err);
+      setMessage("Failed to update blog post.");
+
+      // Hide failure message after 4 seconds
+      setTimeout(() => setMessage(null), 4000);
+    }
+  };
+
+
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await loadBlogById(id)
+        setBlogData({ ...emptyBlog, ...data }) 
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null); // hide message after 3 seconds
+      }, 1000); // 3000ms = 3 seconds
+
+      return () => clearTimeout(timer); // cleanup if message changes before timeout
+    }
+  }, [message]);
+
+  if (loading) return <div>Loading...</div>
+
+
+
 
   return (
     <div className="space-y-6">
@@ -61,8 +178,12 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
           <div>
             <h1 className="text-2xl font-bold">Edit Blog Post</h1>
             <div className="flex items-center gap-2 mt-1">
-              <Badge>{blogData.status}</Badge>
-              <span className="text-sm text-muted-foreground">Last saved 2 minutes ago</span>
+              <Badge>{blogData?.status}</Badge>
+              {message && (
+                <div className="p-2 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
+                  {message}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -71,7 +192,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
-          <Button>
+          <Button onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save Changes
           </Button>
@@ -103,7 +224,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="slug">URL Slug</Label>
                 <Input
                   id="slug"
-                  value={blogData.slug}
+                  value={blogData?.slug}
                   onChange={(e) => setBlogData({ ...blogData, slug: e.target.value })}
                   placeholder="post-url-slug"
                 />
@@ -113,7 +234,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="excerpt">Excerpt</Label>
                 <Textarea
                   id="excerpt"
-                  value={blogData.excerpt}
+                  value={blogData?.excerpt}
                   onChange={(e) => setBlogData({ ...blogData, excerpt: e.target.value })}
                   placeholder="Brief summary of your post"
                   rows={3}
@@ -125,14 +246,14 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="content">Content</Label>
                 <Textarea
                   id="content"
-                  value={blogData.content}
+                  value={blogData?.content}
                   onChange={(e) => setBlogData({ ...blogData, content: e.target.value })}
                   placeholder="Write your blog post content..."
                   rows={15}
                   className="font-mono text-sm"
                 />
                 <div className="text-xs text-muted-foreground">
-                  {blogData.content.split(" ").length} words, {blogData.content.length} characters
+                  {blogData.content.split(" ").length} words {blogData.content.length} characters
                 </div>
               </div>
             </CardContent>
@@ -281,7 +402,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select value={blogData.status} onValueChange={(value) => setBlogData({ ...blogData, status: value })}>
+                <Select value={blogData.status as "published" | "draft" | "scheduled"} onValueChange={(value: "published" | "draft" | "scheduled") => setBlogData({ ...blogData, status: value })}>
                   <SelectTrigger id="status">
                     <SelectValue />
                   </SelectTrigger>
@@ -365,7 +486,18 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
               <div className="space-y-2">
                 <Label htmlFor="tags">Tags</Label>
-                <Input id="tags" value={blogData.tags.join(", ")} placeholder="Separate tags with commas" />
+                <Input
+                  id="tags"
+                  value={blogData.tags.join(", ")}
+                  onChange={(e) =>
+                    setBlogData({
+                      ...blogData,
+                      tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean),
+                    })
+                  }
+                  placeholder="Separate tags with commas"
+                />
+
                 <div className="flex flex-wrap gap-2 mt-2">
                   {blogData.tags.map((tag) => (
                     <Badge key={tag} variant="secondary">
