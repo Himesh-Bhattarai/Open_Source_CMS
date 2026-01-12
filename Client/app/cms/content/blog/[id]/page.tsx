@@ -488,7 +488,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="tags">Tags</Label>
                 <Input
                   id="tags"
-                  value={blogData.tags.join(", ")}
+                  value={blogData.tags.join(",")}
                   onChange={(e) =>
                     setBlogData({
                       ...blogData,

@@ -26,6 +26,7 @@ import FetchPageRoutes from "./Routes/Page/Services.js"
 import deleteRoutes from "./Routes/Delete/pageDelete.js"
 import slugServices from './Services/slugServices.js';
 import loadRoutes from "./Routes/Load/blog.js"
+import blogDelete from "./Routes/Delete/blogDelete.js"
 
 
 dotenv.config();
@@ -69,6 +70,7 @@ app.use('/api/v2/check-slug', slugServices);
 
 //deletion routes
 app.use('/api/v1/delete', deleteRoutes);
+app.use('/api/v1/delete-blog', blogDelete);
 
 
 //Edit / modification routes

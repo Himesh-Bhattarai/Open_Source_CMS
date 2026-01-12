@@ -1,66 +1,125 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Search, Plus, Filter, MoreVertical, Eye, Edit, Trash2, Copy } from "lucide-react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { BulkActionsBar } from "@/components/cms/bulk-actions-bar"
-import { loadAllBlogs } from "@/Api/Blog/Load"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Search,
+  Plus,
+  Filter,
+  MoreVertical,
+  Eye,
+  Edit,
+  Trash2,
+  Copy,
+} from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkActionsBar } from "@/components/cms/bulk-actions-bar";
+import { loadAllBlogs } from "@/Api/Blog/Load";
+import { deleteBlogById } from "@/Api/Blog/Delete";
 
 // Blog post type
 type BlogPost = {
-  _id: string
-  title: string
-  excerpt: string
-  author: string
-  category: string
-  status: "draft" | "published" | "scheduled"
-  publishedDate: string | null
-  views: number
-  featuredImage: string | null
-}
+  _id: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  category: string;
+  status: "draft" | "published" | "scheduled";
+  publishedDate: string | null;
+  views: number;
+  featuredImage: string | null;
+};
 
 export default function BlogPostsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedPosts, setSelectedPosts] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
-  const [blog, setBlog] = useState<BlogPost[]>([])
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [blog, setBlog] = useState<BlogPost[]>([]);
+  const [message, setMessage] = useState<string>("");
 
   // Load all blogs from API
   useEffect(() => {
     async function load() {
       try {
-        const data = await loadAllBlogs()
-        setBlog(data)
+        const data = await loadAllBlogs();
+        setBlog(data);
       } catch (err) {
-        console.error("Error loading blogs:", err)
+        console.error("Error loading blogs:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    load()
-  }, [])
+    load();
+  }, []);
+
+  //delete blog function
+  const deleteBlog = async (id: string) => {
+    try {
+      setLoading(true);
+      setMessage("");
+      const response = await deleteBlogById(id);
+      if (response?.ok) {
+        setBlog((prevBlog) => prevBlog.filter((post) => post._id !== id));
+
+        setMessage("Blog post deleted successfully.");
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error("Error deleting blog:", err);
+      setMessage("Failed to delete blog post.");
+      setLoading(false);
+    }
+  };
+
+  //message timeout
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   // Toggle select all posts
   const toggleSelectAll = () => {
     if (selectedPosts.length === blog.length) {
-      setSelectedPosts([])
+      setSelectedPosts([]);
     } else {
-      setSelectedPosts(blog.map((post) => post._id))
+      setSelectedPosts(blog.map((post) => post._id));
     }
-  }
+  };
 
   // Toggle single post selection
   const toggleSelect = (id: string) => {
-    setSelectedPosts((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]))
-  }
+    setSelectedPosts((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
+  };
 
   // Status badge
   const getStatusBadge = (status: string) => {
@@ -68,22 +127,25 @@ export default function BlogPostsPage() {
       published: "default",
       draft: "secondary",
       scheduled: "outline",
-    }
+    };
     return (
       <Badge variant={variants[status as keyof typeof variants] as any}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
-    )
-  }
+    );
+  };
 
   // Filtered blogs
   const filteredBlogs = blog.filter((post) => {
-    const matchesStatus = statusFilter === "all" || post.status === statusFilter
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+    const matchesStatus =
+      statusFilter === "all" || post.status === statusFilter;
+    const matchesSearch = post.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
@@ -91,7 +153,9 @@ export default function BlogPostsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Blog Posts</h1>
-          <p className="text-muted-foreground">Manage your blog content and articles</p>
+          <p className="text-muted-foreground">
+            Manage your blog content and articles
+          </p>
         </div>
         <Link href="/cms/content/blog/new">
           <Button>
@@ -116,7 +180,9 @@ export default function BlogPostsPage() {
             <CardTitle className="text-sm font-medium">Published</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{blog.filter((p) => p.status === "published").length}</div>
+            <div className="text-2xl font-bold">
+              {blog.filter((p) => p.status === "published").length}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -124,7 +190,9 @@ export default function BlogPostsPage() {
             <CardTitle className="text-sm font-medium">Drafts</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{blog.filter((p) => p.status === "draft").length}</div>
+            <div className="text-2xl font-bold">
+              {blog.filter((p) => p.status === "draft").length}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -132,7 +200,9 @@ export default function BlogPostsPage() {
             <CardTitle className="text-sm font-medium">Total Views</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{blog.reduce((acc, p) => acc + p.views, 0)}</div>
+            <div className="text-2xl font-bold">
+              {blog.reduce((acc, p) => acc + p.views, 0)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -193,7 +263,10 @@ export default function BlogPostsPage() {
               </thead>
               <tbody>
                 {filteredBlogs.map((post) => (
-                  <tr key={post._id} className="border-b last:border-0 hover:bg-muted/50">
+                  <tr
+                    key={post._id}
+                    className="border-b last:border-0 hover:bg-muted/50"
+                  >
                     <td className="p-4">
                       <Checkbox
                         checked={selectedPosts.includes(post._id)}
@@ -208,10 +281,15 @@ export default function BlogPostsPage() {
                           className="w-16 h-10 object-cover rounded border"
                         />
                         <div>
-                          <Link href={`/cms/content/blog/${post._id}`} className="font-medium hover:underline">
+                          <Link
+                            href={`/cms/content/blog/${post._id}`}
+                            className="font-medium hover:underline"
+                          >
                             {post.title}
                           </Link>
-                          <p className="text-sm text-muted-foreground line-clamp-1">{post.excerpt}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-1">
+                            {post.excerpt}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -220,7 +298,9 @@ export default function BlogPostsPage() {
                     </td>
                     <td className="p-4 text-sm">{post.author}</td>
                     <td className="p-4">{getStatusBadge(post.status)}</td>
-                    <td className="p-4 text-sm">{post.views.toLocaleString()}</td>
+                    <td className="p-4 text-sm">
+                      {post.views.toLocaleString()}
+                    </td>
                     <td className="p-4 text-sm">{post.publishedDate || "-"}</td>
                     <td className="p-4">
                       <DropdownMenu>
@@ -242,7 +322,10 @@ export default function BlogPostsPage() {
                             <Copy className="h-4 w-4 mr-2" />
                             Duplicate
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => deleteBlog(post._id)}
+                          >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
@@ -269,6 +352,10 @@ export default function BlogPostsPage() {
           onCancel={() => setSelectedPosts([])}
         />
       )}
+
+      {message && (
+        <div className="text-center text-sm text-green-600">{message}</div>
+      )}
     </div>
-  )
+  );
 }
