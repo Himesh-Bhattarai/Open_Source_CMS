@@ -16,32 +16,36 @@ import { ArrowLeft, Save, Eye, ChevronDown, ChevronUp, Calendar, Tag, ImageIcon 
 
 export default function BlogPostEditor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+
+  const [blogData, setBlogData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
   const [seoOpen, setSeoOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  const [blogData, setBlogData] = useState({
-    title: "Getting Started with Next.js 15",
-    slug: "getting-started-nextjs-15",
-    excerpt: "Learn about the latest features in Next.js 15",
-    content: "Full blog post content goes here...",
-    featuredImage: "/blog-featured.jpg",
-    category: "Development",
-    tags: ["nextjs", "react", "web-development"],
-    author: "Sarah K.",
-    publishDate: "2024-01-15",
-    status: "published",
-    seo: {
-      metaTitle: "Getting Started with Next.js 15 | ContentFlow Blog",
-      metaDescription: "Learn about the latest features in Next.js 15 and how to migrate your apps",
-      focusKeyword: "nextjs 15",
-    },
-    settings: {
-      featured: true,
-      allowComments: true,
-      showAuthor: true,
-      showDate: true,
-    },
-  })
+  // const [blogData, setBlogData] = useState({
+  //   title: "Getting Started with Next.js 15",
+  //   slug: "getting-started-nextjs-15",
+  //   excerpt: "Learn about the latest features in Next.js 15",
+  //   content: "Full blog post content goes here...",
+  //   featuredImage: "/blog-featured.jpg",
+  //   category: "Development",
+  //   tags: ["nextjs", "react", "web-development"],
+  //   author: "Sarah K.",
+  //   publishDate: "2024-01-15",
+  //   status: "published",
+  //   seo: {
+  //     metaTitle: "Getting Started with Next.js 15 | ContentFlow Blog",
+  //     metaDescription: "Learn about the latest features in Next.js 15 and how to migrate your apps",
+  //     focusKeyword: "nextjs 15",
+  //   },
+  //   settings: {
+  //     featured: true,
+  //     allowComments: true,
+  //     showAuthor: true,
+  //     showDate: true,
+  //   },
+  // })
 
   return (
     <div className="space-y-6">
