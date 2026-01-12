@@ -23,6 +23,7 @@ import versionRoutes from './Routes/Version/Version.js';
 import seoRoutes from "./Routes/Seo/Seo.js";
 import formRoutes from "./Routes/Form/Form.js";
 import FetchPageRoutes from "./Routes/Page/Services.js"
+import deleteRoutes from "./Routes/Delete/pageDelete.js"
 
 
 
@@ -59,6 +60,10 @@ app.use('/api/v1/page', FetchPageRoutes);
 
 //helper / services
 app.use('/api/v1/check-slug', FetchPageRoutes);
+
+
+//deletion routes
+app.use('/api/v1/delete', deleteRoutes);
 
 
 //Edit / modification routes

@@ -17,6 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AdvancedSearch } from "@/components/cms/advanced-search"
 import { getUserPages } from "@/Api/Page/Fetch"
+import { deleteUserPageById } from "@/Api/Page/Services"
 
 interface Page {
   id: string
@@ -34,6 +35,7 @@ export default function PagesPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [authorFilter, setAuthorFilter] = useState("all")
   const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set())
+  const [message, setMessage] = useState<string | null>(null);
 
   // =========================
   // FETCH & NORMALIZE
@@ -107,8 +109,21 @@ export default function PagesPage() {
     setSelectedPages(copy)
   }
 
-  const handleDelete = (id: string) => {
-    console.log("Delete:", id)
+  const handleDelete = async (id: string) => {
+    try {
+      setMessage(null);
+      const deletePage = await deleteUserPageById(id);
+
+      if (deletePage?.ok) {
+        setPages((prevPages) => prevPages.filter((page) => page.id !== id));
+        setMessage("Page deleted successfully.");
+      } else {
+        setMessage("Failed to delete page.");
+      }
+    } catch (error) {
+      console.error("Error deleting page:", error);
+      setMessage("An error occurred while deleting the page.");
+    }
   }
 
   const handlePreview = (page: Page) => {
@@ -122,6 +137,12 @@ export default function PagesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Pages</h1>
+
+        {message && (
+          <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
+            {message}
+          </div>
+        )}
 
         <Button asChild>
           <Link href="/cms/content/pages/new">
