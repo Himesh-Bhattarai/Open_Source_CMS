@@ -63,6 +63,7 @@ app.use('/api/v1/tenants', tenantRoutes);
 app.use('/api/v1/page', FetchPageRoutes);
 app.use('/api/v1/blog', loadRoutes);
 app.use('/api/v1/load-menu', menuLoad);
+app.use('/api/v1/user-blog', loadRoutes);
 
 
 //helper / services
@@ -80,7 +81,7 @@ app.use('/api/v1/delete-menu', deleteMenu);
 //Edit / modification routes
 app.use('/api/v1/update-page', pageRoutes);
 app.use('/api/v1/blog', blogRoutes);
-app.use('/api/v1/user-blog', loadRoutes);
+app.use('/api/v1/update-menu', menuRoutes);
 
 // Error handler
 app.use(errorHandler);

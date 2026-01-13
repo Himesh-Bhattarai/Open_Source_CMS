@@ -36,7 +36,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { createMenuItem } from "@/Api/Menu/Combined"
+import { createMenuItem, updateMenu } from "@/Api/Menu/Combined"
 
 // ==================== FIXED TYPE DEFINITIONS ====================
 type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb"
@@ -659,9 +659,9 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     // }
 
     try {
-      // This would be your actual save function
-      // await createMenu(menuData)
-      const response = await createMenuItem(menuDataForDB);
+     
+      const response = await updateMenu(menuId, menuDataForDB)
+
       if(response.ok){
         alert("Menu saved Successfully!");
       }else{

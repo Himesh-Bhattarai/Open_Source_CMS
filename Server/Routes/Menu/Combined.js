@@ -1,10 +1,11 @@
 import express from 'express';
-import MenuItemRoute from './MenuItem.js';
-import MenuRoute from './Menu.js';
 
+import MenuRoute from './Menu.js';
+import updateRoute from './UpdateMenu.js';
 const router = express.Router();
 
-router.use('/menu-item', MenuItemRoute);
+
 router.use('/menu', MenuRoute);
+router.use('/menus', updateRoute);
 
 export default router

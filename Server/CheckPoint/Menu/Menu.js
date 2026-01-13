@@ -1,27 +1,18 @@
-
 import { Menu } from "../../Models/Menu/Menu.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const menuCheckpoint = async (req, res, next) => {
     try {
         const userId = req.user?.userId;
-        const {
-            //tenant id need here for production no tenat 
-            title,
-            description,
-            menuLocation,
-            status,
-            publishedAt,
-            publishedBy,
-        } = req.body;
+        const { title, description, menuLocation, status, publishedAt, publishedBy } = req.body;
 
-        const tenantId = title + userId;
-         
         if (!userId || !title || !menuLocation) {
-            const err = new Error("Missing required fields");
+            const err = new Error("Missing required fields: userId, title, or menuLocation");
             err.statusCode = 400;
             throw err;
         }
+
+        const tenantId = title + userId; // Temporary logic, replace with real tenant in production
 
         log.info(`Menu creation attempt by user: ${userId}`);
 
@@ -31,13 +22,13 @@ export const menuCheckpoint = async (req, res, next) => {
             title,
             description,
             menuLocation,
-            status,
-            publishedAt: publishedAt || Date.now(),
-            publishedBy: publishedBy || userId,
-            items: [], // 🔥 ALWAYS EMPTY AT FIRST
+            status: status || "draft",
+            publishedAt: publishedAt || null,
+            publishedBy: publishedBy || null,
+            items: [], // Phase 1 → always empty
         });
 
-        log.info(`Menu created: ${newMenu._id}`);
+        log.info(`Menu created successfully: ${newMenu._id}`);
 
         res.status(201).json({
             success: true,
