@@ -29,6 +29,7 @@ import loadRoutes from "./Routes/Load/blog.js"
 import blogDelete from "./Routes/Delete/blogDelete.js"
 import deleteMenu from "./Routes/Delete/menuDelete.js"
 import menuLoad from "./Routes/Load/menu.js"
+import statsRoutes from "./Routes/Stats/Stats.js";
 
 
 dotenv.config();
@@ -83,8 +84,14 @@ app.use('/api/v1/update-page', pageRoutes);
 app.use('/api/v1/blog', blogRoutes);
 app.use('/api/v1/update-menu', menuRoutes);
 
+
+//stats routes 
+app.use('/api/v1/statistics', statsRoutes);
 // Error handler
 app.use(errorHandler);
+
+
+
 
 // Connect to DB
 connectDB();

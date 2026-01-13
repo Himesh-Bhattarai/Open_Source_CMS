@@ -20,6 +20,7 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/useAuth"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { fetchStats } from "@/Api/Stats/Stats"
 
 export default function CMSDashboard() {
   const { user, isAdmin, isOwner } = useAuth()
@@ -218,12 +219,39 @@ function AdminDashboard() {
 }
 
 function OwnerDashboard({ user }: { user: any }) {
-  const stats = [
-    { label: "Total Pages", value: "24", icon: FileText, change: "+3 this week", color: "text-blue-600" },
-    { label: "Published Posts", value: "156", icon: BarChart3, change: "+12 this week", color: "text-green-600" },
-    { label: "Media Files", value: "842", icon: ImageIcon, change: "+45 this week", color: "text-purple-600" },
-    { label: "Team Members", value: "5", icon: Users, change: "1 online now", color: "text-orange-600" },
-  ]
+  const [stats, setStats] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch stats once on mount
+  useEffect(() => {
+    const types = "For-Dashboard"
+
+    const getStats = async () => {
+      try {
+        const data = await fetchStats(types)
+
+        // Convert object from backend into array for map
+        const statsArray = [
+          { label: "Total Pages", value: data.totalPages ?? 0, icon: FileText, change: "+3 this week", color: "text-blue-600" },
+          { label: "Published Pages", value: data.publishedPages ?? 0, icon: BarChart3, change: "+12 this week", color: "text-green-600" },
+          { label: "Draft Pages", value: data.draftPages ?? 0, icon: ImageIcon, change: "+5 this week", color: "text-purple-600" },
+          { label: "Team Members", value: data.teamMembers ?? 0, icon: Users, change: "1 online now", color: "text-orange-600" },
+        ]
+
+        setStats(statsArray)
+      } catch (err) {
+        console.error("Failed to fetch stats:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getStats()
+
+    // Optional: poll every 5 seconds
+    const interval = setInterval(getStats, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   const pendingChanges = [
     { type: "Menu", name: "Main Navigation", editor: "Sarah K.", time: "2 hours ago", status: "draft" },
@@ -237,6 +265,9 @@ function OwnerDashboard({ user }: { user: any }) {
     { action: "Created page", item: "Services", user: "Sarah K.", time: "3 hours ago" },
   ]
 
+  if (loading) return <p className="text-center text-muted-foreground mt-8">Loading dashboard...</p>
+
+
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
@@ -247,7 +278,7 @@ function OwnerDashboard({ user }: { user: any }) {
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {stats.map((stat : any) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
@@ -283,7 +314,7 @@ function OwnerDashboard({ user }: { user: any }) {
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Globe className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                        <Globe className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
                         <span className="font-medium text-sm">{change.name}</span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
                           {change.status}
