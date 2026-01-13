@@ -153,7 +153,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
             <X className="h-5 w-5" />
           </Button>
         </div>
-
+{/* 
         {isOwner && (
           <div className="px-4 py-3 border-b border-sidebar-border flex-shrink-0">
             <div className="border rounded-lg p-3 bg-primary/10 border-primary/20">
@@ -165,7 +165,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
               <p className="text-xs text-muted-foreground truncate">{user?.tenantId || "website-id"}</p>
             </div>
           </div>
-        )}
+        )} */}
 
         <ScrollArea className="flex-1">
           <nav className="space-y-1 p-3">
