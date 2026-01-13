@@ -12,7 +12,6 @@ export const loadMenus = async()=>{
         return{
             ok: response.ok,
             menus: request.menus,
-            ...request,
         }
     }catch(err){
         console.error(err);

@@ -27,6 +27,8 @@ import deleteRoutes from "./Routes/Delete/pageDelete.js"
 import slugServices from './Services/slugServices.js';
 import loadRoutes from "./Routes/Load/blog.js"
 import blogDelete from "./Routes/Delete/blogDelete.js"
+import deleteMenu from "./Routes/Delete/menuDelete.js"
+import menuLoad from "./Routes/Load/menu.js"
 
 
 dotenv.config();
@@ -60,6 +62,7 @@ app.use('/api/v1/create-seo', seoRoutes);
 app.use('/api/v1/tenants', tenantRoutes);
 app.use('/api/v1/page', FetchPageRoutes);
 app.use('/api/v1/blog', loadRoutes);
+app.use('/api/v1/load-menu', menuLoad);
 
 
 //helper / services
@@ -71,6 +74,7 @@ app.use('/api/v2/check-slug', slugServices);
 //deletion routes
 app.use('/api/v1/delete', deleteRoutes);
 app.use('/api/v1/delete-blog', blogDelete);
+app.use('/api/v1/delete-menu', deleteMenu);
 
 
 //Edit / modification routes
