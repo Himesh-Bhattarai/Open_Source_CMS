@@ -30,6 +30,8 @@ import blogDelete from "./Routes/Delete/blogDelete.js"
 import deleteMenu from "./Routes/Delete/menuDelete.js"
 import menuLoad from "./Routes/Load/menu.js"
 import statsRoutes from "./Routes/Stats/Stats.js";
+import deleteTenant from "./Routes/Delete/tenantDelete.js"
+import updateTenant from "./Routes/Tenant/Combined/Tenant.js"
 
 
 dotenv.config();
@@ -77,12 +79,13 @@ app.use('/api/v2/check-slug', slugServices);
 app.use('/api/v1/delete', deleteRoutes);
 app.use('/api/v1/delete-blog', blogDelete);
 app.use('/api/v1/delete-menu', deleteMenu);
-
+app.use('/api/v1/delete-tenant', deleteTenant)
 
 //Edit / modification routes
 app.use('/api/v1/update-page', pageRoutes);
 app.use('/api/v1/blog', blogRoutes);
 app.use('/api/v1/update-menu', menuRoutes);
+app.use('/api/v1/update-tenant', updateTenant);
 
 
 //stats routes 

@@ -58,3 +58,8 @@ export const getAllTenants = async () => {
     console.error(err);
   }
 };
+
+
+export const deleteTenant = async(tenantId)=>{
+  console.log("Deleting Tenant", tenantId);
+}

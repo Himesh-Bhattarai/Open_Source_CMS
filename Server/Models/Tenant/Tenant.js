@@ -24,4 +24,11 @@ const TenantSchema = new Schema(
   },
 )
 
+TenantSchema.pre("save", function (next) {
+  if (!this.tenantId) {
+    this.tenantId = this._id.toString();
+  }
+  next();
+});
+
 export const Tenant = models.Tenant || model("Tenant", TenantSchema)

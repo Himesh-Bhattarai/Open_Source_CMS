@@ -23,6 +23,7 @@ import { CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createTenant } from "@/Api/Tenant/Create-tenant";
 import { getUserTenants } from "@/Api/Fetch/allFetch";
+import { deleteTenantById as deleteTenant, editTenantById as updateTenant } from "@/Api/Tenant/Services";
 
 export default function MyWebsitePage() {
   const { user } = useAuth()
@@ -30,10 +31,12 @@ export default function MyWebsitePage() {
   const [websiteName, setWebsiteName] = useState("")
   const [domain, setDomain] = useState("")
   const [isCreating, setIsCreating] = useState(false)
-
+  const [message, setMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenants, setTenants] = useState<any[]>([]);
+  const [editingTenantId, setEditingTenantId] = useState<string | null>(null)
+
 
   const hasWebsite = tenants.length > 0;
 
@@ -56,8 +59,8 @@ export default function MyWebsitePage() {
 
     const fetchData = async () => {
       try {
-        const data = await getUserTenants(); // ✅ get returned data
-        setTenants(data.tenants);                    // 🔥 STORE IN STATE
+        const data = await getUserTenants();
+        setTenants(data.tenants);
       } catch (err) {
         console.error("Failed to fetch tenants", err);
       }
@@ -71,175 +74,263 @@ export default function MyWebsitePage() {
   }, [tenants]);
 
 
-  const handleCreateTenant = async () => {
-    if (!user) return;
-
-    setLoading(true);
-
+  //edit existing tenant
+  const handelEditTenant = async (tenantId: string) => {
     try {
-      await createTenant({
-        ...form,
-        createdBy: user.id, // 🔐 enforced by backend too
-      });
+      setLoading(true)
+      setMessage("")
 
-      setIsCreateDialogOpen(false);
-      setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" });
+      const response = await updateTenant(tenantId, form)
+
+      if (!response?.ok) {
+        setMessage("Failed to update website")
+        setLoading(false)
+        return
+      }
+
+      const updated = response.data
+
+      setTenants(prev =>
+        prev.map(t => (t._id.toString() === tenantId.toString() ? updated : t))
+      )
+
+      setMessage("Website updated successfully")
+      setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+      setEditingTenantId(null)
+      setIsCreateDialogOpen(false)
+      setLoading(false)
     } catch (err) {
-      console.error("Create tenant failed", err);
+      console.error(err)
+      setMessage("Update failed")
+      setLoading(false)
+    }
+  }
+
+
+
+  const handleCreateTenant = async () => {
+    if (!user) return
+
+    setLoading(true)
+    try {
+      await createTenant({ ...form, createdBy: user.id })
+
+      const data = await getUserTenants()
+      setTenants(data.tenants)
+
+      setIsCreateDialogOpen(false)
+      setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+    } catch (err) {
+      console.error("Create tenant failed", err)
     } finally {
+      setLoading(false)
+    }
+  }
+
+  //handel delete
+  const handelDelete = async (tenantId: string) => {
+    try {
+      setLoading(true);
+      setMessage("");
+      const response = await deleteTenant(tenantId);
+      if (!response?.ok) {
+        setLoading(false);
+        setMessage("Failed to Delete Tenant");
+      }
+      setMessage("Website Deleted Successfully");
+      setTenants((prevTenants) => prevTenants.filter((tenant) => tenant._id !== tenantId));
+      setLoading(false);
+    } catch (err) {
+      console.error("Error deleting blog:", err);
+      setMessage("Failed to delete blog post.");
       setLoading(false);
     }
-  };
-
-  if (hasWebsite) {
-    return (
-      <>
-    
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">My Website</h1>
-              <p className="text-muted-foreground mt-2">
-                Manage your website settings
-              </p>
-            </div>
-
-          {tenants.map((tenant: any) => ( <Card key={tenant._id}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  Website Active
-                </CardTitle>
-                <CardDescription>
-                  Your website is live and ready to manage
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Website Name</Label>
-                  <p className="text-lg font-medium mt-1">{tenant.name}</p>
-                </div>
-
-                <div>
-                  <Label>Domain</Label>
-                  <p className="text-lg font-medium mt-1">{tenant.domain}</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button asChild>
-                    <a
-                      href={`https://${tenant.domain}.contentflow.site`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      Visit Website
-                    </a>
-                  </Button>
-                  <Button variant="outline">Edit Settings</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-          }
-          </div>
-       
-      </>
-    )
   }
+
+  //timeout for message
+  useEffect(()=>{
+    const timeout = setTimeout(() => {
+      setMessage("")
+    }, 1000);
+    return () => clearTimeout(timeout);
+
+  },[message])
 
   return (
     <>
-
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="text-center">
-        <Building2 className="h-12 w-12 mx-auto text-primary mb-4" />
-        <h1 className="text-3xl font-bold tracking-tight">Create Your Website</h1>
-        <p className="text-muted-foreground mt-2">Set up your website in just a few steps</p>
-      </div>
-      </div>
-
-      <div className="flex justify-center mt-6">
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Website
-            </Button>
-          </DialogTrigger>
-
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Create New Website</DialogTitle>
-          <DialogDescription>
-            Set up a new tenant website with isolated content and users.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Website Name</Label>
-            <Input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Acme Corporation"
-            />
+      {/* Page Header */}
+      <div className="space-y-6">
+        <div className="flex items-start justify-between">
+          {/* Left side: Title */}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">My Website</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage your website settings
+            </p>
           </div>
+          {message && (
+            <div className="rounded-md bg-green-100 text-green-700 px-4 py-2 text-sm">
+              {message}
+            </div>
+          )}
 
-          <div className="space-y-2">
-            <Label>Domain</Label>
-            <Input
-              name="domain"
-              value={form.domain}
-              onChange={handleChange}
-              placeholder="acme.com"
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label>API Key</Label>
-            <Input
-              name="apiKey"
-              value={form.apiKey}
-              onChange={handleChange}
-              placeholder="auto-generated or custom"
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label>Owner Email</Label>
-            <Input
-              name="ownerEmail"
-              value={form.ownerEmail}
-              onChange={handleChange}
-              placeholder="owner@acme.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Created By</Label>
-            <Input
-              value={user?.email || ""}
-              disabled
-              className="bg-muted"
-            />
-          </div>
+          {/* Right side: Button */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Website
+              </Button>
+            </DialogTrigger>
+            {/* dialog content stays same */}
+          </Dialog>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button  onClick={handleCreateTenant} disabled={loading}>
-            {loading ? "Creating..." : "Create Website"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+
+        {/* CREATE WEBSITE BUTTON — ALWAYS VISIBLE */}
+        <div className="flex justify-end">
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            {/* YOUR EXISTING DIALOG */}
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Create New Website</DialogTitle>
+                <DialogDescription>
+                  Set up a new tenant website with isolated content and users.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Website Name</Label>
+                  <Input name="name" value={form.name} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Domain</Label>
+                  <Input name="domain" value={form.domain} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>API Key</Label>
+                  <Input name="apiKey" value={form.apiKey} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Owner Email</Label>
+                  <Input name="ownerEmail" value={form.ownerEmail} onChange={handleChange} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Created By</Label>
+                  <Input value={user?.email || ""} disabled />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => {
+                  setIsCreateDialogOpen(false)
+                  setEditingTenantId(null)
+                  setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+                }}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (editingTenantId) {
+                      handelEditTenant(editingTenantId)
+                    } else {
+                      handleCreateTenant()
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Saving..."
+                    : editingTenantId
+                      ? "Update Website"
+                      : "Create Website"}
+                </Button>
+
+              </DialogFooter>
+
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* IF NO TENANTS — SHOW EMPTY STATE */}
+        {tenants.length === 0 && (
+          <div className="text-center py-12">
+            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">No websites yet</p>
+          </div>
+        )}
+
+        {/* TENANTS */}
+        {tenants.map((tenant: any) => (
+          <Card key={tenant._id}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Website Active
+              </CardTitle>
+              <CardDescription>
+                Your website is live and ready to manage
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Website Name</Label>
+                <p className="text-lg font-medium mt-1">{tenant.name}</p>
+              </div>
+
+              <div>
+                <Label>Domain</Label>
+                <p className="text-lg font-medium mt-1">{tenant.domain}</p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button asChild>
+                  <a
+                    href={`https://${tenant.domain}.contentflow.site`}
+                    target="_blank"
+                  >
+                    <Globe className="h-4 w-4 mr-2" />
+                    Visit Website
+                  </a>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditingTenantId(tenant._id)
+                    setForm({
+                      name: tenant.name || "",
+                      domain: tenant.domain || "",
+                      apiKey: tenant.apiKey || "",
+                      ownerEmail: tenant.ownerEmail || "",
+                    })
+                    setIsCreateDialogOpen(true)
+                  }}
+                >
+                  Edit
+                </Button>
+
+
+
+                <Button
+                  variant="destructive"
+                  onClick={() => handelDelete(tenant._id)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </>
-     
-  
   )
 }

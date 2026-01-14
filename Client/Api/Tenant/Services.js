@@ -1,26 +1,30 @@
-const DELETE_TENANT_BY_ID =
-  "http://localhost:5000/api/v1/tenants/delete-tenant";
+const DELETE_TENANT_BY_ID = "http://localhost:5000/api/v1/delete-tenant";
 const DELETE_ALL_TENANTS =
   "http://localhost:5000/api/v1/tenants/delete-all-tenants";
-const EDIT_TENANT_BY_ID = "http://localhost:5000/api/v1/tenants/edit-tenant";
+const EDIT_TENANT_BY_ID = "http://localhost:5000/api/v1/update-tenant/tenant";
 
 export const deleteTenantById = async (tenantId) => {
-  try {
-    const response = await fetch(`${DELETE_TENANT_BY_ID}/${tenantId}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+  const response = await fetch(`${DELETE_TENANT_BY_ID}/${tenantId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
 
-    const request = await response.json();
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request,
-      };
-  } catch (err) {
-    console.error(err);
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
   }
+
+  if (!response.ok) {
+    throw new Error(data?.error || "Delete failed");
+  }
+
+  return {
+    ok: true,
+    status: response.status,
+    data,
+  };
 };
 
 //delete all tenants (ADMIN)
@@ -56,11 +60,12 @@ export const editTenantById = async (tenantId, data) => {
     });
 
     const request = await response.json();
+    console.log("What is the backend response ", request);
     if (response.ok)
       return {
         ok: response.ok,
         status: response.status,
-        data: request,
+        data: request.data,
       };
   } catch (err) {
     console.error(err);

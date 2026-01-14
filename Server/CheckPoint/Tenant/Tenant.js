@@ -1,10 +1,8 @@
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { logger as log } from "../../Utils/Logger/logger.js"
-import { v4 as uuidv4 } from "uuid";
 
 export const tenantCheckpoint = async (req, res, next) => {
     try {
-        console.log("tenent hit ?")
         const { name, domain, apiKey, ownerEmail, status, plan, settings, subdomain, createdBy } = req.body;
 
         if (!name || !domain || !apiKey || !ownerEmail) {
@@ -28,7 +26,6 @@ export const tenantCheckpoint = async (req, res, next) => {
 
         //create one
         const tenant = await Tenant.create({
-            tenantId: uuidv4(),
             userId : createdBy,
             name,
             domain,
@@ -44,7 +41,6 @@ export const tenantCheckpoint = async (req, res, next) => {
 
         res.status(200).json({
             message: "Tenant created successfully",
-
         })
 
 
