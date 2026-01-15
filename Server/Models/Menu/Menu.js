@@ -18,7 +18,7 @@ const MenuSchema = new Schema({
 
     title: String,
     description: String,
-    menuLocation: { type: String, enum: ["header", "sidebar"] },
+    menuLocation: { type: String, enum: ["header", "footer", "sidebar"] },
 
     items: { type: [MenuItemSchema], default: [] }, // stores exactly what frontend sends
 
