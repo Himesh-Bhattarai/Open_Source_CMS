@@ -39,6 +39,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { BulkActionsBar } from "@/components/cms/bulk-actions-bar";
 import { loadAllBlogs } from "@/Api/Blog/Load";
 import { deleteBlogById } from "@/Api/Blog/Delete";
+import { useRouter } from "next/navigation";
+
+         
 
 // Blog post type
 type BlogPost = {
@@ -54,6 +57,7 @@ type BlogPost = {
 };
 
 export default function BlogPostsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
@@ -314,7 +318,7 @@ export default function BlogPostsPage() {
                             <Eye className="h-4 w-4 mr-2" />
                             Preview
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/cms/content/blog/${post._id}`)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
-import { ArrowLeft, Save, Eye, ChevronDown, ChevronUp, Calendar, Tag, ImageIcon } from "lucide-react"
+import { ArrowLeft, Save, Eye, ChevronDown, ChevronUp, Calendar, Tag, ImageIcon, X} from "lucide-react"
 import { updateBlogApi } from "@/Api/Blog/createBlog"
 import { loadBlogById } from "@/Api/Blog/Load.js"
 
@@ -85,6 +85,25 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
   const [seoOpen, setSeoOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [tagInput, setTagInput] = useState("");
+
+  function addTag(tag: string) {
+    if (!tag.trim()) return;
+    if (blogData.tags.includes(tag.trim())) return;
+
+    setBlogData({
+      ...blogData,
+      tags: [...blogData.tags, tag.trim()],
+    });
+  }
+
+  function removeTag(tag: string) {
+    setBlogData({
+      ...blogData,
+      tags: blogData.tags.filter(t => t !== tag),
+    });
+  }
+
 
   // const [blogData, setBlogData] = useState({
   //   title: "Getting Started with Next.js 15",
@@ -109,6 +128,56 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
   //     showDate: true,
   //   },
   // })
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const today = () => new Date().toISOString().split("T")[0];
+  useEffect(() => {
+    setBlogData((prev) => ({
+      ...prev,
+      publishDate: prev?.publishDate || today(),
+    }));
+  }, []);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 5MB max
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be under 5MB");
+      return;
+    }
+
+    // Only images
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files allowed");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setBlogData((prev) => ({
+        ...prev,
+        featuredImage: reader.result as string,
+      }));
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+
+  const removeFeaturedImage = () => {
+    setBlogData((prev) => ({
+      ...prev,
+      featuredImage: "",
+    }));
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+
   const handleSave = async () => {
     setMessage(null);
 
@@ -420,9 +489,12 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                   id="publishDate"
                   type="date"
                   value={blogData.publishDate}
-                  onChange={(e) => setBlogData({ ...blogData, publishDate: e.target.value })}
+                  onChange={(e) =>
+                    setBlogData({ ...blogData, publishDate: e.target.value })
+                  }
                 />
               </div>
+
 
               <Button className="w-full">
                 <Calendar className="h-4 w-4 mr-2" />
@@ -436,29 +508,61 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
             <CardHeader>
               <CardTitle>Featured Image</CardTitle>
             </CardHeader>
+
             <CardContent>
               <div className="space-y-4">
-                <div className="aspect-video border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/50">
+
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+
+                {/* Preview box */}
+                <div className="relative aspect-video border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/50 overflow-hidden">
                   {blogData.featuredImage ? (
-                    <img
-                      src={blogData.featuredImage || "/placeholder.svg"}
-                      alt="Featured"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+                    <>
+                      <img
+                        src={blogData.featuredImage}
+                        alt="Featured"
+                        className="w-full h-full object-cover"
+                      />
+
+                      {/* Remove button */}
+                      <button
+                        onClick={removeFeaturedImage}
+                        className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </>
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mt-2">No image selected</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        No image selected
+                      </p>
                     </div>
                   )}
                 </div>
-                <Button variant="outline" className="w-full bg-transparent">
+
+                {/* Choose image */}
+                <Button
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Choose Image
                 </Button>
+
               </div>
             </CardContent>
           </Card>
+
 
           {/* Category & Tags */}
           <Card>
@@ -485,28 +589,37 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
+                <Label>Tags</Label>
+
                 <Input
-                  id="tags"
-                  value={blogData.tags.join(",")}
-                  onChange={(e) =>
-                    setBlogData({
-                      ...blogData,
-                      tags: e.target.value.split(",").map(t => t.trim()).filter(Boolean),
-                    })
-                  }
-                  placeholder="Separate tags with commas"
+                  value={tagInput}
+                  placeholder="Type a tag and press Enter"
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      addTag(tagInput.replace(",", ""));
+                      setTagInput("");
+                    }
+                  }}
                 />
 
                 <div className="flex flex-wrap gap-2 mt-2">
                   {blogData.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
+                    <Badge key={tag} variant="secondary" className="cursor-pointer">
                       <Tag className="h-3 w-3 mr-1" />
                       {tag}
+                      <span
+                        onClick={() => removeTag(tag)}
+                        className="ml-2 text-xs hover:text-red-500"
+                      >
+                        ✕
+                      </span>
                     </Badge>
                   ))}
                 </div>
               </div>
+
             </CardContent>
           </Card>
 

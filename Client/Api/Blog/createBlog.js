@@ -26,7 +26,7 @@ export const updateBlogApi = async (blogId, blogData) => {
       body: JSON.stringify(blogData),
     });
 
-    const request = response.json();
+    const request = await response.json();
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return request;
   } catch (err) {
