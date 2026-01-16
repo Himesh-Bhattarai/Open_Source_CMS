@@ -38,6 +38,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { createMenuItem, updateMenu } from "@/Api/Menu/Combined"
 import { useRouter } from "next/navigation"
+import { loadMenuById } from "@/Api/Menu/Load"
+
 
 // ==================== FIXED TYPE DEFINITIONS ====================
 type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb"
@@ -275,6 +277,101 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       enabled: true,
     },
   ])
+  
+  useEffect(() => {
+    if (!menuId) return
+
+    const loadMenu = async () => {
+      try {
+        setLoading(true)
+        const data = await loadMenuById(menuId)
+
+        const resolvedConfig: MenuConfig = {
+          location: mapLocation(data.menuLocation),
+          navbarType: data.navbarType || "mega",
+        }
+
+        setConfig(resolvedConfig)
+
+        setMenuItems(
+          denormalizeMenuItemsFromDB(
+            data.items,
+            0,
+            resolvedConfig
+          )
+        )
+      } catch (err) {
+        console.error(err)
+        setMessage("Failed to load menu")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadMenu()
+  }, [menuId])
+
+
+
+  const inferMenuType = (
+    item: any,
+    depth: number,
+    config: MenuConfig
+  ): MenuItem["menuType"] => {
+    if (config.location === "sidebar") return "sidebar"
+
+    if (config.navbarType === "static") return "static"
+
+    if (config.navbarType === "dropdown") {
+      return depth === 0 ? "dropdown" : "dropdown-child"
+    }
+
+    if (config.navbarType === "breadcrumb") return "breadcrumb"
+
+    // mega (default)
+    return "mega"
+  }
+
+  const mapLocation = (location?: string): MenuLocation => {
+    if (location === "sidebar") return "sidebar"
+    return "navbar" // default for "header" or undefined
+  }
+
+  const denormalizeMenuItemsFromDB = (
+    items: any[],
+    depth = 0,
+    config: MenuConfig
+  ): MenuItem[] => {
+    return items
+      .sort((a, b) => a.order - b.order)
+      .map((item) => {
+        const menuType = inferMenuType(item, depth, config)
+
+        return {
+          id: generateId(),
+          label: item.label,
+          linkType: item.type ?? "internal",
+          slug: item.link ?? "/",
+          enabled: item.enabled ?? true,
+          menuType,
+          expanded: true,
+
+          images: item.images || [],
+          textBlocks: item.textBlocks || [],
+          buttons: item.buttons || [],
+
+          children: item.children?.length
+            ? denormalizeMenuItemsFromDB(
+              item.children,
+              depth + 1,
+              config
+            )
+            : [],
+        } as MenuItem
+      })
+  }
+
+
 
   const [previewOpen, setPreviewOpen] = useState(false)
 
