@@ -1,6 +1,7 @@
 const GET_PAGE_URL = "http://localhost:5000/api/v1/page/user-pages";
 const GET_PAGE_BY_ID = "http://localhost:5000/api/v1/page/selected-page";
 const GET_ALL_PAGES_URL = "http://localhost:5000/api/v1/page/all-pages";
+const GET_PAGES_ON_WEBSITE = "http://localhost:5000/api/v1/page/belong/website";
 
 export const getUserPages = async () => {
   try {
@@ -17,6 +18,29 @@ export const getUserPages = async () => {
     console.error(err);
   }
 };
+
+//get page based on website 
+export const fetchPagesByTenant= async (tenantId)=>{
+  try{
+    console.log("Tenant Id for getting pages", tenantId);
+
+    const response = await fetch(`${GET_PAGES_ON_WEBSITE}/${tenantId}`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const request = await response.json();
+
+    if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    console.log("From You underwtandfbds")
+    console.log("Pages By Tenant", request);
+
+    return request.pages;
+  }catch(err){
+    console.error(err);
+
+  }
+}
 
 //Get User page By Id
 export const getPageById = async (pageId) => {

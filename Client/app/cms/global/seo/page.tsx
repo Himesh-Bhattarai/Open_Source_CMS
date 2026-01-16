@@ -48,18 +48,24 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import {createSeo} from "@/Api/Seo/Create"
-// Types
-interface Website {
-  id: string
-  name: string
-  domain: string
-}
+import { createSeo } from "@/Api/Seo/Create"
+import { useTenant } from "@/context/TenantContext"
+import { fetchPagesByTenant } from "@/Api/Page/Fetch"
 
+// Types - Simplified Page interface
 interface Page {
+  _id: string
   id: string
   title: string
   slug: string
+  content?: any
+  status?: "draft" | "published" | "archived"
+  contentType?: "article" | "page" | "product" | "event"
+  featuredImage?: string
+  excerpt?: string
+  parentId?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 interface PageSEO {
@@ -125,27 +131,13 @@ interface SEOData {
   }
 }
 
-interface PageData {
-  id: string
-  slug: string
-  title: string
-  content: any
-  status: "draft" | "published" | "archived"
-  contentType: "article" | "page" | "product" | "event"
-  featuredImage?: string
-  excerpt?: string
-  parentId?: string
-  createdAt: string
-  updatedAt: string
-}
-
 interface SEOValidation {
   errors: string[]
   warnings: string[]
   isValid: boolean
 }
 
-// Helper functions
+// Helper functions (keep as is)
 const normalizeSlug = (slug: string): string => {
   return slug.replace(/^\/+|\/+$/g, '')
 }
@@ -155,7 +147,7 @@ const generateCanonical = (siteUrl: string, slug: string): string => {
   return `${siteUrl.replace(/\/+$/, '')}/${cleanSlug}`
 }
 
-const generateRobotsMeta = (pageSEO: PageSEO, globalRobots: any, pageData: PageData, environment: string): string => {
+const generateRobotsMeta = (pageSEO: PageSEO, globalRobots: any, pageData: Page, environment: string): string => {
   let index = pageSEO.robots.index
   let follow = pageSEO.robots.follow
 
@@ -184,7 +176,7 @@ const generateRobotsMeta = (pageSEO: PageSEO, globalRobots: any, pageData: PageD
   return directives.join(', ')
 }
 
-const validateSEO = (pageSEO: PageSEO, globalSEO: SEOData, pageData: PageData): SEOValidation => {
+const validateSEO = (pageSEO: PageSEO, globalSEO: SEOData, pageData: Page): SEOValidation => {
   const errors: string[] = []
   const warnings: string[] = []
 
@@ -229,7 +221,7 @@ const validateSEO = (pageSEO: PageSEO, globalSEO: SEOData, pageData: PageData): 
   }
 }
 
-const generateSchemaMarkup = (pageSEO: PageSEO, globalSEO: SEOData, pageData: PageData) => {
+const generateSchemaMarkup = (pageSEO: PageSEO, globalSEO: SEOData, pageData: Page) => {
   const baseSchema = {
     "@context": "https://schema.org",
     "@type": pageSEO.schemaType || "WebPage",
@@ -251,11 +243,11 @@ const generateSchemaMarkup = (pageSEO: PageSEO, globalSEO: SEOData, pageData: Pa
     case "Article":
     case "BlogPosting":
       Object.assign(baseSchema, {
-        "datePublished": pageData.createdAt,
-        "dateModified": pageData.updatedAt,
+        "datePublished": pageData.createdAt || new Date().toISOString(),
+        "dateModified": pageData.updatedAt || new Date().toISOString(),
         "author": {
           "@type": "Person",
-          "name": "Author Name" // This should come from page data
+          "name": "Author Name"
         },
         "headline": pageData.title,
         "image": pageSEO.ogImage || globalSEO.general.defaultOgImage
@@ -301,39 +293,23 @@ const getImageFallback = (
   return pageImage || pageOgImage || globalOgImage || ''
 }
 
-// Backend API functions (mock implementations)
-const fetchWebsites = async (): Promise<Website[]> => {
-  // Mock implementation - replace with actual API call
-  return [
-    { id: "website-1", name: "Main Website", domain: "https://example.com" },
-    { id: "website-2", name: "Blog", domain: "https://blog.example.com" },
-    { id: "website-3", name: "E-commerce", domain: "https://shop.example.com" },
-  ]
-}
-
-const fetchPages = async (websiteId: string): Promise<Page[]> => {
-  // Mock implementation - replace with actual API call
-  return [
-    { id: "page-1", title: "Home Page", slug: "/" },
-    { id: "page-2", title: "About Us", slug: "/about" },
-    { id: "page-3", title: "Contact", slug: "/contact" },
-    { id: "page-4", title: "Blog Post Example", slug: "/blog/example-post" },
-  ]
-}
-
-
 export default function SEOSettingsPage() {
-  const [activePage, setActivePage] = useState<PageData>({
-    id: 'page-1',
-    slug: 'example-page',
+  const { tenants, activeTenant, setActiveTenant } = useTenant();
+
+  // Default active page
+  const defaultPage: Page = {
+    _id: 'default-page',
+    id: 'default-page',
     title: 'Example Page',
+    slug: 'example-page',
     content: {},
     status: 'published',
     contentType: 'page',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
-  })
+  }
 
+  const [activePage, setActivePage] = useState<Page>(defaultPage)
   const [globalSEO, setGlobalSEO] = useState<SEOData>({
     general: {
       siteTitle: "ContentFlow",
@@ -400,17 +376,10 @@ export default function SEOSettingsPage() {
 
   const [showPreview, setShowPreview] = useState(false)
   const [environment, setEnvironment] = useState<'production' | 'staging'>('production')
-
-  // New state for website and scope management
-  const [websites, setWebsites] = useState<Website[]>([])
-  const [selectedWebsite, setSelectedWebsite] = useState<string>("")
   const [seoScope, setSeoScope] = useState<"global" | "page">("global")
   const [pages, setPages] = useState<Page[]>([])
-  const [selectedPage, setSelectedPage] = useState<string>("")
-  const [isLoading, setIsLoading] = useState({
-    websites: false,
-    pages: false
-  })
+  const [selectedPageId, setSelectedPageId] = useState<string>("")
+  const [isLoadingPages, setIsLoadingPages] = useState(false)
 
   // Generate auto canonical
   const autoCanonical = useMemo(() => {
@@ -438,68 +407,57 @@ export default function SEOSettingsPage() {
     setValidation(result)
   }, [pageSEO, globalSEO, activePage])
 
-  // Fetch websites on component mount
+  // Fetch pages when active tenant changes
+  // In your fetch pages useEffect
+  // In your useEffect for fetching pages
   useEffect(() => {
-    const loadWebsites = async () => {
-      setIsLoading(prev => ({ ...prev, websites: true }))
-      try {
-        const fetchedWebsites = await fetchWebsites()
-        setWebsites(fetchedWebsites)
-        if (fetchedWebsites.length > 0) {
-          setSelectedWebsite(fetchedWebsites[0].id)
-        }
-      } catch (error) {
-        console.error("Failed to fetch websites:", error)
-      } finally {
-        setIsLoading(prev => ({ ...prev, websites: false }))
-      }
-    }
-    loadWebsites()
-  }, [])
+    if (!activeTenant?._id) return
 
-  // Fetch pages when website is selected and scope is page
-  useEffect(() => {
     const loadPages = async () => {
-      if (seoScope === "page" && selectedWebsite) {
-        setIsLoading(prev => ({ ...prev, pages: true }))
-        try {
-          const fetchedPages = await fetchPages(selectedWebsite)
-          setPages(fetchedPages)
-          if (fetchedPages.length > 0) {
-            setSelectedPage(fetchedPages[0].id)
-            // Update activePage with selected page data
-            const selectedPageData = fetchedPages[0]
-            setActivePage(prev => ({
-              ...prev,
-              id: selectedPageData.id,
-              slug: selectedPageData.slug,
-              title: selectedPageData.title
-            }))
-          }
-        } catch (error) {
-          console.error("Failed to fetch pages:", error)
-        } finally {
-          setIsLoading(prev => ({ ...prev, pages: false }))
-        }
-      }
-    }
-    loadPages()
-  }, [selectedWebsite, seoScope])
+      setIsLoadingPages(true)
+      try {
+        // API returns an array directly, not { pages: [...] }
+        const fetchedPages = await fetchPagesByTenant(activeTenant._id)
 
-  // Update activePage when selectedPage changes
-  useEffect(() => {
-    if (seoScope === "page" && selectedPage) {
-      const page = pages.find(p => p.id === selectedPage)
-      if (page) {
-        setActivePage(prev => ({
-          ...prev,
-          id: page.id,
-          slug: page.slug,
-          title: page.title
-        }))
+        console.log('Fetched pages array:', fetchedPages)
+        console.log('Is array?', Array.isArray(fetchedPages))
+
+        // Check if it's an array, if not, handle accordingly
+        if (Array.isArray(fetchedPages)) {
+          setPages(fetchedPages)
+
+          // Auto-select first page if none selected
+          if (fetchedPages.length > 0 && !selectedPageId) {
+            setSelectedPageId(fetchedPages[0]._id)
+          }
+        } else {
+          // If API returns object with different structure
+          console.warn('Unexpected API response format:', fetchedPages)
+          setPages(fetchedPages.pages || fetchedPages.data || [])
+        }
+      } catch (err) {
+        console.error('Error fetching pages:', err)
+        setPages([])
+      } finally {
+        setIsLoadingPages(false)
       }
     }
-  }, [selectedPage, pages, seoScope])
+
+    loadPages()
+  }, [activeTenant?._id])
+
+  // Update activePage when selectedPageId changes
+  useEffect(() => {
+    if (seoScope === "page" && selectedPageId) {
+      const page = pages.find(p => p._id === selectedPageId)
+      if (page) {
+        setActivePage(page)
+      }
+    } else {
+      // Reset to default page when switching to global scope
+      setActivePage(defaultPage)
+    }
+  }, [selectedPageId, pages, seoScope])
 
   // Normalize and prepare data for saving
   const prepareSeoData = () => {
@@ -516,7 +474,7 @@ export default function SEOSettingsPage() {
 
     // Build payload for backend
     const payload: any = {
-      websiteId: selectedWebsite,
+      tenantId: activeTenant?._id,
       scope: seoScope,
       globalSEO: globalSEO,
       meta: {
@@ -526,7 +484,7 @@ export default function SEOSettingsPage() {
     }
 
     if (seoScope === "page") {
-      payload.pageId = selectedPage
+      payload.pageId = selectedPageId
       payload.pageSEO = normalizedPageSEO
     }
 
@@ -534,6 +492,11 @@ export default function SEOSettingsPage() {
   }
 
   const handleSave = async () => {
+    if (!activeTenant?._id) {
+      alert('Please select a tenant first')
+      return
+    }
+
     const seoData = prepareSeoData()
 
     // Show warnings but don't block save
@@ -552,9 +515,8 @@ export default function SEOSettingsPage() {
 
       if (response?.ok && response?.status === 200) {
         // Reset only the specified state on successful save
-        setSelectedWebsite(websites.length > 0 ? websites[0].id : "")
         setSeoScope("global")
-        setSelectedPage("")
+        setSelectedPageId("")
         setPageSEO({
           title: "",
           metaDescription: "",
@@ -604,7 +566,7 @@ export default function SEOSettingsPage() {
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
-          <Button onClick={handleSave} disabled={isLoading.websites || !selectedWebsite}>
+          <Button onClick={handleSave} disabled={!activeTenant?._id}>
             <Save className="h-4 w-4 mr-2" />
             Save Changes
           </Button>
@@ -622,28 +584,38 @@ export default function SEOSettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="website-select">Website</Label>
               <Select
-                value={selectedWebsite}
-                onValueChange={setSelectedWebsite}
-                disabled={isLoading.websites}
+                value={activeTenant?._id || ""}
+                onValueChange={(tenantId) => {
+                  const tenant = tenants.find(t => t._id === tenantId)
+                  if (tenant) {
+                    setActiveTenant(tenant)
+                    setPages([])
+                    setSelectedPageId("")
+                  }
+                }}
               >
                 <SelectTrigger id="website-select">
-                  <SelectValue placeholder={isLoading.websites ? "Loading websites..." : "Select a website"} />
+                  <SelectValue placeholder="Select a website" />
                 </SelectTrigger>
                 <SelectContent>
-                  {websites.map(website => (
-                    <SelectItem key={website.id} value={website.id}>
+                  {tenants?.map((tenant) => (
+                    <SelectItem key={tenant._id} value={tenant._id}>
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4" />
-                        <span>{website.name}</span>
-                        <span className="text-muted-foreground text-sm">({website.domain})</span>
+                        <span>{tenant.name}</span>
+                        {tenant.domain && (
+                          <span className="text-muted-foreground text-sm">
+                            ({tenant.domain})
+                          </span>
+                        )}
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {selectedWebsite && (
+              {activeTenant && (
                 <p className="text-sm text-muted-foreground">
-                  Selected: {websites.find(w => w.id === selectedWebsite)?.domain}
+                  Selected: {activeTenant?.domain}
                 </p>
               )}
             </div>
@@ -685,33 +657,42 @@ export default function SEOSettingsPage() {
             </div>
 
             {seoScope === "page" && (
-              <div className="space-y-2 pt-2">
-                <Label htmlFor="page-select">Select Page</Label>
-                <Select
-                  value={selectedPage}
-                  onValueChange={setSelectedPage}
-                  disabled={isLoading.pages || pages.length === 0}
-                >
-                  <SelectTrigger id="page-select">
-                    <SelectValue placeholder={isLoading.pages ? "Loading pages..." : "Select a page"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pages.map(page => (
-                      <SelectItem key={page.id} value={page.id}>
-                        <div className="flex flex-col">
-                          <span>{page.title}</span>
-                          <span className="text-xs text-muted-foreground">{page.slug}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedPage && (
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {pages.find(p => p.id === selectedPage)?.slug}
-                  </p>
-                )}
-              </div>
+              
+                <div className="space-y-2 pt-2">
+                  <Label htmlFor="page-select">Select Page</Label>
+                  <Select
+                    value={selectedPageId}
+                    onValueChange={setSelectedPageId}
+                    disabled={isLoadingPages || pages.length === 0}
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          isLoadingPages
+                            ? "Loading pages..."
+                            : pages.length === 0
+                              ? "No pages available"
+                              : "Select a page"
+                        }
+                      />
+                    </SelectTrigger>
+
+                    {pages.length > 0 && (
+                      <SelectContent>
+                        {pages.map(page => (
+                          <SelectItem key={page._id} value={page._id}>
+                            <div className="flex flex-col">
+                              <span>{page.title || 'Untitled'}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {page.slug || 'no-slug'}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    )}
+                  </Select>
+                </div>
             )}
           </div>
         </CardContent>
@@ -733,47 +714,29 @@ export default function SEOSettingsPage() {
       </Card>
 
       {/* Page Settings - Only show when scope is page */}
-      {seoScope === "page" ? (
+      {seoScope === "page" && activePage && (
         <Card>
           <CardHeader>
             <CardTitle>Page Settings</CardTitle>
-            <CardDescription>Configure SEO for the current page</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Current Page</Label>
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{activePage.title}</p>
-                    <p className="text-sm text-muted-foreground">/{activePage.slug}</p>
-                  </div>
-                  <Badge variant={activePage.status === 'published' ? 'default' : 'secondary'}>
-                    {activePage.status}
-                  </Badge>
-                </div>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <p className="font-medium">{activePage.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  /{activePage.slug}
+                </p>
               </div>
-              <div className="space-y-2">
-                <Label>Environment</Label>
-                <Select value={environment} onValueChange={(value: any) => setEnvironment(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select environment" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="production">Production</SelectItem>
-                    <SelectItem value="staging">Staging</SelectItem>
-                  </SelectContent>
-                </Select>
-                {environment === 'staging' && (
-                  <p className="text-xs text-amber-600">
-                    Staging environment: Pages may be set to noindex
-                  </p>
-                )}
-              </div>
+              <Badge variant={activePage.status === "published" ? "default" : "secondary"}>
+                {activePage.status || "published"}
+              </Badge>
             </div>
           </CardContent>
         </Card>
-      ) : (
+      )}
+
+      {/* Global Settings - Only show when scope is global */}
+      {seoScope === "global" && (
         <Card>
           <CardHeader>
             <CardTitle>Global Settings</CardTitle>
@@ -785,7 +748,7 @@ export default function SEOSettingsPage() {
               <div>
                 <p className="font-medium">Applying to entire website</p>
                 <p className="text-sm text-muted-foreground">
-                  SEO settings will affect all pages on {websites.find(w => w.id === selectedWebsite)?.domain}
+                  SEO settings will affect all pages on {activeTenant?.domain}
                 </p>
               </div>
             </div>
@@ -1009,7 +972,7 @@ export default function SEOSettingsPage() {
           </TabsContent>
         )}
 
-        {/* General Settings (Existing - Modified) */}
+        {/* General Settings */}
         <TabsContent value="general" className="space-y-6">
           <Card>
             <CardHeader>
@@ -1034,7 +997,6 @@ export default function SEOSettingsPage() {
                 </p>
               </div>
 
-              {/* Existing general fields remain unchanged */}
               <div className="space-y-2">
                 <Label htmlFor="siteTitle">Site Title</Label>
                 <Input
@@ -1094,7 +1056,7 @@ export default function SEOSettingsPage() {
                     onChange={(e) =>
                       setGlobalSEO({
                         ...globalSEO,
-                        general: { ...globalSEO.general, defaultOgImage: e.target.value },
+                        general: { ...globalSEO.general, defaultOgImage: e.target.value  },
                       })
                     }
                   />

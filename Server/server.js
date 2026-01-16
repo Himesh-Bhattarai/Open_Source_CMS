@@ -33,6 +33,7 @@ import deleteTenant from "./Routes/Delete/tenantDelete.js";
 import updateTenant from "./Routes/Tenant/Combined/Tenant.js";
 import loadFooter from "./Routes/Load/footer.js";
 import updateFooter from "./Routes/Footer/Combined.js";
+import loadBelongPage from "./Routes/Load/pageBelong.js";
 
 dotenv.config();
 const app = express();
@@ -69,6 +70,7 @@ app.use("/api/v1/blog", loadRoutes);
 app.use("/api/v1/load-menu", menuLoad);
 app.use("/api/v1/user-blog", loadRoutes);
 app.use("/api/v1/footer", loadFooter);
+app.use("/api/v1/page/belong", loadBelongPage);
 
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
