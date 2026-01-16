@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,6 +35,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { createFooter } from "@/Api/Footer/Create";
+import { useTenant } from "@/context/TenantContext"
+import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
+import { fetchFooterById  as getFooterById } from "@/Api/Footer/Fetch"
+import{ updateFooter } from "@/Api/Footer/Create"
+
 
 // Data Models
 interface MenuLink {
@@ -87,7 +93,6 @@ interface SocialLink {
 
 interface FooterCMSData {
   tenantId: string
-  websiteId: string
   layout: "4-column" | "3-column" | "custom"
   blocks: FooterBlock[]
   bottomBar: {
@@ -102,14 +107,18 @@ interface FooterCMSData {
 }
 
 export default function FooterBuilder() {
+  const router = useRouter()
   const [blocks, setBlocks] = useState<FooterBlock[]>([])
   const [layout, setLayout] = useState<"4-column" | "3-column" | "custom">("4-column")
   const [editOpen, setEditOpen] = useState(false)
   const [socialLinksOpen, setSocialLinksOpen] = useState(false)
   const [activeBlock, setActiveBlock] = useState<FooterBlock | null>(null)
-  const [tenantId, setTenantId] = useState("")
-  const [websiteId, setWebsiteId] = useState("")
+
   const [copyrightText, setCopyrightText] = useState("")
+  const searchParams = useSearchParams()
+  const footerId = searchParams.get("footerId")
+  const isEditMode = Boolean(footerId)
+
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
     {
       id: "1",
@@ -135,24 +144,10 @@ export default function FooterBuilder() {
       label: "Instagram",
       slug: "instagram"
     },
-    {
-      id: "4",
-      platform: "linkedin",
-      url: "",
-      icon: "linkedin",
-      label: "LinkedIn",
-      slug: "linkedin"
-    },
-    {
-      id: "5",
-      platform: "youtube",
-      url: "",
-      icon: "youtube",
-      label: "YouTube",
-      slug: "youtube"
-    },
   ])
   const { toast } = useToast()
+
+  const { tenants, activeTenant, selectedTenantId, setActiveTenant } = useTenant()
 
   const blockTypes = [
     { type: "text", label: "Text Block", icon: Type },
@@ -345,8 +340,7 @@ export default function FooterBuilder() {
   // Function to gather all data for backend
   function gatherFooterData(): FooterCMSData {
     return {
-      tenantId,
-      websiteId,
+      tenantId: activeTenant?._id ?? "",
       layout,
       blocks: blocks.map(block => ({
         id: block.id,
@@ -367,10 +361,10 @@ export default function FooterBuilder() {
 
   // Function to validate data before sending
   function validateFooterData(data: FooterCMSData): boolean {
-    if (!data.tenantId || !data.websiteId) {
+    if (!data.tenantId) {
       toast({
         title: "Missing Information",
-        description: "Please select a tenant and website",
+        description: "Please select a tenant",
         variant: "destructive",
       })
       return false
@@ -457,31 +451,31 @@ export default function FooterBuilder() {
   }
 
   // Function to handle save draft
-  async function handleSaveDraft() {
-    const footerData = gatherFooterData()
+async function handleSaveDraft() {
+  const footerData = gatherFooterData()
 
-    if (!validateFooterData(footerData)) {
-      return
-    }
+  if (!validateFooterData(footerData)) return
 
-    try {
-      // Call the createFooter function with structured data
-      await createFooter(footerData)
+  try {
+    const response = isEditMode
+      ? await updateFooter(footerId!, footerData)
+      : await createFooter(footerData)
 
-      toast({
-        title: "Success",
-        description: "Footer saved as draft successfully",
-      })
+    toast({
+      title: "Success",
+      description: response?.message || "Footer saved",
+    })
 
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save footer. Please try again.",
-        variant: "destructive",
-      })
-      console.error("Error saving footer:", error)
-    }
+    router.push("/cms/global/footer")
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Save failed",
+      variant: "destructive",
+    })
   }
+}
+
 
   // Function to handle preview
   function handlePreview() {
@@ -522,22 +516,7 @@ export default function FooterBuilder() {
         label: "Instagram",
         slug: "instagram"
       },
-      {
-        id: "4",
-        platform: "linkedin",
-        url: "",
-        icon: "linkedin",
-        label: "LinkedIn",
-        slug: "linkedin"
-      },
-      {
-        id: "5",
-        platform: "youtube",
-        url: "",
-        icon: "youtube",
-        label: "YouTube",
-        slug: "youtube"
-      },
+      
     ])
 
     toast({
@@ -555,11 +534,43 @@ export default function FooterBuilder() {
 
   const visibleBlocks = blocks
 
+
+  useEffect(() => {
+    if (!footerId) return
+
+    async function loadFooter() {
+      try {
+        const res = await getFooterById(footerId)
+        if (!res?.ok) throw new Error("Failed to load footer")
+
+        const footer = res.data
+
+        setLayout(footer.layout)
+        setBlocks(footer.blocks)
+        setCopyrightText(footer.bottomBar?.copyrightText || "")
+        setSocialLinks(footer.bottomBar?.socialLinks || [])
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "Failed to load footer",
+          variant: "destructive",
+        })
+      }
+    }
+
+    loadFooter()
+  }, [footerId])
+
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-balance text-3xl font-bold tracking-tight">Footer Builder</h1>
+          
+          <h1 className="text-3xl font-bold">
+            {isEditMode ? "Edit Footer" : "Create Footer"}
+          </h1>
+
           <p className="text-pretty text-muted-foreground mt-1">
             Design your site footer with flexible blocks
           </p>
@@ -590,29 +601,27 @@ export default function FooterBuilder() {
           <div className="space-y-2">
             <Label htmlFor="tenantId">Tenant</Label>
             <select
+              disabled={isEditMode}
               id="tenantId"
               className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-              value={tenantId}
-              onChange={(e) => setTenantId(e.target.value)}
+              value={activeTenant?._id ?? ""}
+              onChange={(e) => {
+                const tenant = tenants.find(t => t._id === e.target.value)
+                if (tenant) setActiveTenant(tenant)
+              }}
             >
               <option value="">Select Tenant</option>
-              <option value="tenant-1">Tenant One</option>
-              <option value="tenant-2">Tenant Two</option>
+              {tenants.map(tenant => (
+                <option key={tenant._id} value={tenant._id}>
+                  {tenant.name}
+                </option>
+              ))}
             </select>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="website">Website</Label>
-            <select
-              id="website"
-              className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-              value={websiteId}
-              onChange={(e) => setWebsiteId(e.target.value)}
-            >
-              <option value="">Select Website</option>
-              <option value="site-1">example.com</option>
-              <option value="site-2">shop.example.com</option>
-            </select>
+            {isEditMode && (
+              <input type="hidden" name="tenantId" value={activeTenant?._id ?? ""} />
+            )}
+
           </div>
         </CardContent>
       </Card>

@@ -3,8 +3,16 @@ const { Schema, model, models } = mongoose;
 
 const FooterSchema = new Schema(
     {
-        tenantId: { type: String, required: true },
-        websiteId: { type: String, required: true },
+        tenantId: {
+            type: String,
+            required: true,
+            index: true,
+        },
+
+        userId: {
+            type: String,
+            required: true,
+        },
 
         layout: {
             type: String,
@@ -14,22 +22,24 @@ const FooterSchema = new Schema(
 
         blocks: [
             {
-                id: String,
+                id: { type: String, required: true },
+
                 type: {
                     type: String,
                     enum: ["text", "menu", "logo", "social", "newsletter", "html"],
                     required: true,
                 },
-                order: Number,
-                column: Number,
-                data: Schema.Types.Mixed,
+
+                data: Schema.Types.Mixed, // frontend-driven CMS block data
             },
         ],
 
         bottomBar: {
             copyrightText: String,
+
             socialLinks: [
                 {
+                    id: String,
                     platform: String,
                     url: String,
                     icon: String,
@@ -46,14 +56,15 @@ const FooterSchema = new Schema(
         },
 
         publishedAt: Date,
-        publishedBy: { type: String, ref: "User" },
+        publishedBy: {
+            type: String,
+            ref: "User",
+        },
     },
     {
         timestamps: true,
         collection: "footers",
     }
 );
-
-FooterSchema.index({ tenantId: 1, websiteId: 1 });
 
 export const Footer = models.Footer || model("Footer", FooterSchema);

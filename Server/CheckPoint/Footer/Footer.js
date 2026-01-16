@@ -3,27 +3,24 @@ import { Footer } from "../../Models/Footer/Footer.js";
 export const footerCheckpoint = async (req, res, next) => {
     try {
         const userId = req.user?.userId;
-        const { tenantId, websiteId, ...payload } = req.body;
+        const { tenantId, metadata, ...payload } = req.body;
 
-        if (!userId || !tenantId || !websiteId) {
+        if (!userId || !tenantId) {
             return res.status(400).json({
-                message: "userId, tenantId and websiteId are required",
+                message: "userId and tenantId are required",
             });
         }
 
-        const footer = await Footer.findOneAndUpdate(
-            { tenantId, websiteId },
-            {
-                ...payload,
-                tenantId,
-                websiteId,
-                publishedBy: userId,
-                publishedAt: new Date(),
-            },
-            { upsert: true, new: true }
-        );
+        const footer = await Footer.create({
+            ...payload,
+            tenantId,
+            userId : userId,
+            status: metadata?.status ?? "draft",
+            publishedBy: userId,
+            publishedAt: new Date(),
+        });
 
-        res.status(200).json({
+        res.status(201).json({
             success: true,
             footer,
         });
