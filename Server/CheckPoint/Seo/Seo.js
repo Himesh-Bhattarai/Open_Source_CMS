@@ -1,8 +1,14 @@
 // server/CheckPoint/Seo/Seo.js
 import { Seo } from "../../Models/Seo/Seo.js";
 
-export const seoCheckpoint = async (seoPayload) => {
+export const seoCheckpoint = async (req, res) => {
     try {
+        // 🔒 Normalize payload from frontend
+        const seoPayload = req.body;
+        const userId = req.user?.userId; // Make sure auth middleware sets this
+
+        console.log("SEO Payload:", seoPayload);
+
         const {
             tenantId,
             scope,
@@ -12,52 +18,44 @@ export const seoCheckpoint = async (seoPayload) => {
             meta
         } = seoPayload;
 
-        // 🔐 Hard validation
-        if (!tenantId) {
-            throw new Error("tenantId is required");
-        }
-
+        // 🔐 Validation
+        if (!tenantId) return res.status(400).json({ message: "tenantId is required" });
+        if (!userId) return res.status(400).json({ message: "userId is required" });
         if (!scope || !["global", "page"].includes(scope)) {
-            throw new Error("Invalid SEO scope");
+            return res.status(400).json({ message: "Invalid SEO scope" });
         }
-
         if (scope === "page" && !pageId) {
-            throw new Error("pageId is required for page-level SEO");
+            return res.status(400).json({ message: "pageId is required for page-level SEO" });
         }
 
-        // 🧠 Build query
-        const query = {
-            tenantId,
-            scope
-        };
-
-        if (scope === "page") {
-            query.pageId = pageId;
-        }
+        // 🧠 Build query for upsert
+        const query = { tenantId, userId, scope };
+        if (scope === "page") query.pageId = pageId;
 
         // 🧠 Build update payload
         const update = {
-            ...(globalSEO && { globalSEO }),
-            ...(pageSEO && { pageSEO }),
+            tenantId,
+            userId,
+            scope,
             meta: {
                 environment: meta?.environment || "production",
                 timestamp: meta?.timestamp || new Date()
             }
         };
 
-        // 🚀 UPSERT (create or update)
+        if (scope === "global") update.globalSEO = globalSEO;
+        if (scope === "page") update.pageSEO = pageSEO;
+
+        // 🚀 UPSERT
         const seo = await Seo.findOneAndUpdate(
             query,
             { $set: update },
-            {
-                new: true,
-                upsert: true
-            }
+            { new: true, upsert: true }
         );
 
-        return seo;
+        return res.status(200).json({ success: true, seo });
     } catch (error) {
         console.error("SEO checkpoint failed:", error.message);
-        throw error;
+        return res.status(500).json({ success: false, message: error.message });
     }
 };

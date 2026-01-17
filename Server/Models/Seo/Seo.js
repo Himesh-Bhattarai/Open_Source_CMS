@@ -4,6 +4,7 @@ const { Schema, model, models } = mongoose;
 
 /* ---------- Sub Schemas ---------- */
 
+// Robots settings for global SEO
 const RobotsGlobalSchema = new Schema(
     {
         indexPages: Boolean,
@@ -16,6 +17,7 @@ const RobotsGlobalSchema = new Schema(
     { _id: false }
 );
 
+// Robots settings for page SEO
 const RobotsPageSchema = new Schema(
     {
         index: Boolean,
@@ -27,6 +29,7 @@ const RobotsPageSchema = new Schema(
     { _id: false }
 );
 
+// Global SEO schema
 const GlobalSEOSchema = new Schema(
     {
         general: {
@@ -37,24 +40,19 @@ const GlobalSEOSchema = new Schema(
             favicon: String,
             siteUrl: String
         },
-
         robots: RobotsGlobalSchema,
-
         social: {
             ogSiteName: String,
             twitterCard: String,
             twitterSite: String,
             facebookAppId: String
         },
-
-        // ✅ IMPORTANT: frontend must send `schemaData`, NOT `schema`
         schemaData: {
             organizationName: String,
             organizationType: String,
             logo: String,
             socialProfiles: [String]
         },
-
         analytics: {
             googleAnalyticsId: String,
             googleTagManagerId: String,
@@ -64,29 +62,22 @@ const GlobalSEOSchema = new Schema(
     { _id: false }
 );
 
+// Page SEO schema
 const PageSEOSchema = new Schema(
     {
         title: String,
         metaDescription: String,
         canonicalUrl: String,
-
         robots: RobotsPageSchema,
-
         ogImage: String,
         ogTitle: String,
         ogDescription: String,
-
         twitterCard: String,
         twitterTitle: String,
         twitterDescription: String,
         twitterImage: String,
-
         schemaType: String,
-
-        breadcrumbs: {
-            type: Array,
-            default: []
-        }
+        breadcrumbs: { type: Array, default: [] }
     },
     { _id: false }
 );
@@ -95,28 +86,12 @@ const PageSEOSchema = new Schema(
 
 const SeoSchema = new Schema(
     {
-        // 🔑 CORE ID (website = tenant)
-        tenantId: {
-            type: String,
-            required: true,
-            index: true
-        },
-
-        scope: {
-            type: String,
-            enum: ["global", "page"],
-            required: true,
-            index: true
-        },
-
-        pageId: {
-            type: String,
-            index: true
-        },
-
+        tenantId: { type: String, required: true, index: true }, // website = tenant
+        userId: { type: String, index: true },
+        scope: { type: String, enum: ["global", "page"], required: true, index: true },
+        pageId: { type: String, index: true },
         globalSEO: GlobalSEOSchema,
         pageSEO: PageSEOSchema,
-
         meta: {
             environment: String,
             timestamp: Date
@@ -125,10 +100,20 @@ const SeoSchema = new Schema(
     { timestamps: true }
 );
 
-// 🚀 Prevent duplicate SEO per page
+/* ---------- Indexes to prevent duplicates ---------- */
+
+// 1️⃣ Global SEO: only one per tenant
+SeoSchema.index(
+    { tenantId: 1, scope: 1 },
+    { unique: true, partialFilterExpression: { scope: "global" } }
+);
+
+// 2️⃣ Page SEO: only one per tenant per page
 SeoSchema.index(
     { tenantId: 1, scope: 1, pageId: 1 },
-    { unique: true, sparse: true }
+    { unique: true, partialFilterExpression: { scope: "page" } }
 );
+
+/* ---------- Export ---------- */
 
 export const Seo = models.Seo || model("Seo", SeoSchema);

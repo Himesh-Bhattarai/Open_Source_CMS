@@ -21,3 +21,6 @@ export const createSeo = async (data) => {
       data: request,
     };
 };
+
+
+export const editSeo = (id, data) => {}
