@@ -118,7 +118,7 @@ interface SEOData {
     twitterSite: string
     facebookAppId: string
   }
-  schema: {
+  schemaData: {
     organizationName: string
     organizationType: string
     logo: string
@@ -229,11 +229,11 @@ const generateSchemaMarkup = (pageSEO: PageSEO, globalSEO: SEOData, pageData: Pa
     "description": pageSEO.metaDescription || globalSEO.general.metaDescription,
     "url": pageSEO.canonicalUrl || generateCanonical(globalSEO.general.siteUrl, pageData.slug),
     "publisher": {
-      "@type": globalSEO.schema.organizationType,
-      "name": globalSEO.schema.organizationName,
+      "@type": globalSEO.schemaData.organizationType,
+      "name": globalSEO.schemaData.organizationName,
       "logo": {
         "@type": "ImageObject",
-        "url": globalSEO.schema.logo
+        "url": globalSEO.schemaData.logo
       }
     }
   }
@@ -333,7 +333,7 @@ export default function SEOSettingsPage() {
       twitterSite: "@contentflow",
       facebookAppId: "",
     },
-    schema: {
+    schemaData: {
       organizationName: "ContentFlow Inc.",
       organizationType: "Organization",
       logo: "/logo.svg",
@@ -1383,11 +1383,11 @@ export default function SEOSettingsPage() {
                   <Label htmlFor="orgName">Organization Name</Label>
                   <Input
                     id="orgName"
-                    value={globalSEO.schema.organizationName}
+                    value={globalSEO.schemaData.organizationName}
                     onChange={(e) =>
                       setGlobalSEO({
                         ...globalSEO,
-                        schema: { ...globalSEO.schema, organizationName: e.target.value },
+                        schemaData: { ...globalSEO.schemaData, organizationName: e.target.value },
                       })
                     }
                   />
@@ -1397,11 +1397,11 @@ export default function SEOSettingsPage() {
                   <Label htmlFor="orgType">Organization Type</Label>
                   <Input
                     id="orgType"
-                    value={globalSEO.schema.organizationType}
+                    value={globalSEO.schemaData.organizationType}
                     onChange={(e) =>
                       setGlobalSEO({
                         ...globalSEO,
-                        schema: { ...globalSEO.schema, organizationType: e.target.value },
+                        schemaData: { ...globalSEO.schemaData, organizationType: e.target.value },
                       })
                     }
                   />
@@ -1413,11 +1413,11 @@ export default function SEOSettingsPage() {
                   <div className="flex gap-2">
                     <Input
                       id="logo"
-                      value={globalSEO.schema.logo}
+                      value={globalSEO.schemaData.logo}
                       onChange={(e) =>
                         setGlobalSEO({
                           ...globalSEO,
-                          schema: { ...globalSEO.schema, logo: e.target.value },
+                          schemaData: { ...globalSEO.schemaData, logo: e.target.value },
                         })
                       }
                     />
@@ -1429,16 +1429,16 @@ export default function SEOSettingsPage() {
 
                 <div className="space-y-2">
                   <Label>Social Profile URLs</Label>
-                  {globalSEO.schema.socialProfiles.map((profile, index) => (
+                  {globalSEO.schemaData.socialProfiles.map((profile, index) => (
                     <Input
                       key={index}
                       value={profile}
                       onChange={(e) => {
-                        const newProfiles = [...globalSEO.schema.socialProfiles]
+                        const newProfiles = [...globalSEO.schemaData.socialProfiles]
                         newProfiles[index] = e.target.value
                         setGlobalSEO({
                           ...globalSEO,
-                          schema: { ...globalSEO.schema, socialProfiles: newProfiles },
+                          schemaData: { ...globalSEO.schemaData, socialProfiles: newProfiles },
                         })
                       }}
                     />

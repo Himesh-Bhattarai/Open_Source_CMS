@@ -1,4 +1,4 @@
-// seo schema
+// server/models/Seo.js
 import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 
@@ -47,7 +47,7 @@ const GlobalSEOSchema = new Schema(
             facebookAppId: String
         },
 
-        // ✅ FIX: NEVER USE FIELD NAME `schema`
+        // ✅ IMPORTANT: frontend must send `schemaData`, NOT `schema`
         schemaData: {
             organizationName: String,
             organizationType: String,
@@ -69,14 +69,18 @@ const PageSEOSchema = new Schema(
         title: String,
         metaDescription: String,
         canonicalUrl: String,
+
         robots: RobotsPageSchema,
+
         ogImage: String,
         ogTitle: String,
         ogDescription: String,
+
         twitterCard: String,
         twitterTitle: String,
         twitterDescription: String,
         twitterImage: String,
+
         schemaType: String,
 
         breadcrumbs: {
@@ -91,24 +95,23 @@ const PageSEOSchema = new Schema(
 
 const SeoSchema = new Schema(
     {
-        userId: {
+        // 🔑 CORE ID (website = tenant)
+        tenantId: {
             type: String,
-            required: true
-        },
-
-        websiteId: {
-            type: String,
-            required: true
+            required: true,
+            index: true
         },
 
         scope: {
             type: String,
             enum: ["global", "page"],
-            required: true
+            required: true,
+            index: true
         },
 
         pageId: {
-            type: String
+            type: String,
+            index: true
         },
 
         globalSEO: GlobalSEOSchema,
@@ -119,9 +122,13 @@ const SeoSchema = new Schema(
             timestamp: Date
         }
     },
-    {
-        timestamps: true
-    }
+    { timestamps: true }
+);
+
+// 🚀 Prevent duplicate SEO per page
+SeoSchema.index(
+    { tenantId: 1, scope: 1, pageId: 1 },
+    { unique: true, sparse: true }
 );
 
 export const Seo = models.Seo || model("Seo", SeoSchema);

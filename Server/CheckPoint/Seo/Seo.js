@@ -1,92 +1,63 @@
+// server/CheckPoint/Seo/Seo.js
 import { Seo } from "../../Models/Seo/Seo.js";
-import { logger as log } from "../../Utils/Logger/logger.js";
 
-export const seoCheckpoint = async (req, res) => {
+export const seoCheckpoint = async (seoPayload) => {
     try {
-
-
-        const userId = req.user?.userId;
-
         const {
-            websiteId,
+            tenantId,
             scope,
             pageId,
             globalSEO,
             pageSEO,
             meta
-        } = req.body;
+        } = seoPayload;
 
-        console.log("Let me see the data Structure", req.body);
-
-        /* ---------- HARD VALIDATIONS ---------- */
-
-        if (!userId) {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
-
-        if (!websiteId) {
-            return res.status(400).json({ message: "websiteId is required" });
+        // 🔐 Hard validation
+        if (!tenantId) {
+            throw new Error("tenantId is required");
         }
 
         if (!scope || !["global", "page"].includes(scope)) {
-            return res.status(400).json({ message: "Invalid SEO scope" });
+            throw new Error("Invalid SEO scope");
         }
 
         if (scope === "page" && !pageId) {
-            return res.status(400).json({
-                message: "pageId is required when scope is page"
-            });
+            throw new Error("pageId is required for page-level SEO");
         }
 
-        if (scope === "global" && pageId) {
-            return res.status(400).json({
-                message: "pageId should not be provided for global SEO"
-            });
+        // 🧠 Build query
+        const query = {
+            tenantId,
+            scope
+        };
+
+        if (scope === "page") {
+            query.pageId = pageId;
         }
 
-        if (!globalSEO) {
-            return res.status(400).json({
-                message: "globalSEO is required"
-            });
-        }
-
-        /* ---------- BUILD DOCUMENT ---------- */
-
-        const seoDocument = {
-            userId,
-            websiteId,
-            scope,
-            pageId: scope === "page" ? pageId : undefined,
-            globalSEO,
-            pageSEO: scope === "page" ? pageSEO : undefined,
+        // 🧠 Build update payload
+        const update = {
+            ...(globalSEO && { globalSEO }),
+            ...(pageSEO && { pageSEO }),
             meta: {
-                environment: meta?.environment,
+                environment: meta?.environment || "production",
                 timestamp: meta?.timestamp || new Date()
             }
         };
 
-        /* ---------- SAVE ---------- */
+        // 🚀 UPSERT (create or update)
+        const seo = await Seo.findOneAndUpdate(
+            query,
+            { $set: update },
+            {
+                new: true,
+                upsert: true
+            }
+        );
 
-        const seo = await Seo.create(seoDocument);
-
-        log.info("SEO saved successfully", {
-            seoId: seo._id,
-            websiteId,
-            scope
-        });
-
-        return res.status(200).json({
-            success: true,
-            data: seo
-        });
-
+        return seo;
     } catch (error) {
-        console.error(error);
-        log.error("SEO checkpoint failed", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to save SEO"
-        });
+        console.error("SEO checkpoint failed:", error.message);
+        throw error;
     }
 };
