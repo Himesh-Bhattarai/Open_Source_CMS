@@ -67,7 +67,7 @@ export default function SeoOverview() {
 
                 {/* ALWAYS AVAILABLE */}
                 <Button asChild>
-                    <Link href="/cms/seo/edit">
+                    <Link href="/cms/global/seo/new">
                         + Create SEO
                     </Link>
                 </Button>
