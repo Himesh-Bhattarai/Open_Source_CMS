@@ -90,6 +90,7 @@ app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/update-menu", menuRoutes);
 app.use("/api/v1/update-tenant", updateTenant);
 app.use("/api/v1/update-footer", updateFooter);
+app.use("/api/v1/update-seo", seoRoutes);
 
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);

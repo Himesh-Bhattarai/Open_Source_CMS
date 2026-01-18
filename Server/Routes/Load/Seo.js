@@ -21,4 +21,20 @@ router.get("/get-seo-settings",
     }
 )
 
+router.get("/get-seo-settings/:seoId", verificationMiddleware,
+    async(req, res, next)=>{
+        try{
+            const userId = req.user?.userId;
+            const seoId = req.params.seoId;
+            if(!userId) throw new Error("Unauthorized");
+            if(!seoId) throw new Error("Seo ID is required");
+
+            const getSeo = await Seo.findOne({userId, _id: seoId});
+            if(!getSeo) throw new Error("Seo not found");
+            return res.status(200).json({data: getSeo});
+        }catch(err){
+            next(err);
+        }
+    })
+
 export default router;

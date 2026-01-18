@@ -114,12 +114,11 @@ export default function SeoOverview() {
                                         </DropdownMenuItem>
 
                                         <DropdownMenuItem asChild>
-                                            <Link
-                                                href={`/cms/seo/edit${isPage ? `?pageId=${seo.pageId}` : ""}`}
-                                            >
+                                            <Link href={`/cms/global/seo/new/${seo._id}`}>
                                                 <Edit className="h-4 w-4 mr-2" />
                                                 Edit
                                             </Link>
+
                                         </DropdownMenuItem>
 
                                         <DropdownMenuItem

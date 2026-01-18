@@ -1,3 +1,5 @@
+const UPDATE_SEO_URL = "http://localhost:5000/api/v1/update-seo/seo"
+
 const CREATE_SEO_URL = "http://localhost:5000/api/v1/create-seo/seo";
 
 export const createSeo = async (data) => {
@@ -22,5 +24,29 @@ export const createSeo = async (data) => {
     };
 };
 
+export const updateSeo = async (seoId, data) => {
+  const response = await fetch(`${UPDATE_SEO_URL}/${seoId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
-export const editSeo = (id, data) => {}
+  const json = await response.json();
+
+  if (response.ok) {
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: json,
+    };
+  }
+
+  return {
+    ok: false,
+    status: response.status,
+    error: json?.message || "Update failed",
+  };
+};
