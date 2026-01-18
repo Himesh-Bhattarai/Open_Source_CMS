@@ -35,6 +35,7 @@ import loadFooter from "./Routes/Load/footer.js";
 import updateFooter from "./Routes/Footer/Combined.js";
 import loadBelongPage from "./Routes/Load/pageBelong.js";
 import loadSeo from "./Routes/Load/Seo.js";
+import deleteSeo from "./Routes/Delete/seoDelete.js";
 
 dotenv.config();
 const app = express();
@@ -83,6 +84,7 @@ app.use("/api/v1/delete", deleteRoutes);
 app.use("/api/v1/delete-blog", blogDelete);
 app.use("/api/v1/delete-menu", deleteMenu);
 app.use("/api/v1/delete-tenant", deleteTenant);
+app.use("/api/v1/delete-seo", deleteSeo);
 
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);
