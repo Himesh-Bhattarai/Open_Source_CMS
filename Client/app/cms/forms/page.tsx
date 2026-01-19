@@ -7,7 +7,7 @@ import { FormInput, Plus, Eye, Edit, Trash2, FileText, CheckSquare } from "lucid
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { loadFormsData } from "@/Api/Form/Load"
-
+import { deleteFormById } from "@/Api/Form/Delete"
 
 interface Form{
   _id: string,
@@ -62,6 +62,7 @@ export default function FormsPage() {
 
   const [loading, setLoading] = useState(false);
   const [forms, setForms] = useState([]);
+  const [message, setMessage] = useState(""); 
 
   //load forms data
   useEffect(() => {
@@ -96,6 +97,24 @@ export default function FormsPage() {
   }, []);
 
 
+  //delete function
+  const handelDelete = async(formId : string)=>{
+    setLoading(true);
+    const response = await deleteFormById(formId);
+    if(response.ok) {
+      setLoading(false)
+      setMessage("Form Deleted Successfully")
+
+      //state management
+      setForms((prevForms) => prevForms.filter((form: Form) => form._id !== formId));
+
+    }else{
+      setLoading(false)
+      setMessage("Failed to delete form")
+    }
+
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -103,6 +122,7 @@ export default function FormsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Forms</h1>
           <p className="text-muted-foreground mt-2">Build and manage custom forms</p>
         </div>
+        {message && <Badge variant="destructive">{message}</Badge>}
         <Button asChild>
           <Link href="/cms/forms/new">
             <Plus className="h-4 w-4 mr-2" />
@@ -188,7 +208,7 @@ export default function FormsPage() {
                       Edit
                     </Link>
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={()=> handelDelete(form._id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
