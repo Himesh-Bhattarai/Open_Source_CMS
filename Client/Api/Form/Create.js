@@ -25,11 +25,10 @@ export const createForm = async (data) => {
   }
 };
 
-export const updateForm = async (formId) => {
-  try {
-    //debug
-    console.log("Form id for updating", formId);
 
+
+export const updateForm = async (data, formId) => {
+  try {
     const response = await fetch(`${UPDATE_FORM_URL}/${formId}`, {
       method: "PUT",
       credentials: "include",
@@ -39,13 +38,13 @@ export const updateForm = async (formId) => {
       body: JSON.stringify(data),
     });
 
-    const request = await response.json();
+    const json = await response.json();
 
     return {
       ok: response.ok,
       status: response.status,
-      message: response.message || "Form updated successfully",
-      data: request,
+      message: json.message,
+      data: json.data, // 🔥 UNWRAP HERE
     };
   } catch (err) {
     console.error(err);
@@ -53,6 +52,7 @@ export const updateForm = async (formId) => {
       ok: false,
       status: 500,
       message: "Network error",
+      data: null,
     };
   }
 };

@@ -9,6 +9,11 @@ const FormSchema = new Schema(
             required: true,
             index: true,
         },
+        userId: {
+            type: String,
+            required: true,
+            index: true,
+        },
 
         name: { type: String },
         description: String,

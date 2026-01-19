@@ -38,6 +38,7 @@ import loadSeo from "./Routes/Load/Seo.js";
 import deleteSeo from "./Routes/Delete/seoDelete.js";
 import deleteForm from "./Routes/Delete/formDelete.js";
 import loadForms from "./Routes/Load/form.js";
+import updateForm from "./Routes/Form/Form.js";
 dotenv.config();
 const app = express();
 
@@ -96,7 +97,7 @@ app.use("/api/v1/update-menu", menuRoutes);
 app.use("/api/v1/update-tenant", updateTenant);
 app.use("/api/v1/update-footer", updateFooter);
 app.use("/api/v1/update-seo", seoRoutes);
-
+app.use("/api/v1/update-form", updateForm);
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);
 // Error handler

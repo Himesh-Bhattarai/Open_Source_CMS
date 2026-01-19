@@ -69,7 +69,6 @@ export default function FormsPage() {
       try {
         setLoading(true);
         const response = await loadFormsData();
-        console.log("Forms Data", response);
 
         if (!response?.ok) {
           throw new Error("Failed to load forms");
@@ -184,7 +183,7 @@ export default function FormsPage() {
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/cms/forms/${form._id}/edit`}>
+                    <Link href={`/cms/forms/new/${form._id}`}>
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Link>
