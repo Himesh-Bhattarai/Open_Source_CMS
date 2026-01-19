@@ -5,37 +5,97 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { FormInput, Plus, Eye, Edit, Trash2, FileText, CheckSquare } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { loadFormsData } from "@/Api/Form/Load"
 
+
+interface Form{
+  _id: string,
+  name: string,
+  status: string,
+  type: string,
+  description: string,
+  createdAt: string,
+  updatedAt: string,
+  fields: string[],
+  fieldsRequired: string[],
+  fieldsOptional: string[],
+  fieldsHidden: string[],
+  fieldsDisabled: string[],
+  fieldsReadonly: string[],
+
+
+  fieldsCount: number,
+  submissions: number,
+  lastSubmission: string
+}
 export default function FormsPage() {
-  const forms = [
-    {
-      id: 1,
-      name: "Contact Form",
-      type: "contact",
-      submissions: 45,
-      status: "published",
-      lastSubmission: "2 hours ago",
-      fields: 5,
-    },
-    {
-      id: 2,
-      name: "Newsletter Signup",
-      type: "newsletter",
-      submissions: 234,
-      status: "published",
-      lastSubmission: "10 minutes ago",
-      fields: 2,
-    },
-    {
-      id: 3,
-      name: "Job Application",
-      type: "application",
-      submissions: 12,
-      status: "draft",
-      lastSubmission: "Never",
-      fields: 8,
-    },
-  ]
+  // const forms = [
+  //   {
+  //     id: 1,
+  //     name: "Contact Form",
+  //     type: "contact",
+  //     submissions: 45,
+  //     status: "published",
+  //     lastSubmission: "2 hours ago",
+  //     fields: 5,
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Newsletter Signup",
+  //     type: "newsletter",
+  //     submissions: 234,
+  //     status: "published",
+  //     lastSubmission: "10 minutes ago",
+  //     fields: 2,
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Job Application",
+  //     type: "application",
+  //     submissions: 12,
+  //     status: "draft",
+  //     lastSubmission: "Never",
+  //     fields: 8,
+  //   },
+  // ]
+
+  const [loading, setLoading] = useState(false);
+  const [forms, setForms] = useState([]);
+
+  //load forms data
+  useEffect(() => {
+    const loadForms = async () => {
+      try {
+        setLoading(true);
+        const response = await loadFormsData();
+        console.log("Forms Data", response);
+
+        if (!response?.ok) {
+          throw new Error("Failed to load forms");
+        }
+
+        // 🔥 Normalize here
+        const normalizedForms = response.data.map((form:Form) => ({
+          _id: form._id,
+          name: form.name,
+          status: form.status,
+          fieldsCount: form.fields?.length ?? 0,
+          submissions: 0, // placeholder
+          lastSubmission: "Never", // placeholder
+        }));
+
+        setForms(normalizedForms);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadForms();
+  }, []);
+
 
   return (
     <div className="space-y-6">
@@ -92,9 +152,9 @@ export default function FormsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {forms.map((form) => (
+            {forms.map((form : Form) => (
               <div
-                key={form.id}
+                key={form._id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border"
               >
                 <div className="flex items-start gap-4 flex-1">
@@ -107,20 +167,24 @@ export default function FormsPage() {
                       <Badge variant={form.status === "published" ? "default" : "secondary"}>{form.status}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {form.fields} fields • {form.submissions} submissions
+                      {form.fieldsCount} fields • {form.submissions} submissions
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">Last submission: {form.lastSubmission}</p>
+
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Last submission: {form.lastSubmission}
+                    </p>
+
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/cms/forms/${form.id}/submissions`}>
+                    <Link href={`/cms/forms/${form?._id}/submissions`}>
                       <Eye className="h-4 w-4 mr-1" />
                       View
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/cms/forms/${form.id}/edit`}>
+                    <Link href={`/cms/forms/${form._id}/edit`}>
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Link>

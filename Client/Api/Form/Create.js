@@ -1,4 +1,5 @@
 const CREATE_FORM_URL = "http://localhost:5000/api/v1/create-form/form";
+const UPDATE_FORM_URL = "http://localhost:5000/api/v1/update-form/form";
 
 export const createForm = async (data) => {
   console.log("What is the data Structure ", data);
@@ -21,5 +22,37 @@ export const createForm = async (data) => {
       };
   } catch (err) {
     console.error(err);
+  }
+};
+
+export const updateForm = async (formId) => {
+  try {
+    //debug
+    console.log("Form id for updating", formId);
+
+    const response = await fetch(`${UPDATE_FORM_URL}/${formId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const request = await response.json();
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      message: response.message || "Form updated successfully",
+      data: request,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      ok: false,
+      status: 500,
+      message: "Network error",
+    };
   }
 };

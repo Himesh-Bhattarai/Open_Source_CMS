@@ -36,7 +36,8 @@ import updateFooter from "./Routes/Footer/Combined.js";
 import loadBelongPage from "./Routes/Load/pageBelong.js";
 import loadSeo from "./Routes/Load/Seo.js";
 import deleteSeo from "./Routes/Delete/seoDelete.js";
-
+import deleteForm from "./Routes/Delete/formDelete.js";
+import loadForms from "./Routes/Load/form.js";
 dotenv.config();
 const app = express();
 
@@ -74,6 +75,7 @@ app.use("/api/v1/user-blog", loadRoutes);
 app.use("/api/v1/footer", loadFooter);
 app.use("/api/v1/page/belong", loadBelongPage);
 app.use("/api/v1/seo/load-seo", loadSeo);
+app.use("/api/v1/form", loadForms);
 
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
@@ -85,6 +87,7 @@ app.use("/api/v1/delete-blog", blogDelete);
 app.use("/api/v1/delete-menu", deleteMenu);
 app.use("/api/v1/delete-tenant", deleteTenant);
 app.use("/api/v1/delete-seo", deleteSeo);
+app.use("/api/v1/delete-form", deleteForm);
 
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);

@@ -11,8 +11,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Trash2, GripVertical, Save, Eye, EyeOff, Mail, Database, ExternalLink, AlertCircle, Globe, Building } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { createForm } from "@/Api/Form/Create"
+import { useParams, useRouter } from "next/navigation"
+import { createForm, updateForm } from "@/Api/Form/Create"
+import { useTenant } from "@/context/TenantContext"
+import { loadFormsDataById } from "@/Api/Form/Load"
+
 
 // Extend FormField interface with advanced CMS features
 interface FormField {
@@ -72,7 +75,9 @@ const MOCK_WEBSITES: Website[] = [
 ]
 
 export default function NewFormPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const {tenants, setActiveTenant, activeTenant, selectedTenantId, refreshTenants} = useTenant();
+  const{id}= useParams();
 
   // Tenant (website) selection state
   const [selectedWebsite, setSelectedWebsite] = useState<Website | null>(null)
