@@ -3,19 +3,7 @@ import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const mediaCheckpoint = async (req, res, next) => {
     try {
-        const { userId, tenantId, filename, originalName, mimeType, size, width, height, url, altText, folder } = req.body;
-
-        if (!userId, tenantId) {
-            const err = new Error("Missing required fields");
-            err.statusCode = 400;
-            throw err;
-        }
-
-        log.info(`Media Creation Attempt by: ${userId}`)
-        const user_name = await User.findOne({ userId }).select('name');
-
-        const media = Media.create({
-            _id: userId,
+        const {
             tenantId,
             filename,
             originalName,
@@ -26,16 +14,37 @@ export const mediaCheckpoint = async (req, res, next) => {
             url,
             altText,
             folder,
-            uploadedBy: user_name
+        } = req.body;
+
+        const userId = req.user?.userId;
+
+        if (!userId || !tenantId || !filename) {
+            const err = new Error("Missing required fields");
+            err.statusCode = 400;
+            throw err;
+        }
+
+        const media = await Media.create({
+            userId,
+            tenantId,
+            filename,
+            originalName,
+            mimeType,
+            size,
+            width,
+            height,
+            url,
+            altText,
+            folder,
+            uploadedBy: userId,
         });
 
-        log.info(`Media created by: ${userId} Date: ${media.createdAt}`)
-        res.status(200).json({
-            message: "Media created successfully by " + userId,
-        })
+        res.status(201).json({
+            ok: true,
+            data: media,
+        });
     } catch (err) {
         err.statusCode = err.statusCode || 400;
         next(err);
     }
-
-}
+};

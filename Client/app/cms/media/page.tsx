@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Plus,
   Search,
@@ -21,15 +21,15 @@ import {
   File,
   Image,
   Video,
-  FileText
-} from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+  FileText,
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -37,171 +37,185 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 
 // API imports (as specified)
-import { createMedia } from "@/Api/Media/Create"
-import { loadMedia } from "@/Api/Media/Fetch"
-import { getPage as loadPages } from "@/Api/Page/CreatePage"
+import { createMedia } from "@/Api/Media/Create";
+import { loadMedia } from "@/Api/Media/Fetch";
+import { getUserPages as loadPages } from "@/Api/Page/Fetch";
 
 // Types
 interface Page {
-  id: string
-  name: string
+  _id: string;
+  title: string;
 }
 
 interface MediaItem {
-  id: string
-  name: string
-  type: "image" | "video" | "document"
-  size: number
-  mimeType: string
-  url?: string
-  status: "uploading" | "ready" | "failed"
-  createdAt?: string
+  id: string;
+  name: string;
+  type: "image" | "video" | "document";
+  size: number;
+  mimeType: string;
+  url?: string;
+  status: "uploading" | "ready" | "failed";
+  createdAt?: string;
 }
 
 export default function MediaLibraryPage() {
-  const { toast } = useToast()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [uploadProgress, setUploadProgress] = useState<number>(0)
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   // State slices as required
-  const [tenantId, setTenantId] = useState<string | null>(null)
-  const [pages, setPages] = useState<Page[]>([])
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(null)
-  const [mediaList, setMediaList] = useState<MediaItem[]>([])
-  const [isLoadingPages, setIsLoadingPages] = useState(false)
-  const [isLoadingMedia, setIsLoadingMedia] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [pages, setPages] = useState<Page[]>([]);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [mediaList, setMediaList] = useState<MediaItem[]>([]);
+  const [isLoadingPages, setIsLoadingPages] = useState(false);
+  const [isLoadingMedia, setIsLoadingMedia] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState("all")
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Simulate tenant selection - in real app, this would come from parent/context
   useEffect(() => {
     // Mock: Simulate having a tenantId after component mounts
-    const mockTenantId = "website-1"
-    setTenantId(mockTenantId)
+    const mockTenantId = "website-1";
+    setTenantId(mockTenantId);
     toast({
       title: "Website selected",
       description: "Now select a page to manage media",
-    })
-  }, [])
+    });
+  }, []);
 
   // Load pages when tenantId is available
   useEffect(() => {
-    if (!tenantId) return
+    if (!tenantId) return;
 
+    // In your fetchPages function
     const fetchPages = async () => {
-      setIsLoadingPages(true)
-      setError(null)
+      setIsLoadingPages(true);
+      setError(null);
       try {
-        const pagesData = await loadPages()
-        setPages(pagesData || [])
-
+        const pagesData = await loadPages();
+        console.log("Pages Data", pagesData);
+        // Transform the data to match your interface
+        const transformedPages = pagesData.map((page: Page) => ({
+          _id: page._id,
+          title: page.title,
+        }));
+        setPages(transformedPages || []);
+        // ...
         if (!pagesData || pagesData.length === 0) {
           toast({
             title: "No pages found",
             description: "Create a page first to upload media",
-            variant: "destructive"
-          })
+            variant: "destructive",
+          });
         }
       } catch (err) {
-        setError("Failed to load pages either page is not created or not exist ")
+        setError(
+          "Failed to load pages either page is not created or not exist ",
+        );
         toast({
           title: "Error loading pages",
           description: "Please try again",
-          variant: "destructive"
-        })
+          variant: "destructive",
+        });
       } finally {
-        setIsLoadingPages(false)
+        setIsLoadingPages(false);
       }
-    }
+    };
 
-    fetchPages()
-  }, [tenantId])
+    fetchPages();
+  }, [tenantId]);
 
   // Load media when page is selected
   useEffect(() => {
-    if (!tenantId || !selectedPageId) return
+    if (!tenantId || !selectedPageId) return;
 
     const fetchMedia = async () => {
-      setIsLoadingMedia(true)
-      setError(null)
+      setIsLoadingMedia(true);
+      setError(null);
       try {
-        const mediaData =await loadMedia()
-        if(mediaData !== undefined) {
-
-          setMediaList(mediaData.data || [])
+        const mediaData = await loadMedia();
+        if (mediaData !== undefined) {
+          setMediaList(mediaData.data || []);
         }
       } catch (err) {
-        setError("Failed to load media")
+        setError("Failed to load media");
         toast({
           title: "Error loading media",
           description: "Please try again",
-          variant: "destructive"
-        })
+          variant: "destructive",
+        });
       } finally {
-        setIsLoadingMedia(false)
+        setIsLoadingMedia(false);
       }
-    }
+    };
 
-    fetchMedia()
-  }, [tenantId, selectedPageId])
+    fetchMedia();
+  }, [tenantId, selectedPageId]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
     if (!files || !tenantId || !selectedPageId) {
       toast({
         title: "Cannot upload",
         description: "Please select a page first",
-        variant: "destructive"
-      })
-      return
+        variant: "destructive",
+      });
+      return;
     }
 
     Array.from(files).forEach(async (file) => {
       // Create optimistic media item
       const optimisticItem: MediaItem = {
-        id: `temp-${Date.now()}-${Math.random()}`,
+        id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // More unique
         name: file.name,
-        type: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document",
+        type: file.type.startsWith("image/")
+          ? "image"
+          : file.type.startsWith("video/")
+            ? "video"
+            : "document",
         size: file.size,
         mimeType: file.type,
         status: "uploading",
-        createdAt: new Date().toISOString()
-      }
+        createdAt: new Date().toISOString(),
+      };
 
       // Add to list immediately for optimistic UI
-      setMediaList(prev => [...prev, optimisticItem])
-      setIsUploading(true)
-      setUploadProgress(0)
+      setMediaList((prev) => [...prev, optimisticItem]);
+      setIsUploading(true);
+      setUploadProgress(0);
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
-            clearInterval(progressInterval)
-            return 90
+            clearInterval(progressInterval);
+            return 90;
           }
-          return prev + 10
-        })
-      }, 200)
+          return prev + 10;
+        });
+      }, 200);
 
       try {
         const payload = {
@@ -212,58 +226,64 @@ export default function MediaLibraryPage() {
             type: optimisticItem.type,
             size: file.size,
             mimeType: file.type,
-            status: "uploading" as const
-          }
-        }
+            status: "uploading" as const,
+          },
+        };
 
-        const result = await createMedia(payload)
+        const result = await createMedia(payload);
 
-        clearInterval(progressInterval)
-        setUploadProgress(100)
+        clearInterval(progressInterval);
+        setUploadProgress(100);
 
         // Update with server response
-        setMediaList(prev => prev.map(media =>
-          media.id === item.id 
-            ? { ...result, status: "ready" as const } as MediaItem
-            : media
-        ))
+        setMediaList((prev) =>
+          prev.map((media) =>
+            media.id === optimisticItem.id
+              ? ({ ...result, status: "ready" as const } as MediaItem)
+              : media,
+          ),
+        );
         toast({
           title: "Upload successful",
           description: `${file.name} has been uploaded`,
-        })
+        });
       } catch (err) {
-        clearInterval(progressInterval)
+        clearInterval(progressInterval);
 
         // Update status to failed
-        setMediaList(prev => prev.map(item =>
-          item.id === optimisticItem.id
-            ? { ...item, status: "failed" as const }
-            : item
-        ))
+        setMediaList((prev) =>
+          prev.map((item) =>
+            item.id === optimisticItem.id
+              ? { ...item, status: "failed" as const }
+              : item,
+          ),
+        );
 
         toast({
           title: "Upload failed",
           description: `Failed to upload ${file.name}`,
-          variant: "destructive"
-        })
+          variant: "destructive",
+        });
       } finally {
-        setIsUploading(false)
-        setUploadProgress(0)
+        setIsUploading(false);
+        setUploadProgress(0);
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""
+          fileInputRef.current.value = "";
         }
       }
-    })
-  }
+    });
+  };
 
   const handleRetryUpload = async (item: MediaItem) => {
-    if (!tenantId || !selectedPageId) return
+    if (!tenantId || !selectedPageId) return;
 
-    setMediaList(prev => prev.map(media =>
-      media.id === item.id
-        ? { ...media, status: "uploading" as const }
-        : item
-    ))
+    setMediaList((prev) =>
+      prev.map((media) =>
+        media.id === item.id
+          ? { ...media, status: "uploading" as const }
+          : item,
+      ),
+    );
 
     try {
       const payload = {
@@ -274,105 +294,117 @@ export default function MediaLibraryPage() {
           type: item.type,
           size: item.size,
           mimeType: item.mimeType,
-          status: "uploading" as const
-        }
-      }
+          status: "uploading" as const,
+        },
+      };
 
-      const result = await createMedia(payload)
+      const result = await createMedia(payload);
 
-      setMediaList(prev => prev.map(media =>
-        media.id === item.id
-          ? { ...result, status: "ready" as const } as MediaItem
-          : media
-      ))
+      setMediaList((prev) =>
+        prev.map((media) =>
+          media.id === item.id
+            ? ({ ...result, status: "ready" as const } as MediaItem)
+            : media,
+        ),
+      );
 
       toast({
         title: "Upload retry successful",
         description: `${item.name} has been uploaded`,
-      })
+      });
     } catch (err) {
-      setMediaList(prev => prev.map(media =>
-        media.id === item.id
-          ? { ...media, status: "failed" as const }
-          : media
-      ))
+      setMediaList((prev) =>
+        prev.map((media) =>
+          media.id === item.id
+            ? { ...media, status: "failed" as const }
+            : media,
+        ),
+      );
 
       toast({
         title: "Retry failed",
         description: `Failed to upload ${item.name}`,
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!selectedMedia) return
+    if (!selectedMedia) return;
 
     // Optimistic removal
-    const itemToDelete = selectedMedia
-    setMediaList(prev => prev.filter(item => item.id !== selectedMedia.id))
+    const itemToDelete = selectedMedia;
+    setMediaList((prev) => prev.filter((item) => item.id !== selectedMedia.id));
 
     try {
       // In real implementation, call delete API here
       toast({
         title: "File deleted",
         description: `${itemToDelete.name} has been removed`,
-      })
+      });
     } catch (err) {
       // Rollback on failure
-      setMediaList(prev => [...prev, itemToDelete])
+      setMediaList((prev) => [...prev, itemToDelete]);
       toast({
         title: "Delete failed",
         description: "Failed to delete the file",
-        variant: "destructive"
-      })
+        variant: "destructive",
+      });
     } finally {
-      setIsDeleteOpen(false)
-      setSelectedMedia(null)
+      setIsDeleteOpen(false);
+      setSelectedMedia(null);
     }
-  }
+  };
 
   const handleDownload = (item: MediaItem) => {
     if (item.status !== "ready") {
       toast({
         title: "Cannot download",
         description: "File is not ready for download",
-        variant: "destructive"
-      })
-      return
+        variant: "destructive",
+      });
+      return;
     }
 
     toast({
       title: "Download started",
       description: `${item.name} download started.`,
-    })
-  }
+    });
+  };
 
   const getStatusBadge = (status: MediaItem["status"]) => {
-    switch (status) {
-      case "uploading":
-        return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            <Clock className="h-3 w-3 mr-1" />
-            Uploading
-          </Badge>
-        )
-      case "ready":
-        return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Ready
-          </Badge>
-        )
-      case "failed":
-        return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Failed
-          </Badge>
-        )
-    }
-  }
+    const content =
+      status === "uploading"
+        ? "Uploading"
+        : status === "ready"
+          ? "Ready"
+          : "Failed";
+
+    const Icon =
+      status === "uploading"
+        ? Clock
+        : status === "ready"
+          ? CheckCircle
+          : AlertCircle;
+
+    return (
+      <Badge
+        variant="outline"
+        className={
+          status === "uploading"
+            ? "bg-blue-50 text-blue-700 border-blue-200"
+            : status === "ready"
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-red-50 text-red-700 border-red-200"
+        }
+      >
+        <span className="flex items-center gap-1">
+          <Icon className="h-3 w-3" />
+          {content}
+        </span>
+      </Badge>
+    );
+  };
 
   const renderPreview = (item: MediaItem) => {
     if (item.status !== "ready") {
@@ -383,7 +415,7 @@ export default function MediaLibraryPage() {
             <p className="text-xs text-muted-foreground">{item.name}</p>
           </div>
         </div>
-      )
+      );
     }
 
     switch (item.type) {
@@ -394,17 +426,13 @@ export default function MediaLibraryPage() {
             alt={item.name}
             className="w-full h-full object-cover"
           />
-        )
+        );
       case "video":
         return (
           <div className="w-full h-full flex items-center justify-center bg-black">
-            <video
-              src={item.url}
-              className="max-w-full max-h-full"
-              controls
-            />
+            <video src={item.url} className="max-w-full max-h-full" controls />
           </div>
-        )
+        );
       case "document":
         return (
           <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -416,21 +444,23 @@ export default function MediaLibraryPage() {
               </p>
             </div>
           </div>
-        )
+        );
     }
-  }
+  };
 
   const filteredItems = mediaList.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesTab =
       activeTab === "all" ||
       (activeTab === "images" && item.type === "image") ||
       (activeTab === "videos" && item.type === "video") ||
-      (activeTab === "documents" && item.type === "document")
-    return matchesSearch && matchesTab
-  })
+      (activeTab === "documents" && item.type === "document");
+    return matchesSearch && matchesTab;
+  });
 
-  const selectedPage = pages.find(p => p.id === selectedPageId)
+  const selectedPage = pages.find((p) => p._id === selectedPageId);
 
   // If no tenant selected
   if (!tenantId) {
@@ -446,7 +476,7 @@ export default function MediaLibraryPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -454,9 +484,12 @@ export default function MediaLibraryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-balance text-3xl font-bold tracking-tight">Media Library</h1>
+          <h1 className="text-balance text-3xl font-bold tracking-tight">
+            Media Library
+          </h1>
           <p className="text-pretty text-muted-foreground mt-1">
-            Manage media for {selectedPage ? `"${selectedPage.name}"` : "selected page"}
+            Manage media for{" "}
+            {selectedPage ? `"${selectedPage.title}"` : "selected page"}
           </p>
         </div>
 
@@ -466,23 +499,27 @@ export default function MediaLibraryPage() {
             <Select
               value={selectedPageId || ""}
               onValueChange={(value) => {
-                setSelectedPageId(value)
-                setMediaList([])
+                setSelectedPageId(value);
+                setMediaList([]);
               }}
               disabled={isLoadingPages}
             >
               <SelectTrigger>
-                <SelectValue placeholder={isLoadingPages ? "Loading pages..." : "Select a page"} />
+                <SelectValue
+                  placeholder={
+                    isLoadingPages ? "Loading pages..." : "Select a page"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {pages.length === 0 ? (
-                  <SelectItem value="no-pages" disabled>
+                  <SelectItem key="no-pages" value="no-pages" disabled>
                     No pages found
                   </SelectItem>
                 ) : (
                   pages.map((page) => (
-                    <SelectItem key={page.id} value={page.id}>
-                      {page.name}
+                    <SelectItem key={page._id} value={page._id}>
+                      {page.title}
                     </SelectItem>
                   ))
                 )}
@@ -526,7 +563,9 @@ export default function MediaLibraryPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Uploading files...</span>
-                <span className="text-sm text-muted-foreground">{uploadProgress}%</span>
+                <span className="text-sm text-muted-foreground">
+                  {uploadProgress}%
+                </span>
               </div>
               <Progress value={uploadProgress} className="h-2" />
             </div>
@@ -589,7 +628,8 @@ export default function MediaLibraryPage() {
                 <FileText className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Select a page</h3>
                 <p className="text-sm text-muted-foreground mb-4 text-center">
-                  Choose a page from the dropdown above to manage its media files
+                  Choose a page from the dropdown above to manage its media
+                  files
                 </p>
               </CardContent>
             </Card>
@@ -598,7 +638,9 @@ export default function MediaLibraryPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-                <p className="text-sm text-muted-foreground">Loading media...</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading media...
+                </p>
               </CardContent>
             </Card>
           ) : filteredItems.length > 0 ? (
@@ -606,9 +648,10 @@ export default function MediaLibraryPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {filteredItems.map((item) => (
                 <Card
-                  key={item.id}
-                  className={`group hover:shadow-md transition-shadow ${item.status === "failed" ? "border-destructive/50" : ""
-                    }`}
+                  key={`${item.id}-${item.name}`} // Add a more unique key
+                  className={`group hover:shadow-md transition-shadow ${
+                    item.status === "failed" ? "border-destructive/50" : ""
+                  }`}
                 >
                   <CardContent className="p-3">
                     <div className="aspect-square bg-muted rounded-lg mb-3 relative overflow-hidden">
@@ -620,8 +663,8 @@ export default function MediaLibraryPage() {
                           size="sm"
                           variant="secondary"
                           onClick={() => {
-                            setSelectedMedia(item)
-                            setIsPreviewOpen(true)
+                            setSelectedMedia(item);
+                            setIsPreviewOpen(true);
                           }}
                           disabled={item.status !== "ready"}
                         >
@@ -644,8 +687,8 @@ export default function MediaLibraryPage() {
                             <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => {
-                                setSelectedMedia(item)
-                                setIsDeleteOpen(true)
+                                setSelectedMedia(item);
+                                setIsDeleteOpen(true);
                               }}
                             >
                               <Trash2 className="h-3 w-3 mr-2" />
@@ -674,13 +717,14 @@ export default function MediaLibraryPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-medium truncate" title={item.name}>
+                      <p
+                        className="text-xs font-medium truncate"
+                        title={item.name}
+                      >
                         {item.name}
                       </p>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>
-                          {Math.round(item.size / 1024)} KB
-                        </span>
+                        <span>{Math.round(item.size / 1024)} KB</span>
                         {item.createdAt && (
                           <span>
                             {new Date(item.createdAt).toLocaleDateString()}
@@ -753,7 +797,8 @@ export default function MediaLibraryPage() {
                     <FileText className="h-24 w-24 mx-auto text-muted-foreground mb-4" />
                     <p className="font-medium">{selectedMedia.name}</p>
                     <p className="text-sm text-muted-foreground mt-2">
-                      {selectedMedia.mimeType} • {Math.round(selectedMedia.size / 1024)} KB
+                      {selectedMedia.mimeType} •{" "}
+                      {Math.round(selectedMedia.size / 1024)} KB
                     </p>
                   </div>
                 )
@@ -788,7 +833,7 @@ export default function MediaLibraryPage() {
               variant="outline"
               onClick={() => {
                 if (selectedMedia?.status === "ready") {
-                  handleDownload(selectedMedia)
+                  handleDownload(selectedMedia);
                 }
               }}
               disabled={!selectedMedia || selectedMedia.status !== "ready"}
@@ -796,9 +841,7 @@ export default function MediaLibraryPage() {
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
-            <Button onClick={() => setIsPreviewOpen(false)}>
-              Close
-            </Button>
+            <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -809,7 +852,8 @@ export default function MediaLibraryPage() {
           <DialogHeader>
             <DialogTitle>Delete File</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedMedia?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{selectedMedia?.name}"? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -824,5 +868,5 @@ export default function MediaLibraryPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

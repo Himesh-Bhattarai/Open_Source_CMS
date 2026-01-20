@@ -52,7 +52,7 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
-// Routes
+//Create Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/activity", activityLogRoutes);
 app.use("/api/v1/create-blog", blogRoutes);

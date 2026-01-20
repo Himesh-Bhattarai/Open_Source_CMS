@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 const MediaSchema = new Schema(
     {
-        _id: { type: String, },
+        userId: { type: String,  ref: "User" },
         tenantId: { type: String,  ref: "Tenant" },
         filename: { type: String, },
         originalName: { type: String, },
