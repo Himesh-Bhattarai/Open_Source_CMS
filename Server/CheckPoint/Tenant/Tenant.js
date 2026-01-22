@@ -1,52 +1,81 @@
+import crypto from "crypto";
 import { Tenant } from "../../Models/Tenant/Tenant.js";
-import { logger as log } from "../../Utils/Logger/logger.js"
+import { ApiKey } from "../../Models/ApiKey/apiKey.js";
+import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const tenantCheckpoint = async (req, res, next) => {
     try {
-        const { name, domain, apiKey, ownerEmail, status, plan, settings, subdomain, createdBy } = req.body;
+        const {
+            name,
+            domain,
+            ownerEmail,
+            status,
+            plan,
+            settings,
+            subdomain,
+            createdBy,
+        } = req.body;
 
-        if (!name || !domain || !apiKey || !ownerEmail) {
+        if (!name || !domain || !ownerEmail) {
             const err = new Error("Missing required fields");
             err.statusCode = 400;
             throw err;
         }
 
-        log.info(`Tenant Creation Attempt by: ${ownerEmail} name: ${name}`)
+        log.info(`Tenant creation attempt by ${ownerEmail}, name: ${name}`);
 
-        //check if tenant already exist
         const isTenantExist = await Tenant.findOne({ domain });
-
-        //if tenant already exist
         if (isTenantExist) {
-            const err = new Error("Tenant already exist");
+            const err = new Error("Tenant already exists");
             err.statusCode = 400;
             throw err;
         }
 
-
-        //create one
+        // 1️⃣ Create tenant
         const tenant = await Tenant.create({
-            userId : createdBy,
+            userId: createdBy,
             name,
             domain,
             subdomain,
-            apiKey,
             ownerEmail,
             status,
             plan,
-            settings
-        })
+            settings,
+        });
 
-        log.info(`Tenant Created by: ${ownerEmail} name: ${name}`)
+        // 2️⃣ Generate raw API key
+        const rawApiKey = crypto.randomBytes(32).toString("hex");
+        console.log("RAW API KEY (save this):", rawApiKey);
 
-        res.status(200).json({
+
+        // 3️⃣ Hash API key
+        const keyHash = crypto
+            .createHash("sha256")
+            .update(rawApiKey)
+            .digest("hex");
+
+        // 4️⃣ Store hash only
+        await ApiKey.create({
+            tenantId: tenant._id.toString(),
+            keyHash,
+            permissions: ["read:pages"],
+            name: "Default Public Key",
+        });
+
+        log.info(`Tenant created successfully: ${name}`);
+
+        // 5️⃣ Return RAW key once
+        res.status(201).json({
             message: "Tenant created successfully",
-        })
-
-
+            apiKey: rawApiKey,
+            tenant: {
+                id: tenant._id,
+                name: tenant.name,
+                domain: tenant.domain,
+            },
+        });
     } catch (err) {
         err.statusCode = err.statusCode || 500;
         next(err);
-
     }
-}
+};

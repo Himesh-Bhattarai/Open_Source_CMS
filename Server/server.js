@@ -39,6 +39,9 @@ import deleteSeo from "./Routes/Delete/seoDelete.js";
 import deleteForm from "./Routes/Delete/formDelete.js";
 import loadForms from "./Routes/Load/form.js";
 import updateForm from "./Routes/Form/Form.js";
+
+
+import externalRequest from "./Routes/Api/getPages.js"
 dotenv.config();
 const app = express();
 
@@ -100,6 +103,11 @@ app.use("/api/v1/update-seo", seoRoutes);
 app.use("/api/v1/update-form", updateForm);
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);
+
+
+
+//external request routes
+app.use("/api/v1/external-request", externalRequest);
 // Error handler
 app.use(errorHandler);
 

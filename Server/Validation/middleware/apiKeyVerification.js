@@ -1,4 +1,4 @@
-// middleware/apiKeyVerification.js
+import crypto from "crypto";
 import { ApiKey } from "../../Models/ApiKey/apiKey.js";
 
 export const apiKeyVerification = async (req, res, next) => {
@@ -9,14 +9,23 @@ export const apiKeyVerification = async (req, res, next) => {
             return res.status(403).json({ error: "API key missing" });
         }
 
-        const rawKey = authHeader.replace("Bearer ", "");
+        const rawKey = authHeader.replace("Bearer ", "").trim();
 
         const apiKeyRecord = await ApiKey.findOne({
-            tenantId: req.tenant._id,
+            tenantId: req.tenant._id.toString(),
             isActive: true,
         });
 
-        if (!apiKeyRecord || !apiKeyRecord.validateKey(rawKey)) {
+        if (!apiKeyRecord) {
+            return res.status(403).json({ error: "Invalid API key. Please contact support" });
+        }
+
+        const hash = crypto
+            .createHash("sha256")
+            .update(rawKey)
+            .digest("hex");
+
+        if (apiKeyRecord.keyHash !== hash) {
             return res.status(403).json({ error: "Invalid API key" });
         }
 
