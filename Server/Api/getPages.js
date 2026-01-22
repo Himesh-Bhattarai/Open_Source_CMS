@@ -1,5 +1,5 @@
 // controllers/getPages.js
-import { Page } from "../../Models/Page/Page.js";
+import { Page } from "../Models/Page/Page.js";
 
 export const getPagesVerification = async (req, res, next) => {
     try {

@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   FileText,
@@ -27,55 +27,84 @@ import {
   Activity,
   Bell,
   FormInput,
-} from "lucide-react"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
-import { useEffect } from "react"
-import { useAuth } from "@/hooks/useAuth"
+} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
-
-import type { ForwardRefExoticComponent, RefAttributes } from "react"
-import type { LucideProps } from "lucide-react"
+import type { ForwardRefExoticComponent, RefAttributes } from "react";
+import type { LucideProps } from "lucide-react";
 
 type IconType = ForwardRefExoticComponent<
   Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
->
+>;
 
 interface NavLinkItem {
-  type: "link"
-  name: string
-  href: string
-  icon: IconType
+  type: "link";
+  name: string;
+  href: string;
+  icon: IconType;
 }
 
 interface NavGroupItem {
-  type: "group"
-  name: string
-  icon: IconType
-  highlight?: boolean
-  children: NavLinkItem[]
+  type: "group";
+  name: string;
+  icon: IconType;
+  highlight?: boolean;
+  children: NavLinkItem[];
 }
 
-type NavigationItem = NavLinkItem | NavGroupItem
+type NavigationItem = NavLinkItem | NavGroupItem;
 const adminNavigation: NavigationItem[] = [
   { type: "link", name: "Overview", href: "/cms", icon: LayoutDashboard },
   { type: "link", name: "All Users", href: "/cms/admin/users", icon: Users },
-  { type: "link", name: "Platform Analytics", href: "/cms/admin/analytics", icon: BarChart3 },
-  { type: "link", name: "System Logs", href: "/cms/admin/logs", icon: Activity },
-  { type: "link", name: "Platform Settings", href: "/cms/admin/settings", icon: Settings },
-]
+  {
+    type: "link",
+    name: "Platform Analytics",
+    href: "/cms/admin/analytics",
+    icon: BarChart3,
+  },
+  {
+    type: "link",
+    name: "System Logs",
+    href: "/cms/admin/logs",
+    icon: Activity,
+  },
+  {
+    type: "link",
+    name: "Platform Settings",
+    href: "/cms/admin/settings",
+    icon: Settings,
+  },
+];
 
 const ownerNavigation: NavigationItem[] = [
   { type: "link", name: "Dashboard", href: "/cms", icon: LayoutDashboard },
-  { type: "link", name: "My Website", href: "/cms/my-website", icon: Building2 },
+  {
+    type: "link",
+    name: "My Website",
+    href: "/cms/my-website",
+    icon: Building2,
+  },
 
   {
     type: "group",
     name: "Content",
     icon: FileText,
     children: [
-      { type: "link", name: "Pages", href: "/cms/content/pages", icon: FileText },
-      { type: "link", name: "Blog Posts", href: "/cms/content/blog", icon: Newspaper },
+      {
+        type: "link",
+        name: "Pages",
+        href: "/cms/content/pages",
+        icon: FileText,
+      },
+      {
+        type: "link",
+        name: "Blog Posts",
+        href: "/cms/content/blog",
+        icon: Newspaper,
+      },
     ],
   },
 
@@ -85,10 +114,30 @@ const ownerNavigation: NavigationItem[] = [
     icon: Globe,
     highlight: true,
     children: [
-      { type: "link", name: "Menus", href: "/cms/global/menus", icon: MenuIcon },
-      { type: "link", name: "Footer", href: "/cms/global/footer", icon: Footprints },
-      { type: "link", name: "SEO Settings", href: "/cms/global/seo", icon: Search },
-      { type: "link", name: "Layout & Theme", href: "/cms/global/layout", icon: Palette },
+      {
+        type: "link",
+        name: "Menus",
+        href: "/cms/global/menus",
+        icon: MenuIcon,
+      },
+      {
+        type: "link",
+        name: "Footer",
+        href: "/cms/global/footer",
+        icon: Footprints,
+      },
+      {
+        type: "link",
+        name: "SEO Settings",
+        href: "/cms/global/seo",
+        icon: Search,
+      },
+      {
+        type: "link",
+        name: "Layout & Theme",
+        href: "/cms/global/layout",
+        icon: Palette,
+      },
     ],
   },
 
@@ -98,32 +147,37 @@ const ownerNavigation: NavigationItem[] = [
   { type: "link", name: "Backups", href: "/cms/backups", icon: Database },
   { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
   { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
-  { type: "link", name: "Notifications", href: "/cms/notifications", icon: Bell },
+  {
+    type: "link",
+    name: "Notifications",
+    href: "/cms/notifications",
+    icon: Bell,
+  },
   { type: "link", name: "Integrations", href: "/cms/integrations", icon: Plug },
-]
+];
 
 interface CMSSidebarProps {
-  isOpen?: boolean
-  onClose?: () => void
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
-  const pathname = usePathname()
-  const { user, isAdmin, isOwner } = useAuth()
+  const pathname = usePathname();
+  const { user, isAdmin, isOwner } = useAuth();
 
-  const navigation = isAdmin ? adminNavigation : ownerNavigation
+  const navigation = isAdmin ? adminNavigation : ownerNavigation;
 
   useEffect(() => {
-    if (onClose) onClose()
-  }, [pathname])
+    if (onClose) onClose();
+  }, [pathname]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && onClose) onClose()
-    }
-    document.addEventListener("keydown", handleEscape)
-    return () => document.removeEventListener("keydown", handleEscape)
-  }, [onClose])
+      if (e.key === "Escape" && onClose) onClose();
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
 
   return (
     <>
@@ -144,16 +198,23 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
         <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border flex-shrink-0">
           <Link href="/cms" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">CF</span>
+              <span className="text-primary-foreground font-bold text-sm">
+                CF
+              </span>
             </div>
             <span className="font-semibold text-lg">ContentFlow</span>
           </Link>
 
-          <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden h-8 w-8"
+            onClick={onClose}
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
-{/* 
+        {/* 
         {isOwner && (
           <div className="px-4 py-3 border-b border-sidebar-border flex-shrink-0">
             <div className="border rounded-lg p-3 bg-primary/10 border-primary/20">
@@ -167,7 +228,9 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           </div>
         )} */}
 
-        <ScrollArea className="flex-1">
+        {/* ?Need to change overflow-y-auto either over-flow-y-scrool */}
+
+        <ScrollArea className="flex-1 overflow-y-auto ">
           <nav className="space-y-1 p-3">
             {navigation.map((item) => (
               <div key={item.name}>
@@ -175,7 +238,8 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
                   <div
                     className={cn(
                       "space-y-1",
-                      item.highlight && "bg-primary/5 rounded-lg p-2 border border-primary/20",
+                      item.highlight &&
+                        "bg-primary/5 rounded-lg p-2 border border-primary/20",
                     )}
                   >
                     <div className="flex items-center gap-2 px-2 py-1.5">
@@ -217,7 +281,6 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
                 )}
               </div>
             ))}
-
           </nav>
         </ScrollArea>
 
@@ -227,7 +290,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
               <span className="text-primary-foreground text-xs font-medium">
                 {user?.name
                   ?.split(" ")
-                  ?.map((n : string) => n[0])
+                  ?.map((n: string) => n[0])
                   ?.join("")}
               </span>
             </div>
@@ -244,5 +307,5 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
         </div>
       </div>
     </>
-  )
+  );
 }

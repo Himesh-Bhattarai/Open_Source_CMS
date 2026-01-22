@@ -7,7 +7,6 @@ const TenantSchema = new Schema(
     name: { type: String },
     domain: { type: String, unique: true },
     subdomain: String,
-    apiKey: { type: String, unique: true },
     ownerEmail: { type: String },
     status: {
       type: String,
