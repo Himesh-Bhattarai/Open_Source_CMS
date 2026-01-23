@@ -5,12 +5,38 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, XCircle, Code, Copy, ExternalLink, AlertCircle } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { integrationsApi } from "@/Api/integrations/Fetch"
 
 export default function IntegrationsPage() {
   const { user } = useAuth()
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const[apiList, setApiList] = useState<any>([]);
+  const [loading, setLoading] = useState(false);
+  const[message, setMessage] = useState("");
+
+
+  useEffect(()=>{
+    const loadApisList = async()=>{
+      setLoading(true);
+      setMessage("");
+      const loadApi = await integrationsApi();
+      console.log("API LIST:", loadApi);
+      console.log("API LIST:", loadApi?.data);
+      console.log("API LIST:", loadApi?.data?.data);
+
+      if(loadApi?.ok){
+        //manage state
+        setLoading(false);
+        setApiList(loadApi?.data)
+        setMessage("Successfully loaded APIs");
+      }
+      setMessage("Failed to load APIs");
+    }
+
+    loadApisList();
+  },[])
 
   const integrations = [
     {
