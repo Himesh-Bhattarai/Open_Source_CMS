@@ -39,7 +39,7 @@ import deleteSeo from "./Routes/Delete/seoDelete.js";
 import deleteForm from "./Routes/Delete/formDelete.js";
 import loadForms from "./Routes/Load/form.js";
 import updateForm from "./Routes/Form/Form.js";
-
+import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
 
 import externalRequest from "./Routes/Api/oneRoutes.js";
 dotenv.config();
@@ -80,6 +80,7 @@ app.use("/api/v1/footer", loadFooter);
 app.use("/api/v1/page/belong", loadBelongPage);
 app.use("/api/v1/seo/load-seo", loadSeo);
 app.use("/api/v1/form", loadForms);
+app.use("/api/v1/integrations", integrationsApi);
 
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
