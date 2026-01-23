@@ -1,12 +1,12 @@
 import express from "express";
-import { apiKeyVerification } from "../../Validation/middleware/apiKeyVerification";
-import { tenantVerification } from "../../Validation/middleware/tenantVerification";
-import {getForm} from "../../Api/getForm.js";
+import { apiKeyVerification } from "../../Validation/middleware/apiKeyVerification.js";
+import { tenantVerification } from "../../Validation/middleware/tenantVerification.js";
+import {getForm} from "../../Api/getForms.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.get(
-    "/:domain/form",
+    "/",
     tenantVerification,
     apiKeyVerification,
     getForm

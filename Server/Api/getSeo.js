@@ -1,10 +1,12 @@
-import {Seo} from "../../Models/Seo/Seo.js";
+import {Seo} from "../Models/Seo/Seo.js";
 
 export const getSeo = async(req, res, next)=>{
     try{
+        const tenantId = req.tenant?._id
+
+        console.log(tenantId)
         const getSeo = await Seo.findOne({
-            tenantId: req.tenantId._id,
-            status: "published"
+            tenantId: tenantId,
         })
 
         if(!getSeo) throw new Error("Seo not Found");

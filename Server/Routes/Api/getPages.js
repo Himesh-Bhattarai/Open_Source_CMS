@@ -6,10 +6,10 @@ import { tenantVerification } from "../../Validation/middleware/tenantVerificati
 // import { featureCheck } from "../../Validation/middleware/featureCheck.js";
 
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.get(
-    "/:domain/pages",
+    "/",
     tenantVerification,
     apiKeyVerification,
     // featureCheck("pages"),
