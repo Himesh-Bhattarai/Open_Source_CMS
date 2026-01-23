@@ -2,13 +2,13 @@ const INTEGRATIONS_URL = "http://localhost:5000/api/v1/integrations/get-api";
 
 export const integrationsApi = async()=>{
     try{
-        const response = await fetch(`${INTEGRATIONS_URL}`,{
+        const response = await fetch(INTEGRATIONS_URL,{
             method: "GET",
             credentials: "include",
-
         });
 
-        const data = response.json();
+        const data = await response.json();
+        console.log("APis:",data);
 
         if(!data.ok) throw new Error(data.message || "Failed to fetch integrations");
 
