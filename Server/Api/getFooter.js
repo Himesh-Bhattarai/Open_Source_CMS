@@ -1,4 +1,4 @@
-import {Footer} from "../../Model/Footer/Footer.js";
+import {Footer} from "../Models/Footer/Footer.js";
 
 
 export const getFooter = async (req, res, next)=>{

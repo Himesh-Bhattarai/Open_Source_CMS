@@ -41,7 +41,7 @@ import loadForms from "./Routes/Load/form.js";
 import updateForm from "./Routes/Form/Form.js";
 
 
-import externalRequest from "./Routes/Api/getPages.js"
+import externalRequest from "./Routes/Api/oneRoutes.js";
 dotenv.config();
 const app = express();
 
@@ -108,6 +108,8 @@ app.use("/api/v1/statistics", statsRoutes);
 
 //external request routes
 app.use("/api/v1/external-request", externalRequest);
+
+
 // Error handler
 app.use(errorHandler);
 

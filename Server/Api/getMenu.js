@@ -1,4 +1,4 @@
-import { Menu } from "../../Models/Menu/Menu.js";
+import { Menu } from "../Models/Menu/Menu.js";
 
 export const getMenu = async (req, res, next) => {
   try {

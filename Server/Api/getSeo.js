@@ -1,4 +1,4 @@
-import {Seo} from "../../Models/Seo/Seo.js";
+import {Seo} from "../Models/Seo/Seo.js";
 
 export const getSeo = async(req, res, next)=>{
     try{
