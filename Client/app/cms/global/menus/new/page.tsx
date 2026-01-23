@@ -10,15 +10,21 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { createMenu } from "@/Api/Menu/Combined"
+import { useTenant } from "@/context/TenantContext"; 
 
 export default function NewMenuPage() {
   const router = useRouter()
+  const { tenants, selectedTenantId, setActiveTenant } = useTenant();
   const [menuName, setMenuName] = useState("")
   const [menuDescription, setMenuDescription] = useState("")
   const [menuLocation, setMenuLocation] = useState("")
+  const [tenantId, setTenantId] = useState(selectedTenantId || "");
+
+
 
   const handleCreate = async() => {
     const data = {
+      tenantId: tenantId,
       title: menuName,
       description: menuDescription,
       menuLocation: menuLocation
@@ -40,6 +46,24 @@ export default function NewMenuPage() {
    
   }
 
+  if (!tenantId) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/cms/global/menus">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Create New Menu</h1>
+            <p className="text-muted-foreground">Set up a new navigation menu for your website</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -59,6 +83,28 @@ export default function NewMenuPage() {
           <CardTitle>Menu Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Tenant Select */}
+          <div className="space-y-2">
+            <Label htmlFor="tenant-select">Select Tenant *</Label>
+            <select
+              id="tenant-select"
+              value={tenantId}
+              onChange={(e) => {
+                setTenantId(e.target.value);
+                const tenant = tenants.find(t => t._id === e.target.value);
+                if (tenant) setActiveTenant(tenant);
+              }}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="">Select tenant...</option>
+              {tenants.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.name} ({t.domain})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="menu-name">Menu Name *</Label>
             <Input
@@ -102,7 +148,7 @@ export default function NewMenuPage() {
             <Button variant="outline" asChild>
               <Link href="/cms/global/menus">Cancel</Link>
             </Button>
-            <Button onClick={handleCreate} disabled={!menuName.trim()}>
+            <Button onClick={handleCreate} disabled={!menuName.trim() || !tenantId}>
               Create Menu
             </Button>
           </div>

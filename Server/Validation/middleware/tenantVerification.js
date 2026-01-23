@@ -5,7 +5,6 @@ export const tenantVerification = async (req, res, next) => {
     try {
         console.log("Its is tenant verification place")
         const { domain } = req.params;
-        console.log(domain)
         if (!domain) {
             return res.status(400).json({ error: "Domain is required" });
         }
@@ -22,6 +21,7 @@ export const tenantVerification = async (req, res, next) => {
         }
 
         req.tenant = tenant; // ✅ FULL tenant object
+        console.log("Tenant found", tenant._id);
         next();
     } catch (err) {
         next(err);

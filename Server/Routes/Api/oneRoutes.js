@@ -16,7 +16,7 @@ router.use("/:domain", getBlog);
 // router.use("/:domain/blog");
 
 //Router Page Related
-router.use("/:domain/pages/:slug", getPages);
+router.use("/:domain/pages", getPages);
 // router.use("/:domain/pages/:slug", getSinglePages);
 
 //Router Menu Related

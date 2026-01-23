@@ -4,7 +4,7 @@ import { logger as log } from "../../Utils/Logger/logger.js";
 export const menuCheckpoint = async (req, res, next) => {
     try {
         const userId = req.user?.userId;
-        const { title, description, menuLocation, status, publishedAt, publishedBy } = req.body;
+        const { title, description, menuLocation, status, publishedAt, publishedBy, tenantId } = req.body;
 
         if (!userId || !title || !menuLocation) {
             const err = new Error("Missing required fields: userId, title, or menuLocation");
@@ -12,7 +12,7 @@ export const menuCheckpoint = async (req, res, next) => {
             throw err;
         }
 
-        const tenantId = title + userId; // Temporary logic, replace with real tenant in production
+        console.log(tenantId)
 
         log.info(`Menu creation attempt by user: ${userId}`);
 
