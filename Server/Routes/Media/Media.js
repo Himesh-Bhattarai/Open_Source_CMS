@@ -1,13 +1,10 @@
-import express from 'express';
+import express from "express";
 
-import {mediaCheckpoint} from '../../CheckPoint/Media/media.js';
-import { verificationMiddleware } from '../../Utils/Jwt/Jwt.js';
+import { mediaCheckpoint } from "../../CheckPoint/Media/media.js";
+import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 
 const router = express.Router();
 
-router.post("/media",
-   verificationMiddleware,
-    mediaCheckpoint
-)
+router.post("/media", verificationMiddleware, mediaCheckpoint);
 
-export default router
+export default router;

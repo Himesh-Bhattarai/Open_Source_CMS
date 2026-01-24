@@ -750,7 +750,7 @@ export default function ThemePage() {
   return (
     <div className="space-y-6">
       {/* ==================== TENANT & WEBSITE SELECTOR ==================== */}
-      <Card className="border-2 border-primary/10 bg-gradient-to-r from-primary/5 to-primary/2">
+      <Card className="border-2 border-primary/10 bg-linear-to-r from-primary/5 to-primary/2">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

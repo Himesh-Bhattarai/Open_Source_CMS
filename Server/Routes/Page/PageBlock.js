@@ -5,10 +5,6 @@ import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 
 const router = express.Router();
 
-router.post("/",
-    validatePage,
-    verificationMiddleware,
-    pageBlockCheckpoint
-)
+router.post("/", validatePage, verificationMiddleware, pageBlockCheckpoint);
 
-export default router
+export default router;

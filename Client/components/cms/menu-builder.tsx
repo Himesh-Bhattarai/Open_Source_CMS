@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   GripVertical,
   Plus,
@@ -30,91 +36,96 @@ import {
   Globe,
   Maximize2,
   Link,
-} from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { createMenuItem, updateMenu } from "@/Api/Menu/Combined"
-import { useRouter } from "next/navigation"
-import { loadMenuById } from "@/Api/Menu/Load"
-
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { createMenuItem, updateMenu } from "@/Api/Menu/Combined";
+import { useRouter } from "next/navigation";
+import { loadMenuById } from "@/Api/Menu/Load";
 
 // ==================== FIXED TYPE DEFINITIONS ====================
-type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb"
-type LinkType = "internal" | "external" | "none"
-type MenuLocation = "navbar" | "sidebar"
+type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb";
+type LinkType = "internal" | "external" | "none";
+type MenuLocation = "navbar" | "sidebar";
 
 // Common content blocks that can be added to ANY menu item
 interface MenuImage {
-  id: string
-  url: string
-  alt: string
-  width?: number
-  height?: number
+  id: string;
+  url: string;
+  alt: string;
+  width?: number;
+  height?: number;
 }
 
 interface MenuButton {
-  id: string
-  label: string
-  action: string
-  variant: "primary" | "secondary" | "outline"
+  id: string;
+  label: string;
+  action: string;
+  variant: "primary" | "secondary" | "outline";
 }
 
 interface MenuTextBlock {
-  id: string
-  content: string
-  type: "paragraph" | "heading" | "subtitle"
+  id: string;
+  content: string;
+  type: "paragraph" | "heading" | "subtitle";
 }
 
 // Base interface with common properties
 interface BaseMenuItem {
-  id: string
-  label: string
-  linkType: LinkType
-  slug?: string
-  enabled: boolean
-  expanded?: boolean
+  id: string;
+  label: string;
+  linkType: LinkType;
+  slug?: string;
+  enabled: boolean;
+  expanded?: boolean;
   // Common content blocks - OPTIONAL for ALL items
-  images?: MenuImage[]
-  textBlocks?: MenuTextBlock[]
-  buttons?: MenuButton[]
+  images?: MenuImage[];
+  textBlocks?: MenuTextBlock[];
+  buttons?: MenuButton[];
 }
 
 // ==================== FIXED DISCRIMINATED UNIONS ====================
 interface StaticMenuItem extends BaseMenuItem {
-  menuType: "static"
-  children?: never
+  menuType: "static";
+  children?: never;
 }
 
 // Fixed: DropdownChild now has proper type discriminator
 interface DropdownChild extends BaseMenuItem {
-  menuType: "dropdown-child"
-  children?: never
+  menuType: "dropdown-child";
+  children?: never;
 }
 
 interface DropdownMenuItem extends BaseMenuItem {
-  menuType: "dropdown"
-  children: DropdownChild[]
+  menuType: "dropdown";
+  children: DropdownChild[];
 }
 
 // Mega menu supports unlimited nesting
 interface MegaMenuItem extends BaseMenuItem {
-  menuType: "mega"
-  children: MegaMenuItem[]
+  menuType: "mega";
+  children: MegaMenuItem[];
 }
 
 // Breadcrumb supports linear unlimited nesting
 interface BreadcrumbMenuItem extends BaseMenuItem {
-  menuType: "breadcrumb"
-  children?: BreadcrumbMenuItem[]
+  menuType: "breadcrumb";
+  children?: BreadcrumbMenuItem[];
 }
 
 // Sidebar menu
 interface SidebarMenuItem extends BaseMenuItem {
-  menuType: "sidebar"
-  children?: SidebarMenuItem[]
+  menuType: "sidebar";
+  children?: SidebarMenuItem[];
 }
 
 // Updated union type to include DropdownChild
@@ -124,31 +135,30 @@ type MenuItem =
   | MegaMenuItem
   | BreadcrumbMenuItem
   | SidebarMenuItem
-  | DropdownChild
-
+  | DropdownChild;
 
 // Menu configuration
 interface MenuConfig {
-  location: MenuLocation
-  navbarType: NavbarType
+  location: MenuLocation;
+  navbarType: NavbarType;
 }
 
 // Preview component props
 interface MenuPreviewProps {
-  menuItems: MenuItem[]
-  config: MenuConfig
+  menuItems: MenuItem[];
+  config: MenuConfig;
 }
 
 // ==================== PREVIEW COMPONENT ====================
 function MenuPreview({ menuItems, config }: MenuPreviewProps) {
   const renderPreviewItem = (item: MenuItem, depth = 0) => {
-    const isStatic = config.navbarType === "static"
-    const isDropdown = config.navbarType === "dropdown"
-    const isMega = config.navbarType === "mega"
-    const isBreadcrumb = config.navbarType === "breadcrumb"
-    const isSidebar = config.location === "sidebar"
+    const isStatic = config.navbarType === "static";
+    const isDropdown = config.navbarType === "dropdown";
+    const isMega = config.navbarType === "mega";
+    const isBreadcrumb = config.navbarType === "breadcrumb";
+    const isSidebar = config.location === "sidebar";
 
-    if (!item.enabled) return null
+    if (!item.enabled) return null;
 
     return (
       <div key={item.id} className="relative">
@@ -156,9 +166,9 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
         <div
           className={`
             flex items-center gap-2 px-3 py-2 rounded-md transition-colors
-            ${depth === 0 ? 'font-medium' : 'font-normal'}
-            ${item.linkType !== 'none' ? 'hover:bg-accent cursor-pointer' : 'cursor-default'}
-            ${isSidebar ? 'text-sm' : 'text-base'}
+            ${depth === 0 ? "font-medium" : "font-normal"}
+            ${item.linkType !== "none" ? "hover:bg-accent cursor-pointer" : "cursor-default"}
+            ${isSidebar ? "text-sm" : "text-base"}
           `}
           style={{ marginLeft: `${depth * 12}px` }}
         >
@@ -166,62 +176,77 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
           <span>{item.label}</span>
 
           {/* Content indicators */}
-          {(item.images && item.images.length > 0) && (
+          {item.images && item.images.length > 0 && (
             <ImageIcon className="h-3 w-3 text-muted-foreground" />
           )}
-          {(item.textBlocks && item.textBlocks.length > 0) && (
+          {item.textBlocks && item.textBlocks.length > 0 && (
             <Type className="h-3 w-3 text-muted-foreground" />
           )}
 
           {/* Child indicator for non-static menus */}
-          {!isStatic && item.menuType !== "dropdown-child" && item.menuType !== "static" &&
-            'children' in item && item.children &&
+          {!isStatic &&
+            item.menuType !== "dropdown-child" &&
+            item.menuType !== "static" &&
+            "children" in item &&
+            item.children &&
             ((isDropdown && depth === 0) || isMega || isBreadcrumb) && (
               <ChevronDown className="h-3 w-3 ml-auto" />
             )}
         </div>
 
         {/* Render children based on menu type */}
-        {!isStatic && item.menuType !== "dropdown-child" && item.menuType !== "static" &&
-          'children' in item && item.children && (
-            <div className={`
-            ${isDropdown ? 'ml-4 border-l-2 border-muted pl-2' : ''}
-            ${isMega ? 'grid grid-cols-2 gap-4 ml-6' : ''}
-            ${isBreadcrumb ? 'flex items-center gap-1 ml-6' : ''}
-          `}>
-              {Array.isArray(item.children) ? (
-                item.children.map(child => renderPreviewItem(child as MenuItem, depth + 1))
-              ) : (
-                renderPreviewItem(item.children, depth + 1)
-              )}
+        {!isStatic &&
+          item.menuType !== "dropdown-child" &&
+          item.menuType !== "static" &&
+          "children" in item &&
+          item.children && (
+            <div
+              className={`
+            ${isDropdown ? "ml-4 border-l-2 border-muted pl-2" : ""}
+            ${isMega ? "grid grid-cols-2 gap-4 ml-6" : ""}
+            ${isBreadcrumb ? "flex items-center gap-1 ml-6" : ""}
+          `}
+            >
+              {Array.isArray(item.children)
+                ? item.children.map((child) =>
+                    renderPreviewItem(child as MenuItem, depth + 1),
+                  )
+                : renderPreviewItem(item.children, depth + 1)}
             </div>
           )}
 
         {/* Render content blocks */}
-        {(item.images && item.images.length > 0) && (
+        {item.images && item.images.length > 0 && (
           <div className="flex gap-2 mt-2 ml-3">
-            {item.images.slice(0, 2).map(img => (
-              <div key={img.id} className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+            {item.images.slice(0, 2).map((img) => (
+              <div
+                key={img.id}
+                className="w-16 h-16 bg-muted rounded flex items-center justify-center"
+              >
                 <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
             ))}
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
-    <div className={`
+    <div
+      className={`
       p-4 rounded-lg border bg-background
-      ${config.location === 'navbar' ? 'min-w-75' : 'min-w-62.5'}
-    `}>
+      ${config.location === "navbar" ? "min-w-75" : "min-w-62.5"}
+    `}
+    >
       <div className="flex items-center gap-2 mb-4 pb-3 border-b">
-        <div className={`
+        <div
+          className={`
           p-1.5 rounded-md
-          ${config.location === 'navbar' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-green-100 dark:bg-green-900'}
-        `}>
-          {config.location === 'navbar' ? (
+          ${config.location === "navbar" ? "bg-blue-100 dark:bg-blue-900" : "bg-green-100 dark:bg-green-900"}
+        `}
+        >
+          {config.location === "navbar" ? (
             <Menu className="h-4 w-4" />
           ) : (
             <PanelLeft className="h-4 w-4" />
@@ -229,16 +254,19 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
         </div>
         <div>
           <div className="font-medium text-sm">
-            {config.location === 'navbar' ? `${config.navbarType} Navbar` : 'Sidebar'} Preview
+            {config.location === "navbar"
+              ? `${config.navbarType} Navbar`
+              : "Sidebar"}{" "}
+            Preview
           </div>
           <div className="text-xs text-muted-foreground">
-            {menuItems.length} item{menuItems.length !== 1 ? 's' : ''}
+            {menuItems.length} item{menuItems.length !== 1 ? "s" : ""}
           </div>
         </div>
       </div>
 
       <div className="space-y-1">
-        {menuItems.map(item => renderPreviewItem(item))}
+        {menuItems.map((item) => renderPreviewItem(item))}
       </div>
 
       {menuItems.length === 0 && (
@@ -247,18 +275,18 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ==================== UPDATED MENU BUILDER ====================
 export function MenuBuilder({ menuId }: { menuId: string }) {
   const [config, setConfig] = useState<MenuConfig>({
     location: "navbar",
-    navbarType: "static"
-  })
+    navbarType: "static",
+  });
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
     {
       id: "1",
@@ -276,76 +304,68 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       slug: "/about",
       enabled: true,
     },
-  ])
-  
+  ]);
+
   useEffect(() => {
-    if (!menuId) return
+    if (!menuId) return;
 
     const loadMenu = async () => {
       try {
-        setLoading(true)
-        const data = await loadMenuById(menuId)
+        setLoading(true);
+        const data = await loadMenuById(menuId);
 
         const resolvedConfig: MenuConfig = {
           location: mapLocation(data.menuLocation),
           navbarType: data.navbarType || "mega",
-        }
+        };
 
-        setConfig(resolvedConfig)
+        setConfig(resolvedConfig);
 
-        setMenuItems(
-          denormalizeMenuItemsFromDB(
-            data.items,
-            0,
-            resolvedConfig
-          )
-        )
+        setMenuItems(denormalizeMenuItemsFromDB(data.items, 0, resolvedConfig));
       } catch (err) {
-        console.error(err)
-        setMessage("Failed to load menu")
+        console.error(err);
+        setMessage("Failed to load menu");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadMenu()
-  }, [menuId])
-
-
+    loadMenu();
+  }, [menuId]);
 
   const inferMenuType = (
     item: any,
     depth: number,
-    config: MenuConfig
+    config: MenuConfig,
   ): MenuItem["menuType"] => {
-    if (config.location === "sidebar") return "sidebar"
+    if (config.location === "sidebar") return "sidebar";
 
-    if (config.navbarType === "static") return "static"
+    if (config.navbarType === "static") return "static";
 
     if (config.navbarType === "dropdown") {
-      return depth === 0 ? "dropdown" : "dropdown-child"
+      return depth === 0 ? "dropdown" : "dropdown-child";
     }
 
-    if (config.navbarType === "breadcrumb") return "breadcrumb"
+    if (config.navbarType === "breadcrumb") return "breadcrumb";
 
     // mega (default)
-    return "mega"
-  }
+    return "mega";
+  };
 
   const mapLocation = (location?: string): MenuLocation => {
-    if (location === "sidebar") return "sidebar"
-    return "navbar" // default for "header" or undefined
-  }
+    if (location === "sidebar") return "sidebar";
+    return "navbar"; // default for "header" or undefined
+  };
 
   const denormalizeMenuItemsFromDB = (
     items: any[],
     depth = 0,
-    config: MenuConfig
+    config: MenuConfig,
   ): MenuItem[] => {
     return items
       .sort((a, b) => a.order - b.order)
       .map((item) => {
-        const menuType = inferMenuType(item, depth, config)
+        const menuType = inferMenuType(item, depth, config);
 
         return {
           id: generateId(),
@@ -361,46 +381,41 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
           buttons: item.buttons || [],
 
           children: item.children?.length
-            ? denormalizeMenuItemsFromDB(
-              item.children,
-              depth + 1,
-              config
-            )
+            ? denormalizeMenuItemsFromDB(item.children, depth + 1, config)
             : [],
-        } as MenuItem
-      })
-  }
+        } as MenuItem;
+      });
+  };
 
-
-
-  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // Fixed: Added type guard for DropdownChild
   const isDropdownChild = (item: MenuItem): item is DropdownChild =>
-    item.menuType === "dropdown-child"
+    item.menuType === "dropdown-child";
 
   const isStaticItem = (item: MenuItem): item is StaticMenuItem =>
-    item.menuType === "static"
+    item.menuType === "static";
 
   const isDropdownItem = (item: MenuItem): item is DropdownMenuItem =>
-    item.menuType === "dropdown"
+    item.menuType === "dropdown";
 
   const isMegaItem = (item: MenuItem): item is MegaMenuItem =>
-    item.menuType === "mega"
+    item.menuType === "mega";
 
   const isBreadcrumbItem = (item: MenuItem): item is BreadcrumbMenuItem =>
-    item.menuType === "breadcrumb"
+    item.menuType === "breadcrumb";
 
   const isSidebarItem = (item: MenuItem): item is SidebarMenuItem =>
-    item.menuType === "sidebar"
+    item.menuType === "sidebar";
 
   // Find selected item with proper type narrowing
-  const selectedItem = selectedItemId ? findMenuItem(menuItems, selectedItemId) : null
-
+  const selectedItem = selectedItemId
+    ? findMenuItem(menuItems, selectedItemId)
+    : null;
 
   // ==================== FIXED UTILITY FUNCTIONS ====================
   function generateId(): string {
-    return `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    return `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   function createEmptyItem(): MenuItem {
@@ -410,14 +425,14 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       linkType: "internal" as LinkType,
       slug: "/",
       enabled: true,
-    }
+    };
 
     if (config.location === "sidebar") {
       return {
         ...base,
         menuType: "sidebar",
-        children: []
-      } as SidebarMenuItem
+        children: [],
+      } as SidebarMenuItem;
     }
 
     // Navbar types
@@ -425,96 +440,110 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       case "static":
         return {
           ...base,
-          menuType: "static"
-        } as StaticMenuItem
+          menuType: "static",
+        } as StaticMenuItem;
       case "dropdown":
         return {
           ...base,
           menuType: "dropdown",
-          children: []
-        } as DropdownMenuItem
+          children: [],
+        } as DropdownMenuItem;
       case "mega":
         return {
           ...base,
           menuType: "mega",
-          children: []
-        } as MegaMenuItem
+          children: [],
+        } as MegaMenuItem;
       case "breadcrumb":
         return {
           ...base,
-          menuType: "breadcrumb"
-        } as BreadcrumbMenuItem
+          menuType: "breadcrumb",
+        } as BreadcrumbMenuItem;
       default:
         return {
           ...base,
-          menuType: "static"
-        } as StaticMenuItem
+          menuType: "static",
+        } as StaticMenuItem;
     }
   }
 
   // FIXED: Proper recursive search for all menu types
   function findMenuItem(items: MenuItem[], id: string): MenuItem | null {
     for (const item of items) {
-      if (item.id === id) return item
+      if (item.id === id) return item;
 
       // Check if item has children based on type
       if (isDropdownItem(item) && item.children) {
         for (const child of item.children) {
-          if (child.id === id) return child
+          if (child.id === id) return child;
         }
       } else if (isMegaItem(item) && item.children) {
-        const found = findMenuItem(item.children as MenuItem[], id)
-        if (found) return found
+        const found = findMenuItem(item.children as MenuItem[], id);
+        if (found) return found;
       } else if (isBreadcrumbItem(item) && item.children) {
-        const found = findMenuItem(item.children as MenuItem[], id)
-        if (found) return found
+        const found = findMenuItem(item.children as MenuItem[], id);
+        if (found) return found;
       } else if (isSidebarItem(item) && item.children) {
-        const found = findMenuItem(item.children as MenuItem[], id)
-        if (found) return found
+        const found = findMenuItem(item.children as MenuItem[], id);
+        if (found) return found;
       }
     }
-    return null
+    return null;
   }
 
   // FIXED: Update function with proper type handling
-  const updateMenuItem = (id: string, updates: Partial<Omit<MenuItem, 'menuType'>>) => {
-    setMenuItems(prev => {
+  const updateMenuItem = (
+    id: string,
+    updates: Partial<Omit<MenuItem, "menuType">>,
+  ) => {
+    setMenuItems((prev) => {
       const updateInTree = (items: MenuItem[]): MenuItem[] => {
-        return items.map(item => {
+        return items.map((item) => {
           if (item.id === id) {
             // Preserve menuType when updating
-            return { ...item, ...updates } as MenuItem
+            return { ...item, ...updates } as MenuItem;
           }
 
           // Recursively update children based on type
           if (isDropdownItem(item) && item.children) {
             return {
               ...item,
-              children: item.children.map(child =>
-                child.id === id ? { ...child, ...updates } as DropdownChild : child
-              )
-            } as DropdownMenuItem
+              children: item.children.map((child) =>
+                child.id === id
+                  ? ({ ...child, ...updates } as DropdownChild)
+                  : child,
+              ),
+            } as DropdownMenuItem;
           }
 
           if (isMegaItem(item) && item.children) {
-            return { ...item, children: updateInTree(item.children) as MegaMenuItem[] } as MegaMenuItem
+            return {
+              ...item,
+              children: updateInTree(item.children) as MegaMenuItem[],
+            } as MegaMenuItem;
           }
 
           if (isBreadcrumbItem(item) && item.children) {
-            return { ...item, children: updateInTree(item.children) as BreadcrumbMenuItem[] } as BreadcrumbMenuItem
+            return {
+              ...item,
+              children: updateInTree(item.children) as BreadcrumbMenuItem[],
+            } as BreadcrumbMenuItem;
           }
 
           if (isSidebarItem(item) && item.children) {
-            return { ...item, children: updateInTree(item.children) as SidebarMenuItem[] } as SidebarMenuItem
+            return {
+              ...item,
+              children: updateInTree(item.children) as SidebarMenuItem[],
+            } as SidebarMenuItem;
           }
 
-          return item
-        })
-      }
+          return item;
+        });
+      };
 
-      return updateInTree(prev)
-    })
-  }
+      return updateInTree(prev);
+    });
+  };
 
   // FIXED: Add child with proper nesting rules// FIXED: Make sure the function properly updates state
   const addChildItem = (parentId: string) => {
@@ -529,32 +558,35 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       enabled: true,
     };
 
-    setMenuItems(prev => {
+    setMenuItems((prev) => {
       const addChildRecursive = (items: MenuItem[]): MenuItem[] => {
-        return items.map(item => {
+        return items.map((item) => {
           if (item.id === parentId) {
             switch (item.menuType) {
               case "dropdown":
                 const newDropdownChild: DropdownChild = {
                   ...newChildBase,
-                  menuType: "dropdown-child"
+                  menuType: "dropdown-child",
                 };
                 return {
                   ...item,
                   children: [...(item.children || []), newDropdownChild],
-                  expanded: true
+                  expanded: true,
                 } as DropdownMenuItem;
 
               case "mega":
                 const newMegaChild: MegaMenuItem = {
                   ...newChildBase,
                   menuType: "mega",
-                  children: []
+                  children: [],
                 };
                 return {
                   ...item,
-                  children: [...((item as MegaMenuItem).children || []), newMegaChild],
-                  expanded: true
+                  children: [
+                    ...((item as MegaMenuItem).children || []),
+                    newMegaChild,
+                  ],
+                  expanded: true,
                 } as MegaMenuItem;
 
               case "breadcrumb":
@@ -566,19 +598,22 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 return {
                   ...item,
                   children: [newBreadcrumbChild],
-                  expanded: true
+                  expanded: true,
                 } as BreadcrumbMenuItem;
 
               case "sidebar":
                 const newSidebarChild: SidebarMenuItem = {
                   ...newChildBase,
                   menuType: "sidebar",
-                  children: []
+                  children: [],
                 };
                 return {
                   ...item,
-                  children: [...((item as SidebarMenuItem).children || []), newSidebarChild],
-                  expanded: true
+                  children: [
+                    ...((item as SidebarMenuItem).children || []),
+                    newSidebarChild,
+                  ],
+                  expanded: true,
                 } as SidebarMenuItem;
 
               default:
@@ -588,13 +623,24 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
 
           // Recursively search for parent in children
           if (isMegaItem(item) && item.children) {
-            return { ...item, children: addChildRecursive(item.children) as MegaMenuItem[] };
+            return {
+              ...item,
+              children: addChildRecursive(item.children) as MegaMenuItem[],
+            };
           }
           if (isSidebarItem(item) && item.children) {
-            return { ...item, children: addChildRecursive(item.children) as SidebarMenuItem[] };
+            return {
+              ...item,
+              children: addChildRecursive(item.children) as SidebarMenuItem[],
+            };
           }
           if (isBreadcrumbItem(item) && item.children) {
-            return { ...item, children: addChildRecursive(item.children) as BreadcrumbMenuItem[] };
+            return {
+              ...item,
+              children: addChildRecursive(
+                item.children,
+              ) as BreadcrumbMenuItem[],
+            };
           }
           if (isDropdownItem(item) && item.children) {
             return { ...item, children: item.children }; // No recursion for dropdown children
@@ -625,151 +671,183 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       linkType: "internal",
       slug: "/",
       enabled: true,
-      children: []
-    }
+      children: [],
+    };
 
     const addToMegaChildren = (children: MegaMenuItem[]): MegaMenuItem[] => {
-      return children.map(child => {
+      return children.map((child) => {
         if (child.id === parentChildId) {
           return {
             ...child,
-            children: [...(child.children || []), newNestedChild]
-          }
+            children: [...(child.children || []), newNestedChild],
+          };
         }
         if (child.children) {
-          return { ...child, children: addToMegaChildren(child.children) }
+          return { ...child, children: addToMegaChildren(child.children) };
         }
-        return child
-      })
-    }
+        return child;
+      });
+    };
 
-    setMenuItems(prev => prev.map(item => {
-      if (isMegaItem(item)) {
-        return { ...item, children: addToMegaChildren(item.children) }
-      }
-      return item
-    }))
-  }
+    setMenuItems((prev) =>
+      prev.map((item) => {
+        if (isMegaItem(item)) {
+          return { ...item, children: addToMegaChildren(item.children) };
+        }
+        return item;
+      }),
+    );
+  };
 
   // FIXED: Delete menu item with proper type handling
   const deleteMenuItem = (id: string) => {
     const deleteFromTree = (items: MenuItem[]): MenuItem[] => {
       return items
-        .filter(item => item.id !== id)
-        .map(item => {
+        .filter((item) => item.id !== id)
+        .map((item) => {
           // Handle children deletion based on type
           if (isDropdownItem(item) && item.children) {
             return {
               ...item,
-              children: item.children.filter(child => child.id !== id)
-            } as DropdownMenuItem
+              children: item.children.filter((child) => child.id !== id),
+            } as DropdownMenuItem;
           }
 
           if (isMegaItem(item) && item.children) {
-            return { ...item, children: deleteFromTree(item.children) as MegaMenuItem[] } as MegaMenuItem
+            return {
+              ...item,
+              children: deleteFromTree(item.children) as MegaMenuItem[],
+            } as MegaMenuItem;
           }
 
           if (isSidebarItem(item) && item.children) {
-            return { ...item, children: deleteFromTree(item.children) as SidebarMenuItem[] } as SidebarMenuItem
+            return {
+              ...item,
+              children: deleteFromTree(item.children) as SidebarMenuItem[],
+            } as SidebarMenuItem;
           }
 
           if (isBreadcrumbItem(item) && item.children) {
             // For breadcrumb, if child is deleted, clear the children
-            const updatedChildren = deleteFromTree(item.children) as BreadcrumbMenuItem[]
+            const updatedChildren = deleteFromTree(
+              item.children,
+            ) as BreadcrumbMenuItem[];
             if (updatedChildren.length === 0) {
-              const { children, ...rest } = item
-              return rest as BreadcrumbMenuItem
+              const { children, ...rest } = item;
+              return rest as BreadcrumbMenuItem;
             }
-            return { ...item, children: updatedChildren } as BreadcrumbMenuItem
+            return { ...item, children: updatedChildren } as BreadcrumbMenuItem;
           }
 
-          return item
-        })
-    }
+          return item;
+        });
+    };
 
-    setMenuItems(deleteFromTree(menuItems))
-    if (selectedItemId === id) setSelectedItemId(null)
-  }
+    setMenuItems(deleteFromTree(menuItems));
+    if (selectedItemId === id) setSelectedItemId(null);
+  };
 
   // FIXED: Add content block to any item
-  const addContentBlock = (itemId: string, type: "image" | "text" | "button") => {
-    setMenuItems(prev => prev.map(item => {
-      if (item.id !== itemId) return item
+  const addContentBlock = (
+    itemId: string,
+    type: "image" | "text" | "button",
+  ) => {
+    setMenuItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
 
-      const newId = generateId()
+        const newId = generateId();
 
-      switch (type) {
-        case "image":
-          return {
-            ...item,
-            images: [...(item.images || []), {
-              id: newId,
-              url: "",
-              alt: "New Image"
-            }]
-          }
-        case "text":
-          return {
-            ...item,
-            textBlocks: [...(item.textBlocks || []), {
-              id: newId,
-              content: "New text content",
-              type: "paragraph"
-            }]
-          }
-        case "button":
-          return {
-            ...item,
-            buttons: [...(item.buttons || []), {
-              id: newId,
-              label: "New Button",
-              action: "/",
-              variant: "primary"
-            }]
-          }
-        default:
-          return item
-      }
-    }))
-  }
+        switch (type) {
+          case "image":
+            return {
+              ...item,
+              images: [
+                ...(item.images || []),
+                {
+                  id: newId,
+                  url: "",
+                  alt: "New Image",
+                },
+              ],
+            };
+          case "text":
+            return {
+              ...item,
+              textBlocks: [
+                ...(item.textBlocks || []),
+                {
+                  id: newId,
+                  content: "New text content",
+                  type: "paragraph",
+                },
+              ],
+            };
+          case "button":
+            return {
+              ...item,
+              buttons: [
+                ...(item.buttons || []),
+                {
+                  id: newId,
+                  label: "New Button",
+                  action: "/",
+                  variant: "primary",
+                },
+              ],
+            };
+          default:
+            return item;
+        }
+      }),
+    );
+  };
 
   // FIXED: Update content blocks with controlled inputs
   const updateContentBlock = (
     itemId: string,
     type: "image" | "text" | "button",
     blockId: string,
-    updates: Partial<MenuImage | MenuTextBlock | MenuButton>
+    updates: Partial<MenuImage | MenuTextBlock | MenuButton>,
   ) => {
-    setMenuItems(prev => prev.map(item => {
-      if (item.id !== itemId) return item
+    setMenuItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
 
-      switch (type) {
-        case "image":
-          return {
-            ...item,
-            images: item.images?.map(img =>
-              img.id === blockId ? { ...img, ...updates } as MenuImage : img
-            )
-          }
-        case "text":
-          return {
-            ...item,
-            textBlocks: item.textBlocks?.map(text =>
-              text.id === blockId ? { ...text, ...updates } as MenuTextBlock : text
-            )
-          }
-        case "button":
-          return {
-            ...item,
-            buttons: item.buttons?.map(btn =>
-              btn.id === blockId ? { ...btn, ...updates } as MenuButton : btn
-            )
-          }
-        default:
-          return item
-      }
-    }))
-  }
+        switch (type) {
+          case "image":
+            return {
+              ...item,
+              images: item.images?.map((img) =>
+                img.id === blockId
+                  ? ({ ...img, ...updates } as MenuImage)
+                  : img,
+              ),
+            };
+          case "text":
+            return {
+              ...item,
+              textBlocks: item.textBlocks?.map((text) =>
+                text.id === blockId
+                  ? ({ ...text, ...updates } as MenuTextBlock)
+                  : text,
+              ),
+            };
+          case "button":
+            return {
+              ...item,
+              buttons: item.buttons?.map((btn) =>
+                btn.id === blockId
+                  ? ({ ...btn, ...updates } as MenuButton)
+                  : btn,
+              ),
+            };
+          default:
+            return item;
+        }
+      }),
+    );
+  };
 
   // FIXED: Normalize menu items for database with proper type handling
   const normalizeMenuItemsForDB = (items: MenuItem[]): any[] => {
@@ -784,9 +862,10 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       images: item.images || [],
       textBlocks: item.textBlocks || [],
       buttons: item.buttons || [],
-      children: 'children' in item && item.children
-        ? normalizeMenuItemsForDB(item.children)
-        : [],
+      children:
+        "children" in item && item.children
+          ? normalizeMenuItemsForDB(item.children)
+          : [],
     }));
   };
 
@@ -794,119 +873,149 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
 
   const handleSave = async () => {
     // Validate menu structure based on type
-    const validationErrors: string[] = []
+    const validationErrors: string[] = [];
 
-    const validateMenu = (items: MenuItem[], depth = 0, parentLabel = ""): void => {
-      items.forEach(item => {
+    const validateMenu = (
+      items: MenuItem[],
+      depth = 0,
+      parentLabel = "",
+    ): void => {
+      items.forEach((item) => {
         // First, ensure we're dealing with a valid menu item
-        if (!item || typeof item !== 'object') {
-          validationErrors.push("Invalid menu item detected")
-          return
+        if (!item || typeof item !== "object") {
+          validationErrors.push("Invalid menu item detected");
+          return;
         }
 
         // Check static navbar for children
         if (config.navbarType === "static" && item.menuType === "static") {
           // Use type assertion to check if it's a static item with children property
-          const staticItem = item as StaticMenuItem
-          if ('children' in staticItem && staticItem.children) {
-            validationErrors.push(`Static navbar item "${staticItem.label}" cannot have children`)
+          const staticItem = item as StaticMenuItem;
+          if ("children" in staticItem && staticItem.children) {
+            validationErrors.push(
+              `Static navbar item "${staticItem.label}" cannot have children`,
+            );
           }
         }
 
         // Check dropdown nesting depth
-        if (config.navbarType === "dropdown" && item.menuType === "dropdown" && depth > 1) {
-          validationErrors.push(`Dropdown item "${item.label}" exceeds maximum depth of 1`)
+        if (
+          config.navbarType === "dropdown" &&
+          item.menuType === "dropdown" &&
+          depth > 1
+        ) {
+          validationErrors.push(
+            `Dropdown item "${item.label}" exceeds maximum depth of 1`,
+          );
         }
 
         // Recursively validate children based on type
         if (isMegaItem(item) && item.children) {
-          validateMenu(item.children, depth + 1, item.label)
+          validateMenu(item.children, depth + 1, item.label);
         } else if (isSidebarItem(item) && item.children) {
-          validateMenu(item.children, depth + 1, item.label)
+          validateMenu(item.children, depth + 1, item.label);
         } else if (isBreadcrumbItem(item) && item.children) {
-          validateMenu(item.children, depth + 1, item.label)
+          validateMenu(item.children, depth + 1, item.label);
         } else if (isDropdownItem(item) && item.children) {
           // For dropdown, validate children but don't recurse further (dropdown children can't have children)
-          item.children.forEach(child => {
+          item.children.forEach((child) => {
             if (!child.enabled) {
-              validationErrors.push(`Dropdown child "${child.label}" in "${item.label}" is disabled`)
+              validationErrors.push(
+                `Dropdown child "${child.label}" in "${item.label}" is disabled`,
+              );
             }
-          })
+          });
         }
         // For static items and dropdown children, no recursion needed
-      })
-    }
+      });
+    };
 
-    validateMenu(menuItems)
+    validateMenu(menuItems);
 
     if (validationErrors.length > 0) {
-      setMessage(`Validation errors:\n${validationErrors.join("\n")}`)
-      return
+      setMessage(`Validation errors:\n${validationErrors.join("\n")}`);
+      return;
     }
 
     const menuDataForDB = {
       items: normalizeMenuItemsForDB(menuItems),
       location: config.location,
       navbarType: config.location === "navbar" ? config.navbarType : undefined,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     try {
       setLoading(true);
-      const response = await updateMenu(menuId, menuDataForDB)
+      const response = await updateMenu(menuId, menuDataForDB);
 
       if (response.ok) {
-        setMessage("Menu saved successfully!")
+        setMessage("Menu saved successfully!");
         // Wait 2 seconds before redirecting to show success message
         setTimeout(() => {
-          router.push("/cms/global/menus")
-        }, 2000)
+          router.push("/cms/global/menus");
+        }, 2000);
       } else {
-        setMessage("Failed to save menu")
+        setMessage("Failed to save menu");
       }
     } catch (error) {
-      console.error("Failed to save menu:", error)
-      setMessage("Failed to save menu. Please try again.")
+      console.error("Failed to save menu:", error);
+      setMessage("Failed to save menu. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
+  };
   // FIXED: Render menu item with proper nesting rules
   const renderMenuItem = (item: MenuItem, depth = 0) => {
-    const canAddChild = !isDropdownChild(item) &&
+    const canAddChild =
+      !isDropdownChild(item) &&
       ((config.navbarType === "dropdown" && depth === 0) ||
-        (config.navbarType === "mega") ||
+        config.navbarType === "mega" ||
         (config.navbarType === "breadcrumb" && depth < 10) ||
-        (config.location === "sidebar" && depth < 3))
+        (config.location === "sidebar" && depth < 3));
 
-    const showAddChildButton = canAddChild &&
+    const showAddChildButton =
+      canAddChild &&
       config.navbarType !== "static" &&
-      !(config.navbarType === "breadcrumb" && item.children && item.children.length > 0)
+      !(
+        config.navbarType === "breadcrumb" &&
+        item.children &&
+        item.children.length > 0
+      );
 
     return (
       <div key={item.id} className="space-y-1">
         <div
-          className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${selectedItemId === item.id ? "bg-primary/10 border border-primary/20" : "hover:bg-muted"
-            }`}
+          className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
+            selectedItemId === item.id
+              ? "bg-primary/10 border border-primary/20"
+              : "hover:bg-muted"
+          }`}
           style={{ paddingLeft: `${depth * 1.5 + 0.5}rem` }}
           onClick={() => setSelectedItemId(item.id)}
         >
           <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
 
           {/* Expand/collapse for items with children */}
-          {(item.menuType !== "dropdown-child" && item.menuType !== "static" &&
-            'children' in item && item.children &&
-            (isMegaItem(item) || isSidebarItem(item) ||
+          {item.menuType !== "dropdown-child" &&
+            item.menuType !== "static" &&
+            "children" in item &&
+            item.children &&
+            (isMegaItem(item) ||
+              isSidebarItem(item) ||
               (isDropdownItem(item) && depth === 0) ||
-              (isBreadcrumbItem(item) && item.children))) && (
+              (isBreadcrumbItem(item) && item.children)) && (
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  updateMenuItem(item.id, { expanded: !item.expanded })
+                  e.stopPropagation();
+                  updateMenuItem(item.id, { expanded: !item.expanded });
                 }}
                 className="p-0.5 hover:bg-background rounded"
               >
-                {item.expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                {item.expanded ? (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5" />
+                )}
               </button>
             )}
 
@@ -914,27 +1023,31 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
             <span className="font-medium text-sm truncate">{item.label}</span>
 
             {/* Content indicators */}
-            {(item.images && item.images.length > 0) && (
+            {item.images && item.images.length > 0 && (
               <Badge variant="outline" className="h-5 px-1">
                 <ImageIcon className="h-3 w-3 mr-1" />
                 {item.images.length}
               </Badge>
             )}
-            {(item.textBlocks && item.textBlocks.length > 0) && (
+            {item.textBlocks && item.textBlocks.length > 0 && (
               <Badge variant="outline" className="h-5 px-1">
                 <Type className="h-3 w-3 mr-1" />
                 {item.textBlocks.length}
               </Badge>
             )}
-            {(item.buttons && item.buttons.length > 0) && (
+            {item.buttons && item.buttons.length > 0 && (
               <Badge variant="outline" className="h-5 px-1">
                 <Link className="h-3 w-3 mr-1" />
                 {item.buttons.length}
               </Badge>
             )}
 
-            {item.linkType === "external" && <ExternalLink className="h-3 w-3 text-muted-foreground" />}
-            {!item.enabled && <EyeOff className="h-3 w-3 text-muted-foreground" />}
+            {item.linkType === "external" && (
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+            )}
+            {!item.enabled && (
+              <EyeOff className="h-3 w-3 text-muted-foreground" />
+            )}
           </div>
 
           {/* Add child button */}
@@ -956,8 +1069,8 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
           {/* Enable/disable toggle */}
           <button
             onClick={(e) => {
-              e.stopPropagation()
-              updateMenuItem(item.id, { enabled: !item.enabled })
+              e.stopPropagation();
+              updateMenuItem(item.id, { enabled: !item.enabled });
             }}
             className="p-1 hover:bg-background rounded"
           >
@@ -970,11 +1083,11 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
         </div>
 
         {/* Render children if expanded */}
-        {item.expanded && 'children' in item && item.children && (
+        {item.expanded && "children" in item && item.children && (
           <div className="ml-4">
             {isDropdownItem(item) && (
               <div className="space-y-1">
-                {item.children.map(child => (
+                {item.children.map((child) => (
                   <div
                     key={child.id}
                     className="flex items-center gap-2 p-2 ml-4 rounded-md cursor-pointer hover:bg-muted/50"
@@ -989,26 +1102,26 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
 
             {isMegaItem(item) && (
               <div className="space-y-1">
-                {item.children.map(child => renderMenuItem(child, depth + 1))}
+                {item.children.map((child) => renderMenuItem(child, depth + 1))}
               </div>
             )}
 
             {isBreadcrumbItem(item) && item.children && (
               <div className="ml-4">
-                {item.children.map(child => renderMenuItem(child, depth + 1))}
+                {item.children.map((child) => renderMenuItem(child, depth + 1))}
               </div>
             )}
 
             {isSidebarItem(item) && (
               <div className="space-y-1">
-                {item.children.map(child => renderMenuItem(child, depth + 1))}
+                {item.children.map((child) => renderMenuItem(child, depth + 1))}
               </div>
             )}
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   // ==================== RENDER ====================
   return (
@@ -1016,15 +1129,23 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       {/* Header with Preview Dialog */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-balance text-3xl font-bold tracking-tight">Menu Builder</h1>
+          <h1 className="text-balance text-3xl font-bold tracking-tight">
+            Menu Builder
+          </h1>
           {message && (
-            <div className={`mt-1 p-2 rounded text-sm ${message.includes("success") ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div
+              className={`mt-1 p-2 rounded text-sm ${message.includes("success") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+            >
               {message}
             </div>
           )}
 
           <p className="text-pretty text-muted-foreground mt-1">
-            Build {config.location === "navbar" ? `${config.navbarType} navbar` : "sidebar"} menu
+            Build{" "}
+            {config.location === "navbar"
+              ? `${config.navbarType} navbar`
+              : "sidebar"}{" "}
+            menu
           </p>
         </div>
         <div className="flex gap-2">
@@ -1068,13 +1189,19 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="navbar" id="navbar" />
-                    <Label htmlFor="navbar" className="font-normal cursor-pointer">
+                    <Label
+                      htmlFor="navbar"
+                      className="font-normal cursor-pointer"
+                    >
                       Navbar
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="sidebar" id="sidebar" />
-                    <Label htmlFor="sidebar" className="font-normal cursor-pointer">
+                    <Label
+                      htmlFor="sidebar"
+                      className="font-normal cursor-pointer"
+                    >
                       Sidebar
                     </Label>
                   </div>
@@ -1087,31 +1214,43 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                   <RadioGroup
                     value={config.navbarType}
                     onValueChange={(value: NavbarType) =>
-                      setConfig(prev => ({ ...prev, navbarType: value }))
+                      setConfig((prev) => ({ ...prev, navbarType: value }))
                     }
                   >
                     <div className="flex flex-wrap gap-2">
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="static" id="static" />
-                        <Label htmlFor="static" className="font-normal cursor-pointer text-xs">
+                        <Label
+                          htmlFor="static"
+                          className="font-normal cursor-pointer text-xs"
+                        >
                           Static (No children)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="dropdown" id="dropdown" />
-                        <Label htmlFor="dropdown" className="font-normal cursor-pointer text-xs">
+                        <Label
+                          htmlFor="dropdown"
+                          className="font-normal cursor-pointer text-xs"
+                        >
                           Dropdown (One level)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="mega" id="mega" />
-                        <Label htmlFor="mega" className="font-normal cursor-pointer text-xs">
+                        <Label
+                          htmlFor="mega"
+                          className="font-normal cursor-pointer text-xs"
+                        >
                           Mega (Unlimited nesting)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="breadcrumb" id="breadcrumb" />
-                        <Label htmlFor="breadcrumb" className="font-normal cursor-pointer text-xs">
+                        <Label
+                          htmlFor="breadcrumb"
+                          className="font-normal cursor-pointer text-xs"
+                        >
                           Breadcrumb (Linear chain)
                         </Label>
                       </div>
@@ -1153,7 +1292,9 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                       <li>• Max 3 levels recommended</li>
                     </>
                   )}
-                  <li className="pt-2">• All items support optional: images, text blocks, buttons</li>
+                  <li className="pt-2">
+                    • All items support optional: images, text blocks, buttons
+                  </li>
                 </ul>
               </div>
             </div>
@@ -1185,9 +1326,9 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const newItem = createEmptyItem()
-                  setMenuItems([...menuItems, newItem])
-                  setSelectedItemId(newItem.id)
+                  const newItem = createEmptyItem();
+                  setMenuItems([...menuItems, newItem]);
+                  setSelectedItemId(newItem.id);
                 }}
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -1203,7 +1344,9 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     <Plus className="h-8 w-8" />
                   </div>
                   <p className="font-medium">No menu items yet</p>
-                  <p className="text-sm mt-1">Add your first item to start building</p>
+                  <p className="text-sm mt-1">
+                    Add your first item to start building
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -1223,8 +1366,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
             <CardDescription>
               {selectedItem
                 ? `Configure ${config.location} item settings`
-                : "Select an item to edit"
-              }
+                : "Select an item to edit"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1243,7 +1385,11 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     <Input
                       id="label"
                       value={selectedItem.label}
-                      onChange={(e) => updateMenuItem(selectedItem.id, { label: e.target.value })}
+                      onChange={(e) =>
+                        updateMenuItem(selectedItem.id, {
+                          label: e.target.value,
+                        })
+                      }
                       placeholder="Menu item label"
                     />
                   </div>
@@ -1259,19 +1405,28 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                       <div className="flex flex-wrap gap-4">
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="internal" id="internal" />
-                          <Label htmlFor="internal" className="font-normal cursor-pointer text-sm">
+                          <Label
+                            htmlFor="internal"
+                            className="font-normal cursor-pointer text-sm"
+                          >
                             Internal Page
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="external" id="external" />
-                          <Label htmlFor="external" className="font-normal cursor-pointer text-sm">
+                          <Label
+                            htmlFor="external"
+                            className="font-normal cursor-pointer text-sm"
+                          >
                             External URL
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="none" id="none" />
-                          <Label htmlFor="none" className="font-normal cursor-pointer text-sm">
+                          <Label
+                            htmlFor="none"
+                            className="font-normal cursor-pointer text-sm"
+                          >
                             No Link
                           </Label>
                         </div>
@@ -1279,15 +1434,26 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     </RadioGroup>
                   </div>
 
-                  {(selectedItem.linkType === "internal" || selectedItem.linkType === "external") && (
+                  {(selectedItem.linkType === "internal" ||
+                    selectedItem.linkType === "external") && (
                     <div className="space-y-2">
                       <Label>
-                        {selectedItem.linkType === "internal" ? "Page URL" : "External URL"}
+                        {selectedItem.linkType === "internal"
+                          ? "Page URL"
+                          : "External URL"}
                       </Label>
                       <Input
                         value={selectedItem.slug || ""}
-                        onChange={(e) => updateMenuItem(selectedItem.id, { slug: e.target.value })}
-                        placeholder={selectedItem.linkType === "internal" ? "/about" : "https://example.com"}
+                        onChange={(e) =>
+                          updateMenuItem(selectedItem.id, {
+                            slug: e.target.value,
+                          })
+                        }
+                        placeholder={
+                          selectedItem.linkType === "internal"
+                            ? "/about"
+                            : "https://example.com"
+                        }
                       />
                     </div>
                   )}
@@ -1297,12 +1463,16 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 <TabsContent value="blocks" className="space-y-6 mt-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Content Blocks</Label>
+                      <Label className="text-sm font-medium">
+                        Content Blocks
+                      </Label>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => addContentBlock(selectedItem.id, "image")}
+                          onClick={() =>
+                            addContentBlock(selectedItem.id, "image")
+                          }
                         >
                           <ImageIcon className="h-3 w-3 mr-2" />
                           Add Image
@@ -1310,7 +1480,9 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => addContentBlock(selectedItem.id, "text")}
+                          onClick={() =>
+                            addContentBlock(selectedItem.id, "text")
+                          }
                         >
                           <Type className="h-3 w-3 mr-2" />
                           Add Text
@@ -1318,7 +1490,9 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => addContentBlock(selectedItem.id, "button")}
+                          onClick={() =>
+                            addContentBlock(selectedItem.id, "button")
+                          }
                         >
                           <Link className="h-3 w-3 mr-2" />
                           Add Button
@@ -1330,8 +1504,11 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     {selectedItem.images && selectedItem.images.length > 0 && (
                       <div className="space-y-3">
                         <Label className="text-sm">Images</Label>
-                        {selectedItem.images.map(img => (
-                          <div key={img.id} className="flex items-center gap-3 p-3 border rounded-md">
+                        {selectedItem.images.map((img) => (
+                          <div
+                            key={img.id}
+                            className="flex items-center gap-3 p-3 border rounded-md"
+                          >
                             <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
                               <ImageIcon className="h-6 w-6 text-muted-foreground" />
                             </div>
@@ -1339,12 +1516,26 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                               <Input
                                 placeholder="Image URL"
                                 value={img.url}
-                                onChange={(e) => updateContentBlock(selectedItem.id, "image", img.id, { url: e.target.value })}
+                                onChange={(e) =>
+                                  updateContentBlock(
+                                    selectedItem.id,
+                                    "image",
+                                    img.id,
+                                    { url: e.target.value },
+                                  )
+                                }
                               />
                               <Input
                                 placeholder="Alt text"
                                 value={img.alt}
-                                onChange={(e) => updateContentBlock(selectedItem.id, "image", img.id, { alt: e.target.value })}
+                                onChange={(e) =>
+                                  updateContentBlock(
+                                    selectedItem.id,
+                                    "image",
+                                    img.id,
+                                    { alt: e.target.value },
+                                  )
+                                }
                               />
                             </div>
                           </div>
@@ -1353,42 +1544,71 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     )}
 
                     {/* Text Blocks */}
-                    {selectedItem.textBlocks && selectedItem.textBlocks.length > 0 && (
-                      <div className="space-y-3">
-                        <Label className="text-sm">Text Blocks</Label>
-                        {selectedItem.textBlocks.map(text => (
-                          <div key={text.id} className="p-3 border rounded-md">
-                            <Textarea
-                              placeholder="Text content"
-                              value={text.content}
-                              onChange={(e) => updateContentBlock(selectedItem.id, "text", text.id, { content: e.target.value })}
-                              rows={3}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {selectedItem.textBlocks &&
+                      selectedItem.textBlocks.length > 0 && (
+                        <div className="space-y-3">
+                          <Label className="text-sm">Text Blocks</Label>
+                          {selectedItem.textBlocks.map((text) => (
+                            <div
+                              key={text.id}
+                              className="p-3 border rounded-md"
+                            >
+                              <Textarea
+                                placeholder="Text content"
+                                value={text.content}
+                                onChange={(e) =>
+                                  updateContentBlock(
+                                    selectedItem.id,
+                                    "text",
+                                    text.id,
+                                    { content: e.target.value },
+                                  )
+                                }
+                                rows={3}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                     {/* Buttons */}
-                    {selectedItem.buttons && selectedItem.buttons.length > 0 && (
-                      <div className="space-y-3">
-                        <Label className="text-sm">Buttons</Label>
-                        {selectedItem.buttons.map(btn => (
-                          <div key={btn.id} className="flex items-center gap-3 p-3 border rounded-md">
-                            <Input
-                              placeholder="Button label"
-                              value={btn.label}
-                              onChange={(e) => updateContentBlock(selectedItem.id, "button", btn.id, { label: e.target.value })}
-                            />
-                            <Input
-                              placeholder="Action URL"
-                              value={btn.action}
-                              onChange={(e) => updateContentBlock(selectedItem.id, "button", btn.id, { action: e.target.value })}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {selectedItem.buttons &&
+                      selectedItem.buttons.length > 0 && (
+                        <div className="space-y-3">
+                          <Label className="text-sm">Buttons</Label>
+                          {selectedItem.buttons.map((btn) => (
+                            <div
+                              key={btn.id}
+                              className="flex items-center gap-3 p-3 border rounded-md"
+                            >
+                              <Input
+                                placeholder="Button label"
+                                value={btn.label}
+                                onChange={(e) =>
+                                  updateContentBlock(
+                                    selectedItem.id,
+                                    "button",
+                                    btn.id,
+                                    { label: e.target.value },
+                                  )
+                                }
+                              />
+                              <Input
+                                placeholder="Action URL"
+                                value={btn.action}
+                                onChange={(e) =>
+                                  updateContentBlock(
+                                    selectedItem.id,
+                                    "button",
+                                    btn.id,
+                                    { action: e.target.value },
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                   </div>
                 </TabsContent>
 
@@ -1397,11 +1617,15 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Enabled</Label>
-                      <p className="text-xs text-muted-foreground">Show this item in the menu</p>
+                      <p className="text-xs text-muted-foreground">
+                        Show this item in the menu
+                      </p>
                     </div>
                     <Switch
                       checked={selectedItem.enabled}
-                      onCheckedChange={(checked) => updateMenuItem(selectedItem.id, { enabled: checked })}
+                      onCheckedChange={(checked) =>
+                        updateMenuItem(selectedItem.id, { enabled: checked })
+                      }
                     />
                   </div>
 
@@ -1411,9 +1635,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                       size="sm"
                       className="w-full"
                       onClick={() => {
-
-                        deleteMenuItem(selectedItem.id)
-
+                        deleteMenuItem(selectedItem.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -1428,12 +1650,14 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                   <FileText className="h-8 w-8" />
                 </div>
                 <p className="font-medium">No item selected</p>
-                <p className="text-sm mt-1">Select an item from the menu tree to edit its properties</p>
+                <p className="text-sm mt-1">
+                  Select an item from the menu tree to edit its properties
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }

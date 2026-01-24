@@ -19,40 +19,33 @@ export const getUserPages = async () => {
   }
 };
 
-//get page based on website 
-export const fetchPagesByTenant= async (tenantId)=>{
-  try{
-    console.log("Tenant Id for getting pages", tenantId);
-
+//get page based on website
+export const fetchPagesByTenant = async (tenantId) => {
+  try {
     const response = await fetch(`${GET_PAGES_ON_WEBSITE}/${tenantId}`, {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
 
     const request = await response.json();
 
-    if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    console.log("From You underwtandfbds")
-    console.log("Pages By Tenant", request);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     return request.pages;
-  }catch(err){
+  } catch (err) {
     console.error(err);
-
   }
-}
+};
 
 //Get User page By Id
 export const getPageById = async (pageId) => {
   try {
-    console.log("Page Id", pageId);
     const response = await fetch(`${GET_PAGE_BY_ID}?pageId=${pageId}`, {
       method: "GET",
       credentials: "include",
     });
 
     const request = await response.json();
-    console.log("Page By Id Response", request);
     return request;
   } catch (err) {
     console.error(err);

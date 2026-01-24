@@ -4,24 +4,26 @@ import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 
 const router = express.Router();
 
-router.get("/website/:tenantId", verificationMiddleware,
-    async(req, res, next)=>{
-        try{
-            const userId = req.user?.userId;
-            const tenantId = req.params.tenantId;
-            console.log("Tenant Id", tenantId);
-            console.log("User Id", userId);
+router.get(
+  "/website/:tenantId",
+  verificationMiddleware,
+  async (req, res, next) => {
+    try {
+      const userId = req.user?.userId;
+      const tenantId = req.params.tenantId;
+      console.log("Tenant Id", tenantId);
+      console.log("User Id", userId);
 
-            if(!userId) throw new Error("Forbidden");
-            if(!tenantId) throw new Error("Missing required fields");
+      if (!userId) throw new Error("Forbidden");
+      if (!tenantId) throw new Error("Missing required fields");
 
-            const getTenantPages = await Page.find({tenantId : tenantId})
-            if(!getTenantPages) throw new Error("page not found");
-            return res.status(200).json({pages: getTenantPages});
-        }catch(err){
-            next(err);
-        }
+      const getTenantPages = await Page.find({ tenantId: tenantId });
+      if (!getTenantPages) throw new Error("page not found");
+      return res.status(200).json({ pages: getTenantPages });
+    } catch (err) {
+      next(err);
     }
-)
+  },
+);
 
 export default router;

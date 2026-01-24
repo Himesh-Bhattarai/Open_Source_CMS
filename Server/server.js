@@ -1,4 +1,4 @@
-// server.js 
+// server.js
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
@@ -40,6 +40,7 @@ import deleteForm from "./Routes/Delete/formDelete.js";
 import loadForms from "./Routes/Load/form.js";
 import updateForm from "./Routes/Form/Form.js";
 import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
+import adminLoad from "./Routes/Load/adminLoad.js";
 
 import externalRequest from "./Routes/Api/oneRoutes.js";
 dotenv.config();
@@ -50,7 +51,7 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true,
-  })
+  }),
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -82,6 +83,8 @@ app.use("/api/v1/seo/load-seo", loadSeo);
 app.use("/api/v1/form", loadForms);
 app.use("/api/v1/integrations", integrationsApi);
 
+//fetch routes for ADMIN
+app.use("/api/v1/admin/get-all-users", adminLoad);
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
 app.use("/api/v2/check-slug", slugServices);
@@ -105,11 +108,8 @@ app.use("/api/v1/update-form", updateForm);
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);
 
-
-
 //external request routes
 app.use("/api/v1/external-request", externalRequest);
-
 
 // Error handler
 app.use(errorHandler);

@@ -49,7 +49,6 @@ export const deleteAllTenants = async () => {
 
 export const editTenantById = async (tenantId, data) => {
   try {
-    console.log("What is the data  Structure", data);
     const response = await fetch(`${EDIT_TENANT_BY_ID}/${tenantId}`, {
       method: "PUT",
       credentials: "include",
@@ -60,7 +59,7 @@ export const editTenantById = async (tenantId, data) => {
     });
 
     const request = await response.json();
-    console.log("What is the backend response ", request);
+
     if (response.ok)
       return {
         ok: response.ok,

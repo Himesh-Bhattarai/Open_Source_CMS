@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Search, X, Plus, Save } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Search, X, Plus, Save } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -15,32 +21,40 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 interface SearchFilter {
-  id: string
-  field: string
-  operator: string
-  value: string
+  id: string;
+  field: string;
+  operator: string;
+  value: string;
 }
 
 interface SavedFilter {
-  id: string
-  name: string
-  filters: SearchFilter[]
+  id: string;
+  name: string;
+  filters: SearchFilter[];
 }
 
 export function AdvancedSearch() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [filters, setFilters] = useState<SearchFilter[]>([])
+  const [isOpen, setIsOpen] = useState(false);
+  const [filters, setFilters] = useState<SearchFilter[]>([]);
   const [savedFilters] = useState<SavedFilter[]>([
     {
       id: "1",
       name: "Published Pages",
-      filters: [{ id: "1", field: "status", operator: "equals", value: "published" }],
+      filters: [
+        { id: "1", field: "status", operator: "equals", value: "published" },
+      ],
     },
-    { id: "2", name: "My Drafts", filters: [{ id: "2", field: "author", operator: "equals", value: "Sarah K." }] },
-  ])
+    {
+      id: "2",
+      name: "My Drafts",
+      filters: [
+        { id: "2", field: "author", operator: "equals", value: "Sarah K." },
+      ],
+    },
+  ]);
 
   const fields = [
     { value: "title", label: "Title" },
@@ -48,14 +62,14 @@ export function AdvancedSearch() {
     { value: "author", label: "Author" },
     { value: "created", label: "Created Date" },
     { value: "modified", label: "Modified Date" },
-  ]
+  ];
 
   const operators = [
     { value: "equals", label: "Equals" },
     { value: "contains", label: "Contains" },
     { value: "starts_with", label: "Starts with" },
     { value: "ends_with", label: "Ends with" },
-  ]
+  ];
 
   const addFilter = () => {
     setFilters([
@@ -66,21 +80,27 @@ export function AdvancedSearch() {
         operator: "contains",
         value: "",
       },
-    ])
-  }
+    ]);
+  };
 
   const removeFilter = (id: string) => {
-    setFilters(filters.filter((f) => f.id !== id))
-  }
+    setFilters(filters.filter((f) => f.id !== id));
+  };
 
-  const updateFilter = (id: string, field: keyof SearchFilter, value: string) => {
-    setFilters(filters.map((f) => (f.id === id ? { ...f, [field]: value } : f)))
-  }
+  const updateFilter = (
+    id: string,
+    field: keyof SearchFilter,
+    value: string,
+  ) => {
+    setFilters(
+      filters.map((f) => (f.id === id ? { ...f, [field]: value } : f)),
+    );
+  };
 
   const applyFilters = () => {
-    console.log("[v0] Applying filters:", filters)
-    setIsOpen(false)
-  }
+    // Apply filters
+    setIsOpen(false);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -93,7 +113,9 @@ export function AdvancedSearch() {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Advanced Search</DialogTitle>
-          <DialogDescription>Create complex search queries with multiple filters</DialogDescription>
+          <DialogDescription>
+            Create complex search queries with multiple filters
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -129,7 +151,9 @@ export function AdvancedSearch() {
 
             {filters.length === 0 ? (
               <div className="text-center py-8 border rounded-lg bg-muted/30">
-                <p className="text-sm text-muted-foreground">No filters added yet</p>
+                <p className="text-sm text-muted-foreground">
+                  No filters added yet
+                </p>
               </div>
             ) : (
               filters.map((filter, index) => (
@@ -139,8 +163,13 @@ export function AdvancedSearch() {
                       AND
                     </Badge>
                   )}
-                  <Select value={filter.field} onValueChange={(value) => updateFilter(filter.id, "field", value)}>
-                    <SelectTrigger className="w-[140px]">
+                  <Select
+                    value={filter.field}
+                    onValueChange={(value) =>
+                      updateFilter(filter.id, "field", value)
+                    }
+                  >
+                    <SelectTrigger className="w-35">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -151,8 +180,13 @@ export function AdvancedSearch() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={filter.operator} onValueChange={(value) => updateFilter(filter.id, "operator", value)}>
-                    <SelectTrigger className="w-[140px]">
+                  <Select
+                    value={filter.operator}
+                    onValueChange={(value) =>
+                      updateFilter(filter.id, "operator", value)
+                    }
+                  >
+                    <SelectTrigger className="w-35">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -166,10 +200,16 @@ export function AdvancedSearch() {
                   <Input
                     placeholder="Value"
                     value={filter.value}
-                    onChange={(e) => updateFilter(filter.id, "value", e.target.value)}
+                    onChange={(e) =>
+                      updateFilter(filter.id, "value", e.target.value)
+                    }
                     className="flex-1"
                   />
-                  <Button variant="ghost" size="icon" onClick={() => removeFilter(filter.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeFilter(filter.id)}
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -192,5 +232,5 @@ export function AdvancedSearch() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

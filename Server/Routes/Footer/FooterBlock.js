@@ -1,9 +1,7 @@
-import express from 'express'
-import { footerBlockCheckpoint } from '../../CheckPoint/Footer/FooterBlock.js'
-const router = express.Router()
+import express from "express";
+import { footerBlockCheckpoint } from "../../CheckPoint/Footer/FooterBlock.js";
+const router = express.Router();
 
-router.post("/",
-    footerBlockCheckpoint
-)
+router.post("/", footerBlockCheckpoint);
 
-export default router
+export default router;

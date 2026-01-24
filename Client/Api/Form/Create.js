@@ -2,7 +2,6 @@ const CREATE_FORM_URL = "http://localhost:5000/api/v1/create-form/form";
 const UPDATE_FORM_URL = "http://localhost:5000/api/v1/update-form/form";
 
 export const createForm = async (data) => {
-  console.log("What is the data Structure ", data);
   try {
     const response = await fetch(CREATE_FORM_URL, {
       method: "POST",
@@ -25,8 +24,6 @@ export const createForm = async (data) => {
   }
 };
 
-
-
 export const updateForm = async (data, formId) => {
   try {
     const response = await fetch(`${UPDATE_FORM_URL}/${formId}`, {
@@ -44,7 +41,7 @@ export const updateForm = async (data, formId) => {
       ok: response.ok,
       status: response.status,
       message: json.message,
-      data: json.data, // 🔥 UNWRAP HERE
+      data: json.data,
     };
   } catch (err) {
     console.error(err);

@@ -195,7 +195,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           isOpen ? "translate-x-0 shadow-xl" : "-translate-x-full",
         )}
       >
-        <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border flex-shrink-0">
+        <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border shrink-0">
           <Link href="/cms" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">
@@ -284,9 +284,9 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
           </nav>
         </ScrollArea>
 
-        <div className="p-3 border-t border-sidebar-border flex-shrink-0">
+        <div className="p-3 border-t border-sidebar-border shrink-0">
           <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-sidebar-accent/50">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center shrink-0">
               <span className="text-primary-foreground text-xs font-medium">
                 {user?.name
                   ?.split(" ")

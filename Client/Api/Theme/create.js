@@ -1,7 +1,6 @@
 const CREATE_THEME_URL = "http://localhost:5000/api/v1/create-theme/theme";
 
 export const createTheme = async (data) => {
-  console.log("WHat is the structure of data", data);
   try {
     const response = await fetch(CREATE_THEME_URL, {
       method: "POST",

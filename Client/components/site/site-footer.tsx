@@ -1,7 +1,7 @@
-import Link from "next/link"
+import Link from "next/link";
 
 interface SiteFooterProps {
-  tenant: string
+  tenant: string;
 }
 
 export function SiteFooter({ tenant }: SiteFooterProps) {
@@ -22,7 +22,7 @@ export function SiteFooter({ tenant }: SiteFooterProps) {
       { label: "Terms", href: "/terms" },
       { label: "Cookie Policy", href: "/cookies" },
     ],
-  }
+  };
 
   return (
     <footer className="border-t bg-muted/30">
@@ -31,12 +31,15 @@ export function SiteFooter({ tenant }: SiteFooterProps) {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">L</span>
+                <span className="text-primary-foreground font-bold text-sm">
+                  L
+                </span>
               </div>
               <span className="font-semibold text-lg">Logo</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Building amazing websites with our powerful content management platform.
+              Building amazing websites with our powerful content management
+              platform.
             </p>
           </div>
 
@@ -90,9 +93,11 @@ export function SiteFooter({ tenant }: SiteFooterProps) {
         </div>
 
         <div className="mt-12 pt-8 border-t">
-          <p className="text-sm text-muted-foreground text-center">© 2025 Your Company. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground text-center">
+            © 2025 Your Company. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

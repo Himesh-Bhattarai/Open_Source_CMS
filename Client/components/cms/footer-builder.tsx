@@ -1,10 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Plus,
   Save,
@@ -22,7 +28,7 @@ import {
   Linkedin,
   Youtube,
   Github,
-} from "lucide-react"
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,94 +36,99 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { createFooter } from "@/Api/Footer/Create";
-import { useTenant } from "@/context/TenantContext"
-import { useRouter } from "next/navigation"
-import { useSearchParams } from "next/navigation"
-import { fetchFooterById  as getFooterById } from "@/Api/Footer/Fetch"
-import{ updateFooter } from "@/Api/Footer/Create"
-
+import { useTenant } from "@/context/TenantContext";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { fetchFooterById as getFooterById } from "@/Api/Footer/Fetch";
+import { updateFooter } from "@/Api/Footer/Create";
 
 // Data Models
 interface MenuLink {
-  id: string
-  label: string
-  slug: string
+  id: string;
+  label: string;
+  slug: string;
 }
 
 interface LogoBlockData {
-  imageUrl: string
-  altText: string
-  text?: string
-  link?: string
+  imageUrl: string;
+  altText: string;
+  text?: string;
+  link?: string;
 }
 
 interface MenuBlockData {
-  title: string
-  links: MenuLink[]
+  title: string;
+  links: MenuLink[];
 }
 
 interface TextBlockData {
-  title?: string
-  content: string
+  title?: string;
+  content: string;
 }
 
 interface NewsletterBlockData {
-  title: string
-  description: string
-  buttonText: string
-  buttonAction: "subscribe" | "redirect"
-  redirectUrl?: string
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonAction: "subscribe" | "redirect";
+  redirectUrl?: string;
 }
 
-type BlockData = LogoBlockData | MenuBlockData | TextBlockData | NewsletterBlockData
+type BlockData =
+  | LogoBlockData
+  | MenuBlockData
+  | TextBlockData
+  | NewsletterBlockData;
 
 interface FooterBlock {
-  id: string
-  type: "logo" | "menu" | "text" | "newsletter"
-  data: BlockData
+  id: string;
+  type: "logo" | "menu" | "text" | "newsletter";
+  data: BlockData;
 }
 
 interface SocialLink {
-  id: string
-  platform: string
-  url: string
-  icon: string
-  label?: string
-  slug?: string
+  id: string;
+  platform: string;
+  url: string;
+  icon: string;
+  label?: string;
+  slug?: string;
 }
 
 interface FooterCMSData {
-  tenantId: string
-  layout: "4-column" | "3-column" | "custom"
-  blocks: FooterBlock[]
+  tenantId: string;
+  layout: "4-column" | "3-column" | "custom";
+  blocks: FooterBlock[];
   bottomBar: {
-    copyrightText: string
-    socialLinks: SocialLink[]
-  }
+    copyrightText: string;
+    socialLinks: SocialLink[];
+  };
   metadata?: {
-    createdAt?: string
-    updatedAt?: string
-    status?: "draft" | "published"
-  }
+    createdAt?: string;
+    updatedAt?: string;
+    status?: "draft" | "published";
+  };
 }
 
 export default function FooterBuilder() {
-  const router = useRouter()
-  const [blocks, setBlocks] = useState<FooterBlock[]>([])
-  const [layout, setLayout] = useState<"4-column" | "3-column" | "custom">("4-column")
-  const [editOpen, setEditOpen] = useState(false)
-  const [socialLinksOpen, setSocialLinksOpen] = useState(false)
-  const [activeBlock, setActiveBlock] = useState<FooterBlock | null>(null)
+  const router = useRouter();
+  const [blocks, setBlocks] = useState<FooterBlock[]>([]);
+  const [layout, setLayout] = useState<"4-column" | "3-column" | "custom">(
+    "4-column",
+  );
+  const [editOpen, setEditOpen] = useState(false);
+  const [socialLinksOpen, setSocialLinksOpen] = useState(false);
+  const [activeBlock, setActiveBlock] = useState<FooterBlock | null>(null);
 
-  const [copyrightText, setCopyrightText] = useState("")
-  const searchParams = useSearchParams()
-  const footerId = searchParams.get("footerId")
-  const isEditMode = Boolean(footerId)
+  const [copyrightText, setCopyrightText] = useState("");
+  const searchParams = useSearchParams();
+  const footerId = searchParams.get("footerId");
+  const isEditMode = Boolean(footerId);
 
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
     {
@@ -126,7 +137,7 @@ export default function FooterBuilder() {
       url: "",
       icon: "facebook",
       label: "Facebook",
-      slug: "facebook"
+      slug: "facebook",
     },
     {
       id: "2",
@@ -134,7 +145,7 @@ export default function FooterBuilder() {
       url: "",
       icon: "twitter",
       label: "Twitter",
-      slug: "twitter"
+      slug: "twitter",
     },
     {
       id: "3",
@@ -142,19 +153,20 @@ export default function FooterBuilder() {
       url: "",
       icon: "instagram",
       label: "Instagram",
-      slug: "instagram"
+      slug: "instagram",
     },
-  ])
-  const { toast } = useToast()
+  ]);
+  const { toast } = useToast();
 
-  const { tenants, activeTenant, selectedTenantId, setActiveTenant } = useTenant()
+  const { tenants, activeTenant, selectedTenantId, setActiveTenant } =
+    useTenant();
 
   const blockTypes = [
     { type: "text", label: "Text Block", icon: Type },
     { type: "menu", label: "Menu", icon: Menu },
     { type: "logo", label: "Logo", icon: Image },
     { type: "newsletter", label: "Newsletter", icon: Mail },
-  ]
+  ];
 
   const platformIcons: Record<string, React.ElementType> = {
     facebook: Facebook,
@@ -163,14 +175,14 @@ export default function FooterBuilder() {
     linkedin: Linkedin,
     youtube: Youtube,
     github: Github,
-  }
+  };
 
   function createEmptyBlock(type: FooterBlock["type"]): FooterBlock {
     const base = {
       id: crypto.randomUUID(),
       type,
-      data: {} as BlockData
-    }
+      data: {} as BlockData,
+    };
 
     switch (type) {
       case "logo":
@@ -178,110 +190,118 @@ export default function FooterBuilder() {
           imageUrl: "",
           altText: "",
           text: "",
-          link: ""
-        }
-        break
+          link: "",
+        };
+        break;
       case "menu":
         base.data = {
           title: "",
-          links: []
-        }
-        break
+          links: [],
+        };
+        break;
       case "text":
         base.data = {
           title: "",
-          content: ""
-        }
-        break
+          content: "",
+        };
+        break;
       case "newsletter":
         base.data = {
           title: "",
           description: "",
           buttonText: "Subscribe",
-          buttonAction: "subscribe"
-        }
-        break
+          buttonAction: "subscribe",
+        };
+        break;
     }
 
-    return base
+    return base;
   }
 
   function addBlock(type: FooterBlock["type"]) {
-    const newBlock = createEmptyBlock(type)
-    setBlocks((prev) => [...prev, newBlock])
+    const newBlock = createEmptyBlock(type);
+    setBlocks((prev) => [...prev, newBlock]);
   }
 
   function deleteBlock(id: string) {
-    setBlocks((prev) => prev.filter((b) => b.id !== id))
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
   }
 
   function saveEdit() {
-    if (!activeBlock) return
+    if (!activeBlock) return;
     setBlocks((prev) =>
-      prev.map((b) => (b.id === activeBlock.id ? activeBlock : b))
-    )
-    setEditOpen(false)
+      prev.map((b) => (b.id === activeBlock.id ? activeBlock : b)),
+    );
+    setEditOpen(false);
   }
 
   function updateBlockData(field: string, value: any) {
-    if (!activeBlock) return
+    if (!activeBlock) return;
     setActiveBlock({
       ...activeBlock,
       data: {
         ...activeBlock.data,
-        [field]: value
-      }
-    })
+        [field]: value,
+      },
+    });
   }
 
   function addMenuLink() {
-    if (!activeBlock || activeBlock.type !== "menu") return
-    const menuData = activeBlock.data as MenuBlockData
+    if (!activeBlock || activeBlock.type !== "menu") return;
+    const menuData = activeBlock.data as MenuBlockData;
     const newLink: MenuLink = {
       id: crypto.randomUUID(),
       label: "",
-      slug: ""
-    }
+      slug: "",
+    };
     setActiveBlock({
       ...activeBlock,
       data: {
         ...menuData,
-        links: [...menuData.links, newLink]
-      }
-    })
+        links: [...menuData.links, newLink],
+      },
+    });
   }
 
-  function updateMenuLink(linkId: string, field: "label" | "slug", value: string) {
-    if (!activeBlock || activeBlock.type !== "menu") return
-    const menuData = activeBlock.data as MenuBlockData
+  function updateMenuLink(
+    linkId: string,
+    field: "label" | "slug",
+    value: string,
+  ) {
+    if (!activeBlock || activeBlock.type !== "menu") return;
+    const menuData = activeBlock.data as MenuBlockData;
     setActiveBlock({
       ...activeBlock,
       data: {
         ...menuData,
-        links: menuData.links.map(link =>
-          link.id === linkId ? { ...link, [field]: value } : link
-        )
-      }
-    })
+        links: menuData.links.map((link) =>
+          link.id === linkId ? { ...link, [field]: value } : link,
+        ),
+      },
+    });
   }
 
   function deleteMenuLink(linkId: string) {
-    if (!activeBlock || activeBlock.type !== "menu") return
-    const menuData = activeBlock.data as MenuBlockData
+    if (!activeBlock || activeBlock.type !== "menu") return;
+    const menuData = activeBlock.data as MenuBlockData;
     setActiveBlock({
       ...activeBlock,
       data: {
         ...menuData,
-        links: menuData.links.filter(link => link.id !== linkId)
-      }
-    })
+        links: menuData.links.filter((link) => link.id !== linkId),
+      },
+    });
   }
 
   // Social Links Functions
-  function updateSocialLink(id: string, field: keyof SocialLink, value: string) {
-    setSocialLinks(prev => prev.map(link =>
-      link.id === id ? { ...link, [field]: value } : link
-    ))
+  function updateSocialLink(
+    id: string,
+    field: keyof SocialLink,
+    value: string,
+  ) {
+    setSocialLinks((prev) =>
+      prev.map((link) => (link.id === id ? { ...link, [field]: value } : link)),
+    );
   }
 
   function addNewSocialLink() {
@@ -291,49 +311,55 @@ export default function FooterBuilder() {
       url: "",
       icon: "link",
       label: "",
-      slug: ""
-    }
-    setSocialLinks(prev => [...prev, newLink])
+      slug: "",
+    };
+    setSocialLinks((prev) => [...prev, newLink]);
   }
 
   function removeSocialLink(id: string) {
-    setSocialLinks(prev => prev.filter(link => link.id !== id))
+    setSocialLinks((prev) => prev.filter((link) => link.id !== id));
   }
 
   function getBlockTitle(block: FooterBlock): string {
     switch (block.type) {
       case "logo":
-        const logoData = block.data as LogoBlockData
-        return logoData.text || logoData.altText || "Logo Block"
+        const logoData = block.data as LogoBlockData;
+        return logoData.text || logoData.altText || "Logo Block";
       case "menu":
-        const menuData = block.data as MenuBlockData
-        return menuData.title || "Menu Block"
+        const menuData = block.data as MenuBlockData;
+        return menuData.title || "Menu Block";
       case "text":
-        const textData = block.data as TextBlockData
-        return textData.title || "Text Block"
+        const textData = block.data as TextBlockData;
+        return textData.title || "Text Block";
       case "newsletter":
-        const newsletterData = block.data as NewsletterBlockData
-        return newsletterData.title || "Newsletter Block"
+        const newsletterData = block.data as NewsletterBlockData;
+        return newsletterData.title || "Newsletter Block";
       default:
-        return "Untitled Block"
+        return "Untitled Block";
     }
   }
 
   function getBlockDescription(block: FooterBlock): string {
     switch (block.type) {
       case "logo":
-        return "Logo"
+        return "Logo";
       case "menu":
-        const menuData = block.data as MenuBlockData
-        return `${menuData.links.length} link${menuData.links.length !== 1 ? 's' : ''}`
+        const menuData = block.data as MenuBlockData;
+        return `${menuData.links.length} link${menuData.links.length !== 1 ? "s" : ""}`;
       case "text":
-        const textData = block.data as TextBlockData
-        return textData.content.substring(0, 20) + (textData.content.length > 20 ? '...' : '')
+        const textData = block.data as TextBlockData;
+        return (
+          textData.content.substring(0, 20) +
+          (textData.content.length > 20 ? "..." : "")
+        );
       case "newsletter":
-        const newsletterData = block.data as NewsletterBlockData
-        return newsletterData.description.substring(0, 30) + (newsletterData.description.length > 30 ? '...' : '')
+        const newsletterData = block.data as NewsletterBlockData;
+        return (
+          newsletterData.description.substring(0, 30) +
+          (newsletterData.description.length > 30 ? "..." : "")
+        );
       default:
-        return ""
+        return "";
     }
   }
 
@@ -342,21 +368,21 @@ export default function FooterBuilder() {
     return {
       tenantId: activeTenant?._id ?? "",
       layout,
-      blocks: blocks.map(block => ({
+      blocks: blocks.map((block) => ({
         id: block.id,
         type: block.type,
-        data: block.data
+        data: block.data,
       })),
       bottomBar: {
         copyrightText,
-        socialLinks: socialLinks.filter(link => link.url.trim() !== "") // Only include links with URLs
+        socialLinks: socialLinks.filter((link) => link.url.trim() !== ""), // Only include links with URLs
       },
       metadata: {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        status: "draft"
-      }
-    }
+        status: "draft",
+      },
+    };
   }
 
   // Function to validate data before sending
@@ -366,8 +392,8 @@ export default function FooterBuilder() {
         title: "Missing Information",
         description: "Please select a tenant",
         variant: "destructive",
-      })
-      return false
+      });
+      return false;
     }
 
     if (data.blocks.length === 0) {
@@ -375,33 +401,33 @@ export default function FooterBuilder() {
         title: "No Blocks Added",
         description: "Please add at least one footer block",
         variant: "destructive",
-      })
-      return false
+      });
+      return false;
     }
 
     // Validate blocks have required data
     for (const block of data.blocks) {
       switch (block.type) {
         case "logo":
-          const logoData = block.data as LogoBlockData
+          const logoData = block.data as LogoBlockData;
           if (!logoData.imageUrl || !logoData.altText) {
             toast({
               title: "Invalid Logo Block",
               description: "Logo blocks require an image URL and alt text",
               variant: "destructive",
-            })
-            return false
+            });
+            return false;
           }
-          break
+          break;
         case "menu":
-          const menuData = block.data as MenuBlockData
+          const menuData = block.data as MenuBlockData;
           if (menuData.links.length === 0) {
             toast({
               title: "Invalid Menu Block",
               description: "Menu blocks require at least one link",
               variant: "destructive",
-            })
-            return false
+            });
+            return false;
           }
           for (const link of menuData.links) {
             if (!link.label.trim() || !link.slug.trim()) {
@@ -409,88 +435,95 @@ export default function FooterBuilder() {
                 title: "Invalid Menu Link",
                 description: "All menu links must have both label and slug",
                 variant: "destructive",
-              })
-              return false
+              });
+              return false;
             }
           }
-          break
+          break;
         case "text":
-          const textData = block.data as TextBlockData
+          const textData = block.data as TextBlockData;
           if (!textData.content.trim()) {
             toast({
               title: "Invalid Text Block",
               description: "Text blocks require content",
               variant: "destructive",
-            })
-            return false
+            });
+            return false;
           }
-          break
+          break;
         case "newsletter":
-          const newsletterData = block.data as NewsletterBlockData
-          if (!newsletterData.title || !newsletterData.description || !newsletterData.buttonText) {
+          const newsletterData = block.data as NewsletterBlockData;
+          if (
+            !newsletterData.title ||
+            !newsletterData.description ||
+            !newsletterData.buttonText
+          ) {
             toast({
               title: "Invalid Newsletter Block",
-              description: "Newsletter blocks require title, description, and button text",
+              description:
+                "Newsletter blocks require title, description, and button text",
               variant: "destructive",
-            })
-            return false
+            });
+            return false;
           }
-          if (newsletterData.buttonAction === "redirect" && !newsletterData.redirectUrl) {
+          if (
+            newsletterData.buttonAction === "redirect" &&
+            !newsletterData.redirectUrl
+          ) {
             toast({
               title: "Invalid Newsletter Block",
               description: "Redirect action requires a redirect URL",
               variant: "destructive",
-            })
-            return false
+            });
+            return false;
           }
-          break
+          break;
       }
     }
 
-    return true
+    return true;
   }
 
   // Function to handle save draft
-async function handleSaveDraft() {
-  const footerData = gatherFooterData()
+  async function handleSaveDraft() {
+    const footerData = gatherFooterData();
 
-  if (!validateFooterData(footerData)) return
+    if (!validateFooterData(footerData)) return;
 
-  try {
-    const response = isEditMode
-      ? await updateFooter(footerId!, footerData)
-      : await createFooter(footerData)
+    try {
+      const response = isEditMode
+        ? await updateFooter(footerId!, footerData)
+        : await createFooter(footerData);
 
-    toast({
-      title: "Success",
-      description: response?.message || "Footer saved",
-    })
+      toast({
+        title: "Success",
+        description: response?.message || "Footer saved",
+      });
 
-    router.push("/cms/global/footer")
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Save failed",
-      variant: "destructive",
-    })
+      router.push("/cms/global/footer");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Save failed",
+        variant: "destructive",
+      });
+    }
   }
-}
-
 
   // Function to handle preview
   function handlePreview() {
-    const footerData = gatherFooterData()
-    console.log("Preview Data:", footerData)
+    const footerData = gatherFooterData();
+    console.log("Preview Data:", footerData);
     toast({
       title: "Preview Mode",
       description: "Check console for footer data",
-    })
+    });
   }
 
   // Function to handle discard changes
   function handleDiscardChanges() {
-    setBlocks([])
-    setCopyrightText("")
+    setBlocks([]);
+    setCopyrightText("");
     setSocialLinks([
       {
         id: "1",
@@ -498,7 +531,7 @@ async function handleSaveDraft() {
         url: "",
         icon: "facebook",
         label: "Facebook",
-        slug: "facebook"
+        slug: "facebook",
       },
       {
         id: "2",
@@ -506,7 +539,7 @@ async function handleSaveDraft() {
         url: "",
         icon: "twitter",
         label: "Twitter",
-        slug: "twitter"
+        slug: "twitter",
       },
       {
         id: "3",
@@ -514,15 +547,14 @@ async function handleSaveDraft() {
         url: "",
         icon: "instagram",
         label: "Instagram",
-        slug: "instagram"
+        slug: "instagram",
       },
-      
-    ])
+    ]);
 
     toast({
       title: "Changes Discarded",
       description: "All changes have been reset",
-    })
+    });
   }
 
   const gridCols =
@@ -530,43 +562,40 @@ async function handleSaveDraft() {
       ? "grid-cols-3"
       : layout === "custom"
         ? "grid-cols-2"
-        : "grid-cols-4"
+        : "grid-cols-4";
 
-  const visibleBlocks = blocks
-
+  const visibleBlocks = blocks;
 
   useEffect(() => {
-    if (!footerId) return
+    if (!footerId) return;
 
     async function loadFooter() {
       try {
-        const res = await getFooterById(footerId)
-        if (!res?.ok) throw new Error("Failed to load footer")
+        const res = await getFooterById(footerId);
+        if (!res?.ok) throw new Error("Failed to load footer");
 
-        const footer = res.data
+        const footer = res.data;
 
-        setLayout(footer.layout)
-        setBlocks(footer.blocks)
-        setCopyrightText(footer.bottomBar?.copyrightText || "")
-        setSocialLinks(footer.bottomBar?.socialLinks || [])
+        setLayout(footer.layout);
+        setBlocks(footer.blocks);
+        setCopyrightText(footer.bottomBar?.copyrightText || "");
+        setSocialLinks(footer.bottomBar?.socialLinks || []);
       } catch (err) {
         toast({
           title: "Error",
           description: "Failed to load footer",
           variant: "destructive",
-        })
+        });
       }
     }
 
-    loadFooter()
-  }, [footerId])
-
+    loadFooter();
+  }, [footerId]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          
           <h1 className="text-3xl font-bold">
             {isEditMode ? "Edit Footer" : "Create Footer"}
           </h1>
@@ -606,12 +635,12 @@ async function handleSaveDraft() {
               className="w-full border rounded-md px-3 py-2 text-sm bg-background"
               value={activeTenant?._id ?? ""}
               onChange={(e) => {
-                const tenant = tenants.find(t => t._id === e.target.value)
-                if (tenant) setActiveTenant(tenant)
+                const tenant = tenants.find((t) => t._id === e.target.value);
+                if (tenant) setActiveTenant(tenant);
               }}
             >
               <option value="">Select Tenant</option>
-              {tenants.map(tenant => (
+              {tenants.map((tenant) => (
                 <option key={tenant._id} value={tenant._id}>
                   {tenant.name}
                 </option>
@@ -619,9 +648,12 @@ async function handleSaveDraft() {
             </select>
 
             {isEditMode && (
-              <input type="hidden" name="tenantId" value={activeTenant?._id ?? ""} />
+              <input
+                type="hidden"
+                name="tenantId"
+                value={activeTenant?._id ?? ""}
+              />
             )}
-
           </div>
         </CardContent>
       </Card>
@@ -635,8 +667,15 @@ async function handleSaveDraft() {
           <RadioGroup value={layout} onValueChange={(v) => setLayout(v as any)}>
             <div className="grid grid-cols-3 gap-4">
               <div className="relative">
-                <RadioGroupItem value="4-column" id="4-col" className="peer sr-only" />
-                <Label htmlFor="4-col" className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">
+                <RadioGroupItem
+                  value="4-column"
+                  id="4-col"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="4-col"
+                  className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                >
                   <div className="flex gap-1 w-full">
                     {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="flex-1 h-16 bg-muted rounded" />
@@ -647,8 +686,15 @@ async function handleSaveDraft() {
               </div>
 
               <div className="relative">
-                <RadioGroupItem value="3-column" id="3-col" className="peer sr-only" />
-                <Label htmlFor="3-col" className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">
+                <RadioGroupItem
+                  value="3-column"
+                  id="3-col"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="3-col"
+                  className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                >
                   <div className="flex gap-1 w-full">
                     {[1, 2, 3].map((i) => (
                       <div key={i} className="flex-1 h-16 bg-muted rounded" />
@@ -659,8 +705,15 @@ async function handleSaveDraft() {
               </div>
 
               <div className="relative">
-                <RadioGroupItem value="custom" id="custom" className="peer sr-only" />
-                <Label htmlFor="custom" className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer">
+                <RadioGroupItem
+                  value="custom"
+                  id="custom"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="custom"
+                  className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
+                >
                   <div className="flex gap-1 w-full">
                     <div className="w-1/3 h-16 bg-muted rounded" />
                     <div className="flex-1 h-16 bg-muted rounded" />
@@ -690,13 +743,17 @@ async function handleSaveDraft() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Footer Block</DialogTitle>
-                  <DialogDescription>Choose a block type to add</DialogDescription>
+                  <DialogDescription>
+                    Choose a block type to add
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   {blockTypes.map((blockType) => (
                     <button
                       key={blockType.type}
-                      onClick={() => addBlock(blockType.type as FooterBlock["type"])}
+                      onClick={() =>
+                        addBlock(blockType.type as FooterBlock["type"])
+                      }
                       className="flex flex-col items-center gap-3 p-4 border-2 rounded-lg hover:border-primary hover:bg-accent transition-colors"
                     >
                       <blockType.icon className="h-8 w-8" />
@@ -712,17 +769,22 @@ async function handleSaveDraft() {
         <CardContent>
           <div className={`grid ${gridCols} gap-4`}>
             {visibleBlocks.map((block) => (
-              <Card key={block.id} className="group hover:shadow-md transition-shadow">
+              <Card
+                key={block.id}
+                className="group hover:shadow-md transition-shadow"
+              >
                 <CardHeader className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                       <div>
-                        <CardTitle className="text-sm">{getBlockTitle(block) || "(Untitled)"}</CardTitle>
+                        <CardTitle className="text-sm">
+                          {getBlockTitle(block) || "(Untitled)"}
+                        </CardTitle>
                         <CardDescription className="text-xs capitalize">
                           {block.type === "logo" && "Logo"}
                           {block.type === "menu" &&
-                            `${(block.data as MenuBlockData).links.length} link${(block.data as MenuBlockData).links.length !== 1 ? 's' : ''}`}
+                            `${(block.data as MenuBlockData).links.length} link${(block.data as MenuBlockData).links.length !== 1 ? "s" : ""}`}
                           {block.type === "text" && "Text"}
                           {block.type === "newsletter" && "Newsletter"}
                         </CardDescription>
@@ -741,12 +803,17 @@ async function handleSaveDraft() {
                         <div className="flex-1 overflow-y-auto space-y-0.5">
                           {(block.data as MenuBlockData).links.length > 0 ? (
                             (block.data as MenuBlockData).links.map((link) => (
-                              <div key={link.id} className="text-muted-foreground hover:text-foreground truncate">
+                              <div
+                                key={link.id}
+                                className="text-muted-foreground hover:text-foreground truncate"
+                              >
                                 → {link.label || "Link"}
                               </div>
                             ))
                           ) : (
-                            <div className="text-muted-foreground italic">No links added</div>
+                            <div className="text-muted-foreground italic">
+                              No links added
+                            </div>
                           )}
                         </div>
                       </div>
@@ -771,7 +838,8 @@ async function handleSaveDraft() {
                           </div>
                         )}
                         <div className="text-muted-foreground text-[10px] leading-tight line-clamp-3">
-                          {(block.data as TextBlockData).content || "No content"}
+                          {(block.data as TextBlockData).content ||
+                            "No content"}
                         </div>
                       </div>
                     )}
@@ -779,17 +847,20 @@ async function handleSaveDraft() {
                     {block.type === "newsletter" && (
                       <div className="h-full flex flex-col">
                         <div className="font-medium text-foreground mb-1 truncate">
-                          {(block.data as NewsletterBlockData).title || "Newsletter"}
+                          {(block.data as NewsletterBlockData).title ||
+                            "Newsletter"}
                         </div>
                         <div className="text-[10px] text-muted-foreground mb-1 line-clamp-2 flex-1">
-                          {(block.data as NewsletterBlockData).description || "Stay updated"}
+                          {(block.data as NewsletterBlockData).description ||
+                            "Stay updated"}
                         </div>
                         <div className="flex items-center gap-1">
                           <div className="flex-1 h-5 bg-background border rounded px-2 flex items-center text-[10px]">
                             email@example.com
                           </div>
                           <div className="h-5 px-2 bg-primary text-primary-foreground rounded text-[10px] flex items-center">
-                            {(block.data as NewsletterBlockData).buttonText || "Subscribe"}
+                            {(block.data as NewsletterBlockData).buttonText ||
+                              "Subscribe"}
                           </div>
                         </div>
                       </div>
@@ -801,8 +872,8 @@ async function handleSaveDraft() {
                       variant="outline"
                       className="flex-1 bg-transparent"
                       onClick={() => {
-                        setActiveBlock(block)
-                        setEditOpen(true)
+                        setActiveBlock(block);
+                        setEditOpen(true);
                       }}
                     >
                       <Edit className="h-3 w-3 mr-1" />
@@ -858,9 +929,13 @@ async function handleSaveDraft() {
                   <div className="space-y-4">
                     <div className="space-y-3">
                       {socialLinks.map((link) => {
-                        const IconComponent = platformIcons[link.icon] || Settings
+                        const IconComponent =
+                          platformIcons[link.icon] || Settings;
                         return (
-                          <div key={link.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                          <div
+                            key={link.id}
+                            className="flex items-center gap-3 p-3 border rounded-lg"
+                          >
                             <div className="flex items-center justify-center w-10 h-10 bg-muted rounded">
                               <IconComponent className="h-5 w-5" />
                             </div>
@@ -869,7 +944,13 @@ async function handleSaveDraft() {
                                 <Label className="text-xs">Platform</Label>
                                 <Input
                                   value={link.platform}
-                                  onChange={(e) => updateSocialLink(link.id, "platform", e.target.value)}
+                                  onChange={(e) =>
+                                    updateSocialLink(
+                                      link.id,
+                                      "platform",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Platform name"
                                   className="h-8 text-sm"
                                 />
@@ -878,7 +959,13 @@ async function handleSaveDraft() {
                                 <Label className="text-xs">Icon</Label>
                                 <Input
                                   value={link.icon}
-                                  onChange={(e) => updateSocialLink(link.id, "icon", e.target.value)}
+                                  onChange={(e) =>
+                                    updateSocialLink(
+                                      link.id,
+                                      "icon",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Icon name"
                                   className="h-8 text-sm"
                                 />
@@ -887,25 +974,47 @@ async function handleSaveDraft() {
                                 <Label className="text-xs">URL</Label>
                                 <Input
                                   value={link.url}
-                                  onChange={(e) => updateSocialLink(link.id, "url", e.target.value)}
+                                  onChange={(e) =>
+                                    updateSocialLink(
+                                      link.id,
+                                      "url",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="https://example.com/username"
                                   className="h-8 text-sm"
                                 />
                               </div>
                               <div>
-                                <Label className="text-xs">Label (Optional)</Label>
+                                <Label className="text-xs">
+                                  Label (Optional)
+                                </Label>
                                 <Input
                                   value={link.label || ""}
-                                  onChange={(e) => updateSocialLink(link.id, "label", e.target.value)}
+                                  onChange={(e) =>
+                                    updateSocialLink(
+                                      link.id,
+                                      "label",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="Display label"
                                   className="h-8 text-sm"
                                 />
                               </div>
                               <div>
-                                <Label className="text-xs">Slug (Optional)</Label>
+                                <Label className="text-xs">
+                                  Slug (Optional)
+                                </Label>
                                 <Input
                                   value={link.slug || ""}
-                                  onChange={(e) => updateSocialLink(link.id, "slug", e.target.value)}
+                                  onChange={(e) =>
+                                    updateSocialLink(
+                                      link.id,
+                                      "slug",
+                                      e.target.value,
+                                    )
+                                  }
                                   placeholder="URL slug"
                                   className="h-8 text-sm"
                                 />
@@ -919,7 +1028,7 @@ async function handleSaveDraft() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        )
+                        );
                       })}
                     </div>
                     <Button
@@ -931,7 +1040,10 @@ async function handleSaveDraft() {
                       Add New Social Link
                     </Button>
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setSocialLinksOpen(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSocialLinksOpen(false)}
+                      >
                         Cancel
                       </Button>
                       <Button onClick={() => setSocialLinksOpen(false)}>
@@ -959,7 +1071,9 @@ async function handleSaveDraft() {
                     <Label>Image URL</Label>
                     <Input
                       value={(activeBlock.data as LogoBlockData).imageUrl || ""}
-                      onChange={(e) => updateBlockData("imageUrl", e.target.value)}
+                      onChange={(e) =>
+                        updateBlockData("imageUrl", e.target.value)
+                      }
                       placeholder="https://example.com/logo.png"
                     />
                   </div>
@@ -967,7 +1081,9 @@ async function handleSaveDraft() {
                     <Label>Alt Text</Label>
                     <Input
                       value={(activeBlock.data as LogoBlockData).altText || ""}
-                      onChange={(e) => updateBlockData("altText", e.target.value)}
+                      onChange={(e) =>
+                        updateBlockData("altText", e.target.value)
+                      }
                       placeholder="Company Logo"
                     />
                   </div>
@@ -1010,16 +1126,23 @@ async function handleSaveDraft() {
                     </div>
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {(activeBlock.data as MenuBlockData).links.map((link) => (
-                        <div key={link.id} className="flex gap-2 items-start p-3 border rounded-lg">
+                        <div
+                          key={link.id}
+                          className="flex gap-2 items-start p-3 border rounded-lg"
+                        >
                           <div className="flex-1 space-y-2">
                             <Input
                               value={link.label}
-                              onChange={(e) => updateMenuLink(link.id, "label", e.target.value)}
+                              onChange={(e) =>
+                                updateMenuLink(link.id, "label", e.target.value)
+                              }
                               placeholder="Link Label"
                             />
                             <Input
                               value={link.slug}
-                              onChange={(e) => updateMenuLink(link.id, "slug", e.target.value)}
+                              onChange={(e) =>
+                                updateMenuLink(link.id, "slug", e.target.value)
+                              }
                               placeholder="Slug (e.g. /about)"
                             />
                           </div>
@@ -1051,7 +1174,9 @@ async function handleSaveDraft() {
                     <Label>Content</Label>
                     <Textarea
                       value={(activeBlock.data as TextBlockData).content || ""}
-                      onChange={(e) => updateBlockData("content", e.target.value)}
+                      onChange={(e) =>
+                        updateBlockData("content", e.target.value)
+                      }
                       placeholder="Enter your text content here..."
                       rows={5}
                     />
@@ -1064,7 +1189,9 @@ async function handleSaveDraft() {
                   <div className="space-y-2">
                     <Label>Title</Label>
                     <Input
-                      value={(activeBlock.data as NewsletterBlockData).title || ""}
+                      value={
+                        (activeBlock.data as NewsletterBlockData).title || ""
+                      }
                       onChange={(e) => updateBlockData("title", e.target.value)}
                       placeholder="Subscribe to our newsletter"
                     />
@@ -1072,8 +1199,13 @@ async function handleSaveDraft() {
                   <div className="space-y-2">
                     <Label>Description</Label>
                     <Textarea
-                      value={(activeBlock.data as NewsletterBlockData).description || ""}
-                      onChange={(e) => updateBlockData("description", e.target.value)}
+                      value={
+                        (activeBlock.data as NewsletterBlockData).description ||
+                        ""
+                      }
+                      onChange={(e) =>
+                        updateBlockData("description", e.target.value)
+                      }
                       placeholder="Enter newsletter description..."
                       rows={3}
                     />
@@ -1081,8 +1213,13 @@ async function handleSaveDraft() {
                   <div className="space-y-2">
                     <Label>Button Text</Label>
                     <Input
-                      value={(activeBlock.data as NewsletterBlockData).buttonText || ""}
-                      onChange={(e) => updateBlockData("buttonText", e.target.value)}
+                      value={
+                        (activeBlock.data as NewsletterBlockData).buttonText ||
+                        ""
+                      }
+                      onChange={(e) =>
+                        updateBlockData("buttonText", e.target.value)
+                      }
                       placeholder="Subscribe"
                     />
                   </div>
@@ -1090,19 +1227,29 @@ async function handleSaveDraft() {
                     <Label>Button Action</Label>
                     <select
                       className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-                      value={(activeBlock.data as NewsletterBlockData).buttonAction}
-                      onChange={(e) => updateBlockData("buttonAction", e.target.value)}
+                      value={
+                        (activeBlock.data as NewsletterBlockData).buttonAction
+                      }
+                      onChange={(e) =>
+                        updateBlockData("buttonAction", e.target.value)
+                      }
                     >
                       <option value="subscribe">Subscribe Action</option>
                       <option value="redirect">Redirect to URL</option>
                     </select>
                   </div>
-                  {(activeBlock.data as NewsletterBlockData).buttonAction === "redirect" && (
+                  {(activeBlock.data as NewsletterBlockData).buttonAction ===
+                    "redirect" && (
                     <div className="space-y-2">
                       <Label>Redirect URL</Label>
                       <Input
-                        value={(activeBlock.data as NewsletterBlockData).redirectUrl || ""}
-                        onChange={(e) => updateBlockData("redirectUrl", e.target.value)}
+                        value={
+                          (activeBlock.data as NewsletterBlockData)
+                            .redirectUrl || ""
+                        }
+                        onChange={(e) =>
+                          updateBlockData("redirectUrl", e.target.value)
+                        }
                         placeholder="https://example.com/subscribe"
                       />
                     </div>
@@ -1121,5 +1268,5 @@ async function handleSaveDraft() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

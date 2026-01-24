@@ -201,6 +201,3 @@ export const BLOCK_SCHEMAS = {
 // Type guard for block types
 export type BlockType = keyof typeof BLOCK_SCHEMAS;
 export type PageContent = Page;
-
-
-

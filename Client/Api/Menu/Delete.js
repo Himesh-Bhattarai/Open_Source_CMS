@@ -3,7 +3,7 @@ const DELETE_MENU_BY_ID = "http://localhost:5000/api/v1/delete-menu/menu";
 
 export const deleteMenuById = async (menuId) => {
   try {
-    const response = await fetch(`${DELETE_MENU_BY_ID}/${menuId}`,{
+    const response = await fetch(`${DELETE_MENU_BY_ID}/${menuId}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -23,7 +23,7 @@ export const deleteMenuById = async (menuId) => {
 
 export const deleteMenu = async () => {
   try {
-    const response = await fetch(DELETE_MENU_ITEM,{
+    const response = await fetch(DELETE_MENU_ITEM, {
       method: "DELETE",
       credentials: "include",
     });
