@@ -31,7 +31,6 @@ const TenantSchema = new Schema(
       theme: { type: Boolean, default: false },
       seo: { type: Boolean, default: false },
     },
-
   },
   {
     timestamps: true,

@@ -4,9 +4,6 @@ import { updateMenuCheckpoint } from "../../CheckPoint/Menu/UpdateMenu.js";
 
 const router = express.Router();
 
-router.put("/:menuId",
-    verificationMiddleware,
-    updateMenuCheckpoint
-);
+router.put("/:menuId", verificationMiddleware, updateMenuCheckpoint);
 
 export default router;

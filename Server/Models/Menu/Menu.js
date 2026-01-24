@@ -2,17 +2,21 @@ import mongoose from "mongoose";
 const { Schema, model, models } = mongoose;
 
 // Menu item schema (flexible)
-const MenuItemSchema = new Schema({
-    label: String,   // optional, store exactly what frontend sends
+const MenuItemSchema = new Schema(
+  {
+    label: String, // optional, store exactly what frontend sends
     type: String,
     link: String,
     enabled: Boolean,
     order: Number,
-    children: { type: [Schema.Types.Mixed], default: [] } // flexible, can be empty or nested
-}, { _id: true });
+    children: { type: [Schema.Types.Mixed], default: [] }, // flexible, can be empty or nested
+  },
+  { _id: true },
+);
 
 // Main menu schema
-const MenuSchema = new Schema({
+const MenuSchema = new Schema(
+  {
     userId: { type: String, ref: "User", required: true },
     tenantId: { type: String, ref: "Tenant", required: true },
 
@@ -25,8 +29,9 @@ const MenuSchema = new Schema({
     status: { type: String, enum: ["draft", "published"], default: "draft" },
     publishedAt: Date,
     publishedBy: { type: String, ref: "User" },
-
-}, { timestamps: true, collection: "menus" });
+  },
+  { timestamps: true, collection: "menus" },
+);
 
 MenuSchema.index({ tenantId: 1, menuLocation: 1 });
 

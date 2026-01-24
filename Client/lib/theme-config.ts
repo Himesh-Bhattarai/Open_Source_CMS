@@ -2,29 +2,29 @@
 
 export interface ThemeConfig {
   colors: {
-    primary: string
-    secondary: string
-    background: string
-    foreground: string
-    muted: string
-    accent: string
-  }
+    primary: string;
+    secondary: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    accent: string;
+  };
   typography: {
-    headingFont: string
-    bodyFont: string
+    headingFont: string;
+    bodyFont: string;
     fontSize: {
-      base: string
-      h1: string
-      h2: string
-      h3: string
-    }
-  }
+      base: string;
+      h1: string;
+      h2: string;
+      h3: string;
+    };
+  };
   layout: {
-    containerWidth: "1024" | "1280" | "1536" | "full"
-    borderRadius: "none" | "small" | "medium" | "large"
-    sectionSpacing: "compact" | "normal" | "relaxed"
-    headerStyle: "fixed" | "sticky" | "static"
-  }
+    containerWidth: "1024" | "1280" | "1536" | "full";
+    borderRadius: "none" | "small" | "medium" | "large";
+    sectionSpacing: "compact" | "normal" | "relaxed";
+    headerStyle: "fixed" | "sticky" | "static";
+  };
 }
 
 export const defaultTheme: ThemeConfig = {
@@ -52,7 +52,7 @@ export const defaultTheme: ThemeConfig = {
     sectionSpacing: "normal",
     headerStyle: "fixed",
   },
-}
+};
 
 export function generateCSSVariables(theme: ThemeConfig): string {
   return `
@@ -78,13 +78,13 @@ export function generateCSSVariables(theme: ThemeConfig): string {
               : "16px"
       };
     }
-  `
+  `;
 }
 
 export function applyTheme(theme: ThemeConfig) {
   if (typeof document !== "undefined") {
-    const style = document.createElement("style")
-    style.innerHTML = generateCSSVariables(theme)
-    document.head.appendChild(style)
+    const style = document.createElement("style");
+    style.innerHTML = generateCSSVariables(theme);
+    document.head.appendChild(style);
   }
 }

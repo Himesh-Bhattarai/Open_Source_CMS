@@ -10,7 +10,7 @@ const ApiKeySchema = new Schema(
     isActive: { type: Boolean, default: true },
     name: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const ApiKey = models.ApiKey || model("ApiKey", ApiKeySchema);

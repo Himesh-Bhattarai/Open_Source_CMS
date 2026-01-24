@@ -1,6 +1,6 @@
 // Permission system for role-based access control
 
-export type Role = "admin" | "editor" | "author" | "viewer"
+export type Role = "admin" | "editor" | "author" | "viewer";
 
 export type Permission =
   | "content.view"
@@ -17,7 +17,7 @@ export type Permission =
   | "users.manage"
   | "settings.view"
   | "settings.edit"
-  | "global.publish"
+  | "global.publish";
 
 const rolePermissions: Record<Role, Permission[]> = {
   admin: [
@@ -60,32 +60,38 @@ const rolePermissions: Record<Role, Permission[]> = {
     "media.upload",
   ],
   viewer: ["content.view", "media.view", "settings.view"],
-}
+};
 
 export function hasPermission(role: Role, permission: Permission): boolean {
-  return rolePermissions[role]?.includes(permission) ?? false
+  return rolePermissions[role]?.includes(permission) ?? false;
 }
 
-export function hasAnyPermission(role: Role, permissions: Permission[]): boolean {
-  return permissions.some((permission) => hasPermission(role, permission))
+export function hasAnyPermission(
+  role: Role,
+  permissions: Permission[],
+): boolean {
+  return permissions.some((permission) => hasPermission(role, permission));
 }
 
-export function hasAllPermissions(role: Role, permissions: Permission[]): boolean {
-  return permissions.every((permission) => hasPermission(role, permission))
+export function hasAllPermissions(
+  role: Role,
+  permissions: Permission[],
+): boolean {
+  return permissions.every((permission) => hasPermission(role, permission));
 }
 
 export function canPublishGlobal(role: Role): boolean {
-  return hasPermission(role, "global.publish")
+  return hasPermission(role, "global.publish");
 }
 
 export function canManageUsers(role: Role): boolean {
-  return hasPermission(role, "users.manage")
+  return hasPermission(role, "users.manage");
 }
 
 export function canEditContent(role: Role): boolean {
-  return hasPermission(role, "content.edit")
+  return hasPermission(role, "content.edit");
 }
 
 export function canPublishContent(role: Role): boolean {
-  return hasPermission(role, "content.publish")
+  return hasPermission(role, "content.publish");
 }

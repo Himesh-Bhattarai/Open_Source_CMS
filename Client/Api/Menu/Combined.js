@@ -35,34 +35,30 @@ export const createMenuItem = async (data) => {
       body: JSON.stringify(data),
     });
 
-    //debug response
-    console.log(response, "Did i get MenuItem Response?");
     return response.json();
   } catch (err) {
     console.error(err);
   }
 };
 
-
-export const updateMenu = async(menuId, data)=>{
-  try{
-    console.log(menuId, data, "Updating Menu with Id and Data");
-    const response = await fetch(`${UPDATE_MENU_URL}/${menuId}`,{
+export const updateMenu = async (menuId, data) => {
+  try {
+    const response = await fetch(`${UPDATE_MENU_URL}/${menuId}`, {
       method: "PUT",
       credentials: "include",
-      headers:{
-        "Content-Type": "application/json"
+      headers: {
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
 
     const request = await response.json();
-    return{
+    return {
       ok: response.ok,
       status: response.status,
       ...request,
-    }
-  }catch(err){
+    };
+  } catch (err) {
     console.error(err);
   }
-}
+};

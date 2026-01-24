@@ -20,7 +20,6 @@ export const getUserTenants = async () => {
 //Get user tenants By ID
 export const getUserTenantsById = async (tenantId) => {
   try {
-    console.log("Tenant Id check", tenantId);
     const response = await fetch(`${LOAD_TENANTS_BY_ID}/${tenantId}`, {
       method: "GET",
       credentials: "include",
@@ -59,7 +58,6 @@ export const getAllTenants = async () => {
   }
 };
 
-
-export const deleteTenant = async(tenantId)=>{
+export const deleteTenant = async (tenantId) => {
   console.log("Deleting Tenant", tenantId);
-}
+};

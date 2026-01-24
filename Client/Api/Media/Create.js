@@ -2,7 +2,6 @@ const CREATE_MEDIA_URL = "http://localhost:5000/api/v1/create-media/media";
 
 export const createMedia = async (data) => {
   try {
-    console.log("What is the data Structure", data);
     const response = await fetch(CREATE_MEDIA_URL, {
       method: "POST",
       credentials: "include",

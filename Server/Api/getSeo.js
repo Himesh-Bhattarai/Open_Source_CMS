@@ -1,19 +1,18 @@
-import {Seo} from "../Models/Seo/Seo.js";
+import { Seo } from "../Models/Seo/Seo.js";
 
-export const getSeo = async(req, res, next)=>{
-    try{
-        const tenantId = req.tenant?._id
+export const getSeo = async (req, res, next) => {
+  try {
+    const tenantId = req.tenant?._id;
 
-        console.log(tenantId)
-        const getSeo = await Seo.findOne({
-            tenantId: tenantId,
-        })
+    const getSeo = await Seo.findOne({
+      tenantId: tenantId,
+    });
 
-        if(!getSeo) throw new Error("Seo not Found");
-        res.json({
-            getSeo
-        })
-    }catch(err){
-        next(err)
-    }
-}
+    if (!getSeo) throw new Error("Seo not Found");
+    res.json({
+      getSeo,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

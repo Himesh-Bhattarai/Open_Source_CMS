@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,45 +8,64 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, Globe, AlertTriangle, CheckCircle2 } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PageContent } from "@/lib/types/page"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  Clock,
+  Globe,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageContent } from "@/lib/types/page";
 
 export interface PublishModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onPublish: (type: "now" | "schedule", date?: string, time?: string) => Promise<void>
-  content: PageContent
-  validation?: string[]   // ← ADD THIS
-  isGlobal?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  onPublish: (
+    type: "now" | "schedule",
+    date?: string,
+    time?: string,
+  ) => Promise<void>;
+  content: PageContent;
+  validation?: string[]; // ← ADD THIS
+  isGlobal?: boolean;
 }
 
-
-export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = false }: PublishModalProps) {
-  const [publishType, setPublishType] = useState<"now" | "schedule">("now")
-  const [scheduleDate, setScheduleDate] = useState("")
-  const [scheduleTime, setScheduleTime] = useState("")
-  const [publishNote, setPublishNote] = useState("")
+export function PublishModal({
+  isOpen,
+  onClose,
+  onPublish,
+  content,
+  isGlobal = false,
+}: PublishModalProps) {
+  const [publishType, setPublishType] = useState<"now" | "schedule">("now");
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [publishNote, setPublishNote] = useState("");
 
   const handlePublish = () => {
     if (publishType === "schedule" && (!scheduleDate || !scheduleTime)) {
-      return
+      return;
     }
-    onPublish(publishType, scheduleDate, scheduleTime)
-    onClose()
-  }
+    onPublish(publishType, scheduleDate, scheduleTime);
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{content.status === "published" ? "Update Published Content" : "Publish Content"}</DialogTitle>
+          <DialogTitle>
+            {content.status === "published"
+              ? "Update Published Content"
+              : "Publish Content"}
+          </DialogTitle>
           <DialogDescription>
             {isGlobal
               ? "This will affect the entire site. Make sure to preview changes first."
@@ -60,7 +79,9 @@ export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = f
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-medium text-sm text-amber-900 dark:text-amber-100">Global Change Warning</p>
+                  <p className="font-medium text-sm text-amber-900 dark:text-amber-100">
+                    Global Change Warning
+                  </p>
                   <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
                     {content.affectedPages
                       ? `This will affect ${content.affectedPages} pages across your site.`
@@ -75,11 +96,20 @@ export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = f
             <Label>Content</Label>
             <div className="flex items-center gap-2">
               <p className="font-medium">{content.title}</p>
-              <Badge variant={content.status === "published" ? "default" : "secondary"}>{content.status}</Badge>
+              <Badge
+                variant={
+                  content.status === "published" ? "default" : "secondary"
+                }
+              >
+                {content.status}
+              </Badge>
             </div>
           </div>
 
-          <Tabs value={publishType} onValueChange={(v) => setPublishType(v as typeof publishType)}>
+          <Tabs
+            value={publishType}
+            onValueChange={(v) => setPublishType(v as typeof publishType)}
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="now" className="gap-2">
                 <Globe className="h-4 w-4" />
@@ -98,7 +128,8 @@ export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = f
                   <div>
                     <p className="font-medium text-sm">Publish Immediately</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Content will be live within seconds and visible to all visitors.
+                      Content will be live within seconds and visible to all
+                      visitors.
                     </p>
                   </div>
                 </div>
@@ -130,7 +161,10 @@ export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = f
               {scheduleDate && scheduleTime && (
                 <div className="p-3 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
                   <p className="text-sm text-blue-900 dark:text-blue-100">
-                    Will publish on {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString()}
+                    Will publish on{" "}
+                    {new Date(
+                      `${scheduleDate}T${scheduleTime}`,
+                    ).toLocaleString()}
                   </p>
                 </div>
               )}
@@ -153,7 +187,12 @@ export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = f
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handlePublish} disabled={publishType === "schedule" && (!scheduleDate || !scheduleTime)}>
+          <Button
+            onClick={handlePublish}
+            disabled={
+              publishType === "schedule" && (!scheduleDate || !scheduleTime)
+            }
+          >
             {publishType === "now" ? (
               <>
                 <Globe className="h-4 w-4 mr-2" />
@@ -169,5 +208,5 @@ export function PublishModal({ isOpen, onClose, onPublish, content, isGlobal = f
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

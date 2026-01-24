@@ -16,18 +16,22 @@ export const fetchFooter = async () => {
   };
 };
 
-export const fetchFooterById = async(footerId)=>{
-  try{
-    const response = await fetch(`${FETCH_FOOTER_BY_ID}/${footerId}`,{
+export const fetchFooterById = async (footerId) => {
+  try {
+    const response = await fetch(`${FETCH_FOOTER_BY_ID}/${footerId}`, {
       method: "GET",
-      credentials: "include"
-    }
-    );
+      credentials: "include",
+    });
 
     const request = await response.json();
-    if(!response.ok) return { ok: response.ok, status: response.status, message: request.message };
+    if (!response.ok)
+      return {
+        ok: response.ok,
+        status: response.status,
+        message: request.message,
+      };
     return { ok: response.ok, status: response.status, data: request };
-  }catch(err){
+  } catch (err) {
     console.error(err);
   }
-}
+};
