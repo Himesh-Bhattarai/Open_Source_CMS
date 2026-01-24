@@ -1,3 +1,5 @@
+
+
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -12,15 +14,8 @@ import { Palette, Type, LayoutIcon, Sparkles, Save, RotateCcw, CheckCircle, XCir
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import {createTheme} from "@/Api/Theme/create";
+import UnderConstruction404  from "@/notNow/UnderConstruction404";
 
-// ==================== SEMANTIC BACKEND FUNCTIONS ====================
-// These are the ONLY entry points for backend interaction
-
-/**
- * Load theme settings for a specific website
- * @param websiteId - The website identifier
- * @returns Promise with theme data or null if not found
- */
 const loadThemeSetting = async (websiteId: string) => {
   try {
     const response = await fetch(`/api/websites/${websiteId}/theme`, {
@@ -336,7 +331,13 @@ const MOCK_WEBSITES = [
 const DEFAULT_THEME_NAME = "Global Theme"
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
 
+//remove later
 export default function ThemePage() {
+  const isUpdating = true;
+  
+  if(isUpdating){
+    return <UnderConstruction404 />
+  }
   // ==================== EXISTING STATE VARIABLES (DO NOT RENAME) ====================
   const [primaryColor, setPrimaryColor] = useState("#8b5cf6")
   const [secondaryColor, setSecondaryColor] = useState("#10b981")

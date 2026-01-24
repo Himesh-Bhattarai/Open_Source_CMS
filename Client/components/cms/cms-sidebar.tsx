@@ -132,12 +132,12 @@ const ownerNavigation: NavigationItem[] = [
         href: "/cms/global/seo",
         icon: Search,
       },
-      {
-        type: "link",
-        name: "Layout & Theme",
-        href: "/cms/global/layout",
-        icon: Palette,
-      },
+      // {
+      //   type: "link",
+      //   name: "Layout & Theme",
+      //   href: "/cms/global/layout",
+      //   icon: Palette,
+      // },
     ],
   },
 
@@ -145,7 +145,7 @@ const ownerNavigation: NavigationItem[] = [
   { type: "link", name: "Forms", href: "/cms/forms", icon: FormInput },
   { type: "link", name: "Media Library", href: "/cms/media", icon: ImageIcon },
   { type: "link", name: "Backups", href: "/cms/backups", icon: Database },
-  { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
+  // { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
   { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
   {
     type: "link",
