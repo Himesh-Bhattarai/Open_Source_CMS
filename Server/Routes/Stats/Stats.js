@@ -10,7 +10,6 @@ router.get("/stats/:types", verificationMiddleware, async (req, res, next) => {
     const userId = req.user?.userId;
     0;
     const types = req.params.types;
-    console.log("t`ypes", types);
     if (!userId) throw new Error("Unauthorized Access");
 
     // Switch case for different stats types

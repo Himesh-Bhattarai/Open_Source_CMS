@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { ApiKey } from "../../Models/ApiKey/apiKey.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const tenantCheckpoint = async (req, res, next) => {
   try {
@@ -59,6 +60,8 @@ export const tenantCheckpoint = async (req, res, next) => {
     });
 
     log.info(`Tenant created successfully: ${name}`);
+
+    notif.createWebsite({ userId: createdBy, domain, name, websiteId: tenant._id });
 
     // 5️⃣ Return RAW key once
     res.status(201).json({

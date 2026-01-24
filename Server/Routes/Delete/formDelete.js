@@ -1,6 +1,7 @@
 import express from "express";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import { Form } from "../../Models/Form/Form.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 const router = express.Router();
 
@@ -13,6 +14,8 @@ router.delete("/form/:formId", verificationMiddleware, async (req, res) => {
   if (!form) throw new Error("Form not found");
 
   const deleteForm = await Form.findByIdAndDelete({ _id: formId });
+
+  notif.deleteForm({ userId, formName: form.formName, formId: form._id, websiteId: form.websiteId });
 
   res
     .status(200)

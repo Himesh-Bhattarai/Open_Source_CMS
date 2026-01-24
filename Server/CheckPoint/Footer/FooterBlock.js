@@ -1,5 +1,5 @@
 import { FooterBlock } from "../../Models/Footer/FooterBlock.js";
-
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 import { logger as log } from "../../Utils/Logger/logger.js";
 
 export const footerBlockCheckpoint = (req, res, next) => {

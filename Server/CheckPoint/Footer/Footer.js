@@ -1,4 +1,5 @@
 import { Footer } from "../../Models/Footer/Footer.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const footerCheckpoint = async (req, res, next) => {
   try {

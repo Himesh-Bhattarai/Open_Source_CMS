@@ -1,6 +1,7 @@
 import { logger as log } from "../../Utils/Logger/logger.js";
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { ActivityLog } from "../../Models/ActivityLog/ActivityLog.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const ActivityLogCheckpoint = async (req, res, next) => {
   try {
