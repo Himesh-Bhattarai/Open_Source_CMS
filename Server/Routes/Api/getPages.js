@@ -5,7 +5,7 @@ import { apiKeyVerification } from "../../Validation/middleware/apiKeyVerificati
 import { tenantVerification } from "../../Validation/middleware/tenantVerification.js";
 // import { featureCheck } from "../../Validation/middleware/featureCheck.js";
 
-
+import { trackIntegrationUsage } from "../../Validation/middleware/trackIntegrationUsage.js";
 const router = express.Router({ mergeParams: true });
 
 router.get(
@@ -13,6 +13,7 @@ router.get(
     tenantVerification,
     apiKeyVerification,
     // featureCheck("pages"),
+    trackIntegrationUsage({ featureKey: "page" }),
     getPagesVerification
 );
 
@@ -21,6 +22,7 @@ router.get(
     "/domain/pages/:slug",
     tenantVerification,
     apiKeyVerification,
+    trackIntegrationUsage({ featureKey: "page" }),
     getPagesByIdVerification
 )
 
