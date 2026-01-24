@@ -1,5 +1,6 @@
 import { BlogPost } from "../../Models/Blog/Blogpost.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const updateBlog = async (req, res, next) => {
   try {

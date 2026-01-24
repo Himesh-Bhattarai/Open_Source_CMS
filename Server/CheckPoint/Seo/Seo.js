@@ -1,5 +1,6 @@
 // server/CheckPoint/Seo/Seo.js
 import { Seo } from "../../Models/Seo/Seo.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const seoCheckpoint = async (req, res) => {
   try {

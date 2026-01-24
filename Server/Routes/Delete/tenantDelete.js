@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 const router = express.Router();
 
@@ -32,6 +33,9 @@ router.delete("/:tenantId", verificationMiddleware, async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    notif.deleteWebsite({ userId, domain: tenant.domain, name: tenant.name, websiteId: tenant._id });
+    
 
     res.json({ ok: true });
   } catch (err) {

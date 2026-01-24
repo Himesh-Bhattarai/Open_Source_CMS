@@ -1,13 +1,14 @@
 import express from "express";
 import TenantRoute from "../Tenant.js";
-import TenantUserRoute from "../TenantUser.js";
+
 import { verificationMiddleware } from "../../../Utils/Jwt/Jwt.js";
 import { Tenant } from "../../../Models/Tenant/Tenant.js";
+import {cmsEventService as notif} from "../../../Services/notificationServices.js"
 
 const router = express.Router();
 
 router.use("/", TenantRoute);
-router.use("/", TenantUserRoute);
+
 
 router.get("/get-tenant", verificationMiddleware, async (req, res) => {
   const userId = req.user?.userId;
@@ -36,6 +37,8 @@ router.put("/tenant/:tenantId", verificationMiddleware, async (req, res) => {
     if (!tenant) {
       return res.status(404).json({ error: "Tenant not found" });
     }
+
+    notif.updateWebsite({ userId, domain: tenant.domain, name: tenant.name, websiteId: tenant._id });
 
     res.json({
       ok: true,

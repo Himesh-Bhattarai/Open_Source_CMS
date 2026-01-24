@@ -1,5 +1,5 @@
 import { ContentType } from "../../../Models/Field/ContentType.js";
-
+import {cmsEventService as notif} from "../../../Services/notificationServices.js"
 import { logger as log } from "../../../Utils/Logger/logger.js";
 
 export const contentTypeCheckpoint = async (req, res, next) => {

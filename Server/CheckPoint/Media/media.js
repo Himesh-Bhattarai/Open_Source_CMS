@@ -1,5 +1,6 @@
 import { Media } from "../../Models/Media/Media.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const mediaCheckpoint = async (req, res, next) => {
   try {

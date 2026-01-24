@@ -3,6 +3,7 @@ import footer from "./Footer.js";
 import footerBlock from "./FooterBlock.js";
 import { Footer } from "../../Models/Footer/Footer.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 const router = express.Router();
 

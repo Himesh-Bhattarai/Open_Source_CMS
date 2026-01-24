@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { Page } from "../../Models/Page/Page.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const updatePagePhase2 = async (req, res) => {
   try {
@@ -68,6 +69,8 @@ export const updatePagePhase2 = async (req, res) => {
     page.etag = crypto.randomUUID();
 
     await page.save();
+
+    notif.updatePage({ userId, slug: page.slug, title: page.title, pageId: page._id, websiteId: page.websiteId });
 
     res.json({
       success: true,

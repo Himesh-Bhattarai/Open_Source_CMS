@@ -1,5 +1,6 @@
 import express from "express";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 import { Seo } from "../../Models/Seo/Seo.js";
 
 const router = express.Router();
@@ -18,6 +19,8 @@ router.delete("/seo/:seoId", verificationMiddleware, async (req, res) => {
   if (seo.userId !== userId) throw new Error("Unauthorized");
 
   const deleteSeo = await Seo.findByIdAndDelete({ _id: seoId });
+
+  notif.deleteSEO({ userId, seoName: deleteSeo.seoName, seoId: deleteSeo._id, websiteId: deleteSeo.websiteId });
 
   res.status(200).json({ message: "Seo deleted successfully" });
 });

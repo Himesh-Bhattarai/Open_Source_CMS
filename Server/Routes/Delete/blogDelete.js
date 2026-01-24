@@ -1,6 +1,7 @@
 import express from "express";
 import { BlogPost } from "../../Models/Blog/Blogpost.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ router.delete("/blog/:blogId", verificationMiddleware, async (req, res) => {
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     await BlogPost.deleteOne({ _id: blogId, authorId: userId });
+
+    notif.deleteBlog({ userId, slug: blog.slug, title: blog.title, blogId: blog._id, websiteId: blog.websiteId });
     return res.status(200).json({ message: "Blog deleted successfully" });
   } catch (err) {
     return res.status(500).json({ message: err.message });

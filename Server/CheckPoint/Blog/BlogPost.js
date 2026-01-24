@@ -1,5 +1,5 @@
 import { BlogPost } from "../../Models/Blog/Blogpost.js";
-
+import { cmsEventService as notif } from "../../Services/notificationServices.js"
 export const BlogPostCheckpoint = async (req, res, next) => {
   try {
     const { blogData } = req.body;

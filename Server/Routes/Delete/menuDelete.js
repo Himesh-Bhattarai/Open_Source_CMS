@@ -1,5 +1,6 @@
 import { Menu } from "../../Models/Menu/Menu.js";
 import express from "express";
+import {cmsEventService as notif} from "../../Services/notificationServices.js"
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 const router = express.Router();
 
@@ -23,6 +24,8 @@ router.delete(
         return res
           .status(404)
           .json({ message: "Menu not found or already deleted" });
+
+      notif.deleteMenu({ userId, menuName: deleteMenu.menuName, menuId: deleteMenu._id, websiteId: deleteMenu.websiteId });
 
       return res.status(200).json({ message: "Menu deleted successfully" });
     } catch (err) {
