@@ -48,7 +48,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "default",
-                            url: `/api/v1/${domain}/menu`,
+                            url: `/api/v1/external-request/${domain}/menu`,
                             status: getEndpointStatus("menu", "default"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "menu" && u.endpointKey === "default")
@@ -68,7 +68,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "default",
-                            url: `/api/v1/${domain}/footer`,
+                            url: `/api/v1/external-request/${domain}/footer`,
                             status: getEndpointStatus("footer", "default"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "footer" && u.endpointKey === "default")
@@ -88,7 +88,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "default",
-                            url: `/api/v1/${domain}/seo`,
+                            url: `/api/v1/external-request/${domain}/seo`,
                             status: getEndpointStatus("seo", "default"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "seo" && u.endpointKey === "default")
@@ -109,7 +109,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "collection",
-                            url: `/api/v1/${domain}/pages`,
+                            url: `/api/v1/external-request/${domain}/pages`,
                             status: getEndpointStatus("pages", "collection"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "pages" && u.endpointKey === "collection")
@@ -119,7 +119,7 @@ export const integrationsApi = async (req, res, next) => {
                             .filter((p) => p.slug)
                             .map((p) => ({
                                 key: `page:${p.slug}`,
-                                url: `/api/v1/${domain}/pages/${p.slug}`,
+                                url: `/api/v1/external-request/${domain}/pages/${p.slug}`,
                                 status: getEndpointStatus("pages", `page:${p.slug}`),
                                 lastCalledAt:
                                     usage.find((u) => u.featureKey === "pages" && u.endpointKey === `page:${p.slug}`)
@@ -140,7 +140,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "collection",
-                            url: `/api/v1/${domain}/blogs`,
+                            url: `/api/v1/external-request/${domain}/blogs`,
                             status: getEndpointStatus("blog", "collection"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "blog" && u.endpointKey === "collection")
@@ -150,7 +150,7 @@ export const integrationsApi = async (req, res, next) => {
                             .filter((b) => b.slug)
                             .map((b) => ({
                                 key: `post:${b.slug}`,
-                                url: `/api/v1/${domain}/blogs/${b.slug}`,
+                                url: `/api/v1/external-request/${domain}/blogs/${b.slug}`,
                                 status: getEndpointStatus("blog", `post:${b.slug}`),
                                 lastCalledAt:
                                     usage.find(
@@ -171,7 +171,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "default",
-                            url: `/api/v1/${domain}/form`,
+                            url: `/api/v1/external-request/${domain}/form`,
                             status: getEndpointStatus("form", "default"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "form" && u.endpointKey === "default")
@@ -191,7 +191,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "default",
-                            url: `/api/v1/${domain}/theme`,
+                            url: `/api/v1/external-request/${domain}/theme`,
                             status: getEndpointStatus("theme", "default"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "theme" && u.endpointKey === "default")
@@ -211,7 +211,7 @@ export const integrationsApi = async (req, res, next) => {
                     endpoints: [
                         {
                             key: "default",
-                            url: `/api/v1/${domain}/media`,
+                            url: `/api/v1/external-request/${domain}/media`,
                             status: getEndpointStatus("media", "default"),
                             lastCalledAt:
                                 usage.find((u) => u.featureKey === "media" && u.endpointKey === "default")
@@ -228,7 +228,7 @@ export const integrationsApi = async (req, res, next) => {
             });
         }
 
-        res.json({ success: true, data: result });
+        res.status(200).json({ ok: true, status: 200, message: "Success", data: result });
     } catch (err) {
         next(err);
     }
