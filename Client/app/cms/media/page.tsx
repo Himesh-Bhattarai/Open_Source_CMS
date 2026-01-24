@@ -53,6 +53,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createMedia } from "@/Api/Media/Create";
 import { loadMedia } from "@/Api/Media/Fetch";
 import { getUserPages as loadPages } from "@/Api/Page/Fetch";
+import UnderConstruction404 from "@/notNow/UnderConstruction404";
 
 // Types
 interface Page {
@@ -72,6 +73,12 @@ interface MediaItem {
 }
 
 export default function MediaLibraryPage() {
+
+    const isUpdating = true;
+    
+    if(isUpdating){
+      return <UnderConstruction404 />
+    }
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
