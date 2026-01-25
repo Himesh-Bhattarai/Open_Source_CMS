@@ -40,6 +40,12 @@ export const mediaCheckpoint = async (req, res, next) => {
       uploadedBy: userId,
     });
 
+    notif.createMedia({
+      userId,
+      mediaName: media.filename,
+      mediaId: media._id
+    })
+
     res.status(201).json({
       ok: true,
       data: media,

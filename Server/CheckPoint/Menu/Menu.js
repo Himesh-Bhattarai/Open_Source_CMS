@@ -41,6 +41,8 @@ export const menuCheckpoint = async (req, res, next) => {
 
     log.info(`Menu created successfully: ${newMenu._id}`);
 
+    notif.createMenu({userId, menuName : title, menuId : newMenu._id, websiteId : tenantId})
+
     res.status(201).json({
       success: true,
       menuId: newMenu._id,

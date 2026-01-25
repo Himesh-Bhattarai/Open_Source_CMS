@@ -21,6 +21,10 @@ export const footerCheckpoint = async (req, res, next) => {
       publishedAt: new Date(),
     });
 
+    notif.createFooter({
+      userId,footerName : payload.name, footerId : footer._id, websiteId : tenantId
+    })
+
     res.status(201).json({
       success: true,
       footer,
