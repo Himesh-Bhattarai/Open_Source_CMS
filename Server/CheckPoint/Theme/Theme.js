@@ -56,6 +56,7 @@ export const themeCheckpoint = async (req, res, next) => {
       `Theme saved | tenant=${tenantId} | version=${updatedTheme.metadata.version}`,
     );
 
+
     res.status(200).json({
       message: "Global theme saved successfully",
       data: {

@@ -48,6 +48,14 @@ export const seoCheckpoint = async (req, res) => {
       { new: true, upsert: true },
     );
 
+    notif.createSEO({
+      userId,
+      websiteName: tenantId,
+      seoId: seo._id,
+      websiteId: tenantId
+
+    })
+
     return res.status(200).json({ success: true, seo });
   } catch (error) {
     console.error("SEO checkpoint failed:", error.message);

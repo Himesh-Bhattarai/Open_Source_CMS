@@ -39,6 +39,14 @@ export const updateBlog = async (req, res, next) => {
 
     log.info(`Blog post updated by user: ${userId}, blogId: ${blogId}`);
 
+    notif.updateBlog({
+      userId: userId,
+      slug: updatedBlog.slug || "",
+      title,
+      blogId: blogId,
+      websiteId: updatedBlog.tenantId
+    })
+
     res.status(200).json({
       ok: true,
       blog: updatedBlog,

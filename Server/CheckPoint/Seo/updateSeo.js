@@ -38,6 +38,8 @@ export const updateSeoCheckpoint = async (req, res, next) => {
       { new: true },
     );
 
+    notif.updateSEO({ userId, websiteName: payload.websiteName, seoId, websiteId: payload.websiteId });
+
     return res.status(200).json({
       success: true,
       data: updatedSeo,
