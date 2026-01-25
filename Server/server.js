@@ -1,13 +1,15 @@
 // server.js
+import dotenv from "dotenv";
+dotenv.config();
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 import "./Services/notification.js";
+
 
 import { connectDB } from "./Database/db.js";
 import { errorHandler } from "./Utils/Logger/errorHandler.js";
-import dotenv from "dotenv";
-dotenv.config();
 
 // Import routes
 import authRoutes from "./Routes/Auth/Combined/Auth.js";
@@ -44,11 +46,12 @@ import updateForm from "./Routes/Form/Form.js";
 import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
 import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
-
+import oAuth from "./Routes/Auth/oAuth/oAuth.js";
 
 import externalRequest from "./Routes/Api/oneRoutes.js";
-dotenv.config();
+
 const app = express();
+import passport from "./config/password.js";
 
 // Middleware
 app.use(
@@ -60,6 +63,19 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "some_secret",
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+
+// Passport middlewares
+app.use(passport.initialize());
+app.use(passport.session());
+
 //Create Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/activity", activityLogRoutes);
@@ -75,6 +91,9 @@ app.use("/api/v1/create-theme", themeRoutes);
 app.use("/api/v1/create-version", versionRoutes);
 app.use("/api/v1/create-seo", seoRoutes);
 
+//create but oAuth
+app.use("/api/v1/oAuth", oAuth);
+
 //fetch routes
 app.use("/api/v1/tenants", tenantRoutes);
 app.use("/api/v1/page", FetchPageRoutes);
@@ -89,7 +108,6 @@ app.use("/api/v1/integrations", integrationsApi);
 
 //fetch routes for ADMIN
 app.use("/api/v1/admin/get-all-users", adminLoad);
-
 
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
