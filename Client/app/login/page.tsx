@@ -51,11 +51,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     setIsLoading(true)
-    // Simulate Google OAuth
-    setTimeout(() => {
-      localStorage.setItem("cms_auth", "authenticated")
-      router.push("/cms")
-    }, 1500)
+    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/google"
   }
 
   const handleFacebookLogin = () => {
