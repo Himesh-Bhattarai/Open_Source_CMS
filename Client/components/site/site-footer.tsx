@@ -9,7 +9,7 @@ export function SiteFooter({ tenant }: SiteFooterProps) {
   const footerLinks = {
     product: [
       { label: "Features", href: "/features" },
-      { label: "Pricing", href: "/pricing" },
+      // { label: "Pricing", href: "/pricing" },
       { label: "FAQ", href: "/faq" },
     ],
     company: [

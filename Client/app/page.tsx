@@ -104,37 +104,37 @@ export default function LandingPage() {
     },
   ]
 
-  const pricing = [
-    {
-      name: "Starter",
-      price: "$29",
-      period: "/month",
-      description: "Perfect for small websites",
-      features: ["1 Website", "10GB Storage", "Basic Support", "All Features"],
-    },
-    {
-      name: "Professional",
-      price: "$79",
-      period: "/month",
-      description: "For growing businesses",
-      features: ["5 Websites", "50GB Storage", "Priority Support", "Advanced Analytics", "Custom Domain"],
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "$199",
-      period: "/month",
-      description: "For large organizations",
-      features: [
-        "Unlimited Websites",
-        "500GB Storage",
-        "24/7 Support",
-        "Custom Integrations",
-        "Dedicated Manager",
-        "SLA Guarantee",
-      ],
-    },
-  ]
+  // const pricing = [
+  //   {
+  //     name: "Starter",
+  //     price: "$29",
+  //     period: "/month",
+  //     description: "Perfect for small websites",
+  //     features: ["1 Website", "10GB Storage", "Basic Support", "All Features"],
+  //   },
+  //   {
+  //     name: "Professional",
+  //     price: "$79",
+  //     period: "/month",
+  //     description: "For growing businesses",
+  //     features: ["5 Websites", "50GB Storage", "Priority Support", "Advanced Analytics", "Custom Domain"],
+  //     popular: true,
+  //   },
+  //   {
+  //     name: "Enterprise",
+  //     price: "$199",
+  //     period: "/month",
+  //     description: "For large organizations",
+  //     features: [
+  //       "Unlimited Websites",
+  //       "500GB Storage",
+  //       "24/7 Support",
+  //       "Custom Integrations",
+  //       "Dedicated Manager",
+  //       "SLA Guarantee",
+  //     ],
+  //   },
+  // ]
 
   return (
     <div className="min-h-screen bg-background">
@@ -178,7 +178,7 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <Zap className="h-4 w-4" />
-              No-Code Website Builder
+              No-Code Website Builder(v1.0.0)
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               Build & Manage Websites{" "}
@@ -193,14 +193,14 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild className="text-base">
                 <Link href="/signup">
-                  Start Free Trial <ArrowRight className="ml-2 h-5 w-5" />
+                  Start with us <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-base bg-transparent">
                 <Link href="#features">Explore Features</Link>
               </Button>
             </div>
-            <div className="pt-8 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+            {/* <div className="pt-8 flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-primary" />
                 <span>14-day free trial</span>
@@ -213,7 +213,7 @@ export default function LandingPage() {
                 <Check className="h-5 w-5 text-primary" />
                 <span>Cancel anytime</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
@@ -300,7 +300,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing
       <section id="pricing" className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -340,10 +340,10 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary text-white">
+      {/* <section className="py-20 bg-primary text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <h2 className="text-3xl md:text-5xl font-bold">Ready to Build Your Website?</h2>
@@ -367,7 +367,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
       <footer className="py-12 border-t">

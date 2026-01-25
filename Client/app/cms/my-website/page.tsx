@@ -69,10 +69,6 @@ export default function MyWebsitePage() {
     fetchData();
   }, [user]);
 
-  useEffect(() => {
-    console.log("TENANTS 👉", tenants);
-  }, [tenants]);
-
 
   //edit existing tenant
   const handelEditTenant = async (tenantId: string) => {
@@ -193,7 +189,7 @@ export default function MyWebsitePage() {
         <div className="flex justify-end">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             {/* YOUR EXISTING DIALOG */}
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-125">
               <DialogHeader>
                 <DialogTitle>Create New Website</DialogTitle>
                 <DialogDescription>
