@@ -91,7 +91,7 @@ app.use("/api/v1/create-theme", themeRoutes);
 app.use("/api/v1/create-version", versionRoutes);
 app.use("/api/v1/create-seo", seoRoutes);
 
-//create but oAuth
+//create -- oAuth
 app.use("/api/v1/oAuth", oAuth);
 
 //fetch routes
