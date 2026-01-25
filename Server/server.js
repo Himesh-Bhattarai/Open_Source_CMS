@@ -45,7 +45,6 @@ import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
 import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
 
-import cmsService from "./Services/notificationServices.js"
 
 import externalRequest from "./Routes/Api/oneRoutes.js";
 dotenv.config();
@@ -95,7 +94,7 @@ app.use("/api/v1/admin/get-all-users", adminLoad);
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
 app.use("/api/v2/check-slug", slugServices);
-app.use("/api/notifications", notificationRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 //deletion routes
 app.use("/api/v1/delete", deleteRoutes);

@@ -1,13 +1,16 @@
 import express from "express";
 import  Notification  from "../../Models/Notification/Notification.js";
+import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 
 const router = express.Router();
 
 // Get all notifications for a user
-router.get("/:userId", async (req, res) => {
+router.get("/get-notification", verificationMiddleware,
+     async (req, res) => {
     try {
-        const { userId } = req.params;
-
+        const userId = req.user?.userId;
+        console.log(userId, "For NOtification")
+        if(!userId) throw new Error("Unauthorized");
         const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
 
         res.json({ ok: true, notifications });
