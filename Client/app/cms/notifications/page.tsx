@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Bell, Mail, CheckCircle, Trash2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getNotification } from "@/Api/Notification/notification"
 
 interface Notification {
   id: number
@@ -19,40 +20,9 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: "success",
-      title: "Page Published",
-      message: "About Us page has been published successfully",
-      time: "5 minutes ago",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "info",
-      title: "Menu Updated",
-      message: "Mike R. updated Main Navigation",
-      time: "1 hour ago",
-      read: false,
-    },
-    {
-      id: 3,
-      type: "warning",
-      title: "Draft Saved",
-      message: "Your changes to Services page were saved as draft",
-      time: "2 hours ago",
-      read: true,
-    },
-    {
-      id: 4,
-      type: "success",
-      title: "Media Uploaded",
-      message: "3 new images added to media library",
-      time: "3 hours ago",
-      read: true,
-    },
-  ])
+ const [notifications, setNotifications] = useState<Notification[]>([]);
+ const [loading, setLoading] = useState(false);
+ const [message, setMessage] = useState("");
 
   const [emailSettings, setEmailSettings] = useState({
     contentPublished: true,
@@ -64,6 +34,35 @@ export default function NotificationsPage() {
     desktopNotifications: false,
     soundAlerts: false,
   })
+  
+
+  //loadNotification
+  useEffect(() => {
+    const loadNotif = async () => {
+      setLoading(true);
+      const notif = await getNotification();
+      const notificationsArray = notif.data?.notifications || [];
+      if (!notif.ok) {
+        setMessage(notif?.message ?? "Failed to load notifications");
+        setLoading(false);
+        return;
+      }
+
+      // map _id → id and createdAt → time
+      const formatted = notificationsArray.map((n: any) => ({
+        id: n._id,
+        type: n.type.toLowerCase(), 
+        title: n.title,
+        message: n.message,
+        time: n.createdAt,
+        read: n.read,
+      }));
+
+      setNotifications(formatted);
+      setLoading(false);
+    };
+    loadNotif();
+  }, []);
 
   const markAsRead = (id: number) => {
     setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
@@ -77,7 +76,18 @@ export default function NotificationsPage() {
     setNotifications(notifications.filter((n) => n.id !== id))
   }
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  
+  
+  //filter notification by time show only the last 7 days
+  const filteredNotifications = notifications.filter((n)=>{
+    const notificationData = new Date(n.time);
+    const today = new Date();
+    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return notificationData >= sevenDaysAgo
+  })
+  
+  const unreadCount = filteredNotifications.filter((n) => !n.read).length
+
 
   return (
     <div className="space-y-6">
@@ -106,14 +116,14 @@ export default function NotificationsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {notifications.length === 0 ? (
+              {filteredNotifications.length === 0 ? (
                 <div className="text-center py-12">
                   <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-lg font-medium">No notifications</p>
                   <p className="text-sm text-muted-foreground mt-1">You're all caught up!</p>
                 </div>
               ) : (
-                notifications.map((notification) => (
+                  filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`flex items-start gap-4 p-4 rounded-lg border ${!notification.read ? "bg-accent/50" : ""}`}
@@ -168,14 +178,14 @@ export default function NotificationsPage() {
               <CardTitle>Unread Notifications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {notifications.filter((n) => !n.read).length === 0 ? (
+              {filteredNotifications.filter((n) => !n.read).length === 0 ? (
                 <div className="text-center py-12">
                   <CheckCircle className="h-12 w-12 mx-auto text-green-600 mb-4" />
                   <p className="text-lg font-medium">All caught up!</p>
                   <p className="text-sm text-muted-foreground mt-1">No unread notifications</p>
                 </div>
               ) : (
-                notifications
+                filteredNotifications
                   .filter((n) => !n.read)
                   .map((notification) => (
                     <div key={notification.id} className="flex items-start gap-4 p-4 rounded-lg border bg-accent/50">

@@ -146,7 +146,7 @@ const ownerNavigation: NavigationItem[] = [
   { type: "link", name: "Media Library", href: "/cms/media", icon: ImageIcon },
   { type: "link", name: "Backups", href: "/cms/backups", icon: Database },
   // { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
-  { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
+  // { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
   {
     type: "link",
     name: "Notifications",
@@ -227,8 +227,6 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
             </div>
           </div>
         )} */}
-
-        {/* ?Need to change overflow-y-auto either over-flow-y-scrool */}
 
         <ScrollArea className="flex-1 overflow-y-auto ">
           <nav className="space-y-1 p-3">

@@ -6,6 +6,8 @@ const UserSchema = new Schema(
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     name: { type: String, required: true },
+    googleId: String,
+    facebookId: String,
     avatar: String,
     role: { type: String, enum: ["admin", "web-owner"], default: "web-owner" },
     status: {

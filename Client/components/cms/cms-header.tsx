@@ -22,9 +22,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { getNotification } from "@/Api/Notification/notification";
 
 import { logoutApi } from "@/Api/Auth/Logout";
 interface CMSHeaderProps {
@@ -42,12 +43,64 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const router = useRouter();
+  const [notification , setNotifications] = useState([]);
+
+  
+  const [unread, setUnread] = useState(
+    notification.some((n : any) => !n.read) 
+  );
+  
+  useEffect(() => {
+    const hasUnread = notification.some((n : any) => !n.read);
+    setUnread(hasUnread);
+  }, [notification]);
+  const handleOpen = () => {
+    // mark the dot as gone once dropdown is opened
+    setUnread(false);
+  };
 
   const handleLogout = async () => {
     const callLogout = await logoutApi();
     router.push("/");
     router.refresh();
   };
+
+
+  useEffect(() => {
+    const loadNotification = async () => {
+      const notif = await getNotification();
+      if (!notif.ok) return;
+
+      const notificationsArray = notif.data?.notifications || [];
+
+      // map _id → id and createdAt → time
+      const formatted = notificationsArray.map((n: any) => ({
+        id: n._id,
+        type: n.type.toLowerCase(),
+        title: n.title,
+        message: n.message,
+        time: n.createdAt,
+        read: n.read,
+      }));
+
+      // filter to very recent notifications (last 10 days)
+      const filtered = formatted.filter((n: any) => {
+        const notificationTime = new Date(n.time).getTime();
+        const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
+        return notificationTime >= tenDaysAgo;
+      });
+
+      // optionally, get top 5 most recent
+      const top5 = filtered
+        .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
+        .slice(0, 5);
+
+      setNotifications(top5);
+    };
+
+    loadNotification();
+  }, []);
+
 
   return (
     <header className="h-14 md:h-16 border-b bg-card shrink-0 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
@@ -80,14 +133,14 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
           <Menu className="h-5 w-5" />
         </Button>
 
-        <div className="hidden lg:flex items-center gap-2">
+        {/* <div className="hidden lg:flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">
               CF
             </span>
           </div>
           <span className="font-semibold text-lg">ContentFlow</span>
-        </div>
+        </div> */}
       </div>
 
       <div
@@ -113,11 +166,13 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
           <Search className="h-5 w-5" />
         </Button>
 
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={handleOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-destructive rounded-full"></span>
+              {unread && (
+                <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-destructive rounded-full"></span>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -126,13 +181,15 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
           >
             <div className="p-3">
               <p className="font-semibold mb-3">Notifications</p>
-              <div className="space-y-2">
-                <div className="p-3 rounded-md bg-muted/50 text-sm">
-                  <p className="font-medium">Menu updated</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Mike R. published Main Navigation
-                  </p>
-                </div>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {notification.map((notification: any, index: number) => (
+                  <div key={index} className="p-3 rounded-md bg-muted/50 text-sm">
+                    <p className="font-medium">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {notification.message}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </DropdownMenuContent>

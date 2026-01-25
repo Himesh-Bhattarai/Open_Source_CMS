@@ -235,7 +235,7 @@ function OwnerDashboard({ user }: { user: any }) {
           { label: "Total Pages", value: data.totalPages ?? 0, icon: FileText, change: "+3 this week", color: "text-blue-600" },
           { label: "Published Pages", value: data.publishedPages ?? 0, icon: BarChart3, change: "+12 this week", color: "text-green-600" },
           { label: "Draft Pages", value: data.draftPages ?? 0, icon: ImageIcon, change: "+5 this week", color: "text-purple-600" },
-          { label: "Team Members", value: data.teamMembers ?? 0, icon: Users, change: "1 online now", color: "text-orange-600" },
+          // { label: "Team Members", value: data.teamMembers ?? 0, icon: Users, change: "1 online now", color: "text-orange-600" },
         ]
 
         setStats(statsArray)
@@ -291,9 +291,9 @@ function OwnerDashboard({ user }: { user: any }) {
           </Card>
         ))}
       </div>
-
+{/* 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        {/* Pending Global Changes */}
+       
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -334,8 +334,7 @@ function OwnerDashboard({ user }: { user: any }) {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <Card>
+         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Clock className="h-5 w-5" />
@@ -347,11 +346,11 @@ function OwnerDashboard({ user }: { user: any }) {
             <div className="space-y-4">
               {recentActivity.map((activity, idx) => (
                 <div key={idx} className="flex items-start gap-3">
-                  <div className="h-2 w-2 mt-2 rounded-full bg-primary flex-shrink-0"></div>
+                  <div className="h-2 w-2 mt-2 rounded-full bg-primary shrink-0"></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm">
                       <span className="text-muted-foreground">{activity.action}</span>{" "}
-                      <span className="font-medium break-words">{activity.item}</span>
+                      <span className="font-medium wrap-break-word">{activity.item}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {activity.user} • {activity.time}
@@ -362,7 +361,7 @@ function OwnerDashboard({ user }: { user: any }) {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Quick Actions */}
       <Card>
