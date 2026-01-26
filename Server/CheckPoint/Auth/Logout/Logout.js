@@ -18,8 +18,20 @@ export const logoutCheckpoint = async (req, res, next) => {
     log.info(`Logout Attempt by: ${userId}`);
 
     // Clear cookies
-    res.clearCookie("accessToken", { httpOnly: true });
-    res.clearCookie("refreshToken", { httpOnly: true });
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: true,         
+      sameSite: "Strict",   
+      path: "/",           
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      path: "/",
+    });
+
 
     // Clear session tokens
     await Session.findOneAndUpdate(
