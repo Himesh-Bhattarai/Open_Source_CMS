@@ -21,8 +21,35 @@ import {
   Eye,
   Download,
 } from "lucide-react"
-
+import { useEffect, useState } from "react"
+import { verifyMe } from "@/Api/Auth/VerifyAuth"
+import { useRouter } from "next/navigation"
+import LoadingScreen from "@/lib/loading"
 export default function LandingPage() {
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const directMe = async () => {
+      try {
+        const res = await verifyMe();
+
+        if (!res.ok) {
+          // user not verified → stay on landing/login page
+          setLoading(false);
+        } 
+        // user verified → redirect to dashboard
+          router.push("/cms");
+        
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+      }
+    };
+
+    directMe();
+  }, [router]);
+
   const features = [
     {
       icon: Layout,
@@ -135,6 +162,10 @@ export default function LandingPage() {
   //     ],
   //   },
   // ]
+
+  if (loading) {
+    return <LoadingScreen />; // show your logo/login bar while verifying
+  }
 
   return (
     <div className="min-h-screen bg-background">
