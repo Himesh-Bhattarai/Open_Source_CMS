@@ -11,6 +11,8 @@ router.use("/login", LoginRoute);
 router.use("/logout", LogoutRoute);
 router.use("/register", RegisterRoute);
 //protected
-router.get("/profile", verificationMiddleware, verifyMe);
+router.get("/profile", verificationMiddleware,
+  
+    verifyMe);
 
 export default router;

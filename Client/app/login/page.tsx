@@ -56,11 +56,7 @@ export default function LoginPage() {
 
   const handleFacebookLogin = () => {
     setIsLoading(true)
-    // Simulate Facebook OAuth
-    setTimeout(() => {
-      localStorage.setItem("cms_auth", "authenticated")
-      router.push("/cms")
-    }, 1500)
+    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/facebook"
   }
 
   return (

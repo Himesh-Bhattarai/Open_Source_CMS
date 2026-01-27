@@ -21,10 +21,15 @@ import { useAuth } from "@/hooks/useAuth"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { fetchStats } from "@/Api/Stats/Stats"
+import { verifyMe } from "@/Api/Auth/VerifyAuth"
+import router from "next/router"
+import LoadingScreen from "@/lib/loading"
+
 
 export default function CMSDashboard() {
-  const { user, isAdmin, isOwner } = useAuth()
   const router = useRouter()
+  const { user, isAdmin, isOwner } = useAuth()
+  
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -35,14 +40,17 @@ export default function CMSDashboard() {
     return null
   }
 
+
+
   if (isAdmin) {
-    return <AdminDashboard />
+    return <AdminDashboard  />
   }
 
   return <OwnerDashboard user={user} />
 }
 
 function AdminDashboard() {
+
   const stats = [
     {
       label: "Total Users",

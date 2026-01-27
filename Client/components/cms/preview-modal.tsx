@@ -25,7 +25,7 @@ export interface PreviewModalProps {
   content: PageContent;
   previewUrl: string;
   environment: string;
-  seoPreview?: string; // ← ADD THIS
+  seoPreview?: string;
 }
 
 export function PreviewModal({
@@ -34,7 +34,7 @@ export function PreviewModal({
   content,
   previewUrl = "/",
   environment,
-  seoPreview, // <-- accept it even if you don't render yet
+  seoPreview,
 }: PreviewModalProps) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">(
     "desktop",

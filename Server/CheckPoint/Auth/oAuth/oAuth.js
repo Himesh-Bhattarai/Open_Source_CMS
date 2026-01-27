@@ -1,4 +1,4 @@
-//server/CheckPoint/Auth/oAuth/oAuth.js
+
 import passport from "passport";
 
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -24,6 +24,7 @@ passport.use(
     async (_, __, profile, done) => {
       let user = await User.findOne({ googleId: profile.id });
       if (!user) {
+        //create user in database
         user = await User.create({
           name: profile.displayName,
           email: profile.emails?.[0].value,
@@ -39,7 +40,8 @@ passport.use(
   ),
 );
 
-// Facebook OAuth
+// Facebook OAuth ----- Its not working idk why?? if someone know please tell me how its work explain here
+// Ans--->
 passport.use(
   new FacebookStrategy(
     {

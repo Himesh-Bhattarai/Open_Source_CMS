@@ -239,7 +239,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                     </Badge>
                   ) : (
                     <Badge variant="secondary">
-                      {user?.role === "owner" && "Website Owner"}
+                        {user?.role === "web-owner" && "web-owner"}
                       {user?.role === "manager" && "Manager"}
                       {user?.role === "editor" && "Editor"}
                       {user?.role === "viewer" && "Viewer"}
@@ -249,10 +249,11 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/cms/settings")}>
               <SettingsIcon className="h-4 w-4 mr-2" />
               Account Settings
             </DropdownMenuItem>
+
             <DropdownMenuItem
               className="text-destructive"
               onClick={handleLogout}

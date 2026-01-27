@@ -41,7 +41,6 @@ export const integrationsApi = async (req, res, next) => {
       // ---------- MENU ----------
       const menuExists = await Menu.exists({
         tenantId: tenant._id,
-        status: "publish",
       });
       if (menuExists) {
         integrations.push({
