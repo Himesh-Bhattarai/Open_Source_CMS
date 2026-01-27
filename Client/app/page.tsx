@@ -25,22 +25,34 @@ import { useEffect, useState } from "react"
 import { verifyMe } from "@/Api/Auth/VerifyAuth"
 import { useRouter } from "next/navigation"
 import LoadingScreen from "@/lib/loading"
+import {fetchMenu as loadNavigation } from "@/Api/Navigation/Navigation"
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  
+//loading MenuItem Dynamically
+  useEffect(()=>{
+    const loadApi = async ()=>{
+      const res = await loadNavigation();
+      if(!res.ok){
+        console.error("Failed to load navigation items");
+
+      }
+      console.log("Data form CMS", res.data);
+    }
+    loadApi();
+  })
 
   useEffect(() => {
     const directMe = async () => {
       try {
         const res = await verifyMe();
-
         if (!res.ok) {
           // user not verified → stay on landing/login page
           setLoading(false);
         } 
         // user verified → redirect to dashboard
           router.push("/cms");
-        
       } catch (err) {
         console.error(err);
         setLoading(false);
