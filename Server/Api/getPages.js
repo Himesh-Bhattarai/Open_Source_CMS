@@ -20,7 +20,6 @@ export const getPagesByIdVerification = async (req, res, next) => {
     const slugId = req.params.slug;
     const page = await Page.find({
       tenantId: req.tenant._id,
-      status: "published",
       slug: slugId,
     })
       .select("Title Slug settings")
