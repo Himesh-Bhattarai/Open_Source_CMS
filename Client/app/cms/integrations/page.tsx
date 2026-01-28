@@ -23,6 +23,7 @@ interface Integration {
   description: string;
   status: "ready" | "connected" | "disconnected";
   endpoints: Endpoint[];
+  _uniqueId: string;
 }
 
 interface TenantData {
@@ -53,16 +54,22 @@ export default function IntegrationsPage() {
         const loadApi = await integrationsApi()
         console.log("Load Api", loadApi)
 
-        if (loadApi?.ok) {
-          // Extract integrations from the first tenant (or combine all if needed)
-          const firstTenant = loadApi.data[0]
-          if (firstTenant?.integrations) {
-            setApiList(firstTenant.integrations)
-            setMessage("Successfully loaded integrations")
-          } else {
-            setApiList([])
-            setMessage("No integrations found")
-          }
+        if (loadApi?.ok && Array.isArray(loadApi.data)) {
+          // Flatten all integrations from all tenants
+          const allIntegrations = loadApi.data.flatMap(tenant =>
+            (tenant.integrations || []).map((integration : Integration)=> ({
+              ...integration,
+              _uniqueId: `${tenant.tenantId}-${integration.id}` // unique per tenant
+            }))
+          )
+          setApiList(allIntegrations)
+
+
+          setMessage(
+            allIntegrations.length
+              ? "Successfully loaded integrations"
+              : "No integrations found"
+          )
         } else {
           setApiList([])
           setMessage("Failed to load integrations from API")
@@ -203,7 +210,7 @@ export default function IntegrationsPage() {
 
               return (
                 <Card
-                  key={integration.id}
+                  key={integration._uniqueId}
                   className={isConnected ? "border-green-600/50" : ""}
                 >
                   <CardHeader>
@@ -234,7 +241,8 @@ export default function IntegrationsPage() {
                     {/* Render Multiple Endpoints */}
                     {integration.endpoints && integration.endpoints.length > 0 ? (
                       integration.endpoints.map((endpoint, index) => (
-                        <div key={`${integration.id}-${endpoint.key}-${index}`}>
+                        <div key={`${integration._uniqueId}-${endpoint.key}`}>
+
                           <div className="flex items-center justify-between mb-2">
                             <label className="text-sm font-medium">
                               {formatEndpointKey(endpoint.key)}
