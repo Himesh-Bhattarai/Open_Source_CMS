@@ -19,7 +19,7 @@ router.use("/:domain/pages", getPages);
 // router.use("/:domain/pages/:slug", getSinglePages);
 
 //Router Menu Related
-router.use("/:domain/menu", getMenu);
+router.use("/menu", getMenu);
 
 //Router Footer Related
 router.use("/:domain/footer", getFooter);
