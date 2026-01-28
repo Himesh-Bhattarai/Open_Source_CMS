@@ -4,13 +4,19 @@ import { Tenant } from "../../Models/Tenant/Tenant.js";
 export const tenantVerification = async (req, res, next) => {
   try {
     console.log("Its is tenant verification place");
-    const { domain } = req.params;
+    console.log("domain from req.domain:", req.domain);
+    console.log("params:", req.params);
+
+    const domain = req.domain;
+    console.log("Domain", domain);
+
+
     if (!domain) {
       return res.status(400).json({ error: "Domain is required" });
     }
 
     const tenant = await Tenant.findOne({
-      domain: domain.toLowerCase(),
+      domain: domain,
       status: "active",
     });
 
@@ -20,7 +26,7 @@ export const tenantVerification = async (req, res, next) => {
       return res.status(404).json({ error: "Tenant not found" });
     }
 
-    req.tenant = tenant; // ✅ FULL tenant object
+    req.tenant = tenant;
     console.log("Tenant found", tenant._id);
     next();
   } catch (err) {

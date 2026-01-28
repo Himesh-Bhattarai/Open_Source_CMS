@@ -47,6 +47,7 @@ import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
 import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
 import oAuth from "./Routes/Auth/oAuth/oAuth.js";
+import { extractDomain } from "./Validation/middleware/extractDomain.js";
 
 import externalRequest from "./Routes/Api/oneRoutes.js";
 
@@ -134,7 +135,7 @@ app.use("/api/v1/update-form", updateForm);
 app.use("/api/v1/statistics", statsRoutes);
 
 //external request routes
-app.use("/api/v1/external-request", externalRequest);
+app.use("/api/v1/external-request", extractDomain, externalRequest);
 
 // Error handler
 app.use(errorHandler);

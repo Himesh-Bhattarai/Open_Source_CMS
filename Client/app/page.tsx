@@ -26,8 +26,20 @@ import { verifyMe } from "@/Api/Auth/VerifyAuth"
 import { useRouter } from "next/navigation"
 import LoadingScreen from "@/lib/loading"
 import {fetchMenu as loadNavigation } from "@/Api/Navigation/Navigation"
+
+interface MenuItem {
+  _id: string;
+  label: string;
+  link: string;
+  enabled: boolean;
+  order: number;
+  type: "internal" | "external";
+  children: MenuItem[];
+}
+
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
+  const[menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const router = useRouter();
   
 //loading MenuItem Dynamically
@@ -39,9 +51,11 @@ export default function LandingPage() {
 
       }
       console.log("Data form CMS", res.data);
+      setMenuItems(res.data[0].items);
+      setLoading(false);
     }
     loadApi();
-  })
+  },[])
 
   useEffect(() => {
     const directMe = async () => {
@@ -191,7 +205,18 @@ export default function LandingPage() {
             <span className="font-bold text-xl">ContentFlow</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+            {menuItems.map(item => (
+              item?.enabled && (
+                <Link
+                  key={item?._id}
+                  href={item?.link}
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                >
+                  {item?.label}
+                </Link>
+              )
+            ))}
+            {/* <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
               Features
             </Link>
             <Link href="#use-cases" className="text-sm font-medium hover:text-primary transition-colors">
@@ -202,7 +227,7 @@ export default function LandingPage() {
             </Link>
             <Link href="/docs" className="text-sm font-medium hover:text-primary transition-colors">
               Docs
-            </Link>
+            </Link> */}
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
