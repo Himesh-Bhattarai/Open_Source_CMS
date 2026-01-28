@@ -7,7 +7,15 @@ import { trackIntegrationUsage } from "../../Validation/middleware/trackIntegrat
 const router = express.Router({ mergeParams: true });
 
 router.get(
-  "/blog",
+  "/",
+  tenantVerification,
+  apiKeyVerification,
+  trackIntegrationUsage({ featureKey: "blog" }),
+  getBlog,
+);
+
+router.get(
+  "/:slug",
   tenantVerification,
   apiKeyVerification,
   trackIntegrationUsage({ featureKey: "blog" }),

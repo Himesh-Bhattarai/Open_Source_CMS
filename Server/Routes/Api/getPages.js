@@ -21,7 +21,7 @@ router.get(
 );
 
 router.get(
-  "/domain/pages/:slug",
+  "/:slug",
   tenantVerification,
   apiKeyVerification,
   trackIntegrationUsage({ featureKey: "page" }),

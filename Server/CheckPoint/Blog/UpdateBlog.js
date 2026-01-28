@@ -42,7 +42,7 @@ export const updateBlog = async (req, res, next) => {
     notif.updateBlog({
       userId: userId,
       slug: updatedBlog.slug || "",
-      title,
+      title : updatedBlog.title || "",
       blogId: blogId,
       websiteId: updatedBlog.tenantId
     })
