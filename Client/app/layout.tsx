@@ -11,9 +11,38 @@ import "./globals.css"
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
-export const metaData ={
+interface Metadata {
+  title: string
+  description: string
+  icons: {
+    icon: {
+      url: string
+      media: string
+    }[]
+    apple: string
+  }
+  }
+
+export const metadata: Metadata = {
   title: "Content Flow",
-  description: "Headless CMS"
+  description: "Content Flow is a modern content management system designed to streamline your digital content workflow.",
+  icons: {
+    icon: [
+      {
+        url: "/fav/favicon-32x32.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/fav/favicon-16x16.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+      {
+        url: "/fav/favicon.ico",
+        media: "(prefers-color-scheme: any)",
+      },
+    ],
+    apple: "/fav/apple-touch-icon.png",
+  },
 }
 
 export default function RootLayout({
