@@ -55,11 +55,11 @@ export default function IntegrationsPage() {
         console.log("Load Api", loadApi)
 
         if (loadApi?.ok && Array.isArray(loadApi.data)) {
-          // Flatten all integrations from all tenants
+      
           const allIntegrations = loadApi.data.flatMap(tenant =>
             (tenant.integrations || []).map((integration : Integration)=> ({
               ...integration,
-              _uniqueId: `${tenant.tenantId}-${integration.id}` // unique per tenant
+              _uniqueId: `${tenant.tenantId}-${integration.id}` 
             }))
           )
           setApiList(allIntegrations)
@@ -238,7 +238,7 @@ export default function IntegrationsPage() {
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    {/* Render Multiple Endpoints */}
+                   
                     {integration.endpoints && integration.endpoints.length > 0 ? (
                       integration.endpoints.map((endpoint, index) => (
                         <div key={`${integration._uniqueId}-${endpoint.key}`}>
