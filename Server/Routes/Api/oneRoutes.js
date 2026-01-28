@@ -11,30 +11,23 @@ import getForm from "./getForm.js";
 const router = express.Router();
 
 //Routes Blog Related
-router.use("/:domain", getBlog);
+router.use("/blog", getBlog);
 // router.use("/:domain/blog");
-
 //Router Page Related
-router.use("/:domain/pages", getPages);
+router.use("/pages", getPages);
 // router.use("/:domain/pages/:slug", getSinglePages);
-
 //Router Menu Related
 router.use("/menu", getMenu);
-
 //Router Footer Related
-router.use("/:domain/footer", getFooter);
-
+router.use("/footer", getFooter);
 //Router Seo Related
-router.use("/:domain/seo", getSeo);
+router.use("/seo", getSeo);
 // router.use("/:domain/seo");
-
 //Router Theme Related
-router.use("/:domain/theme", getTheme);
-
+router.use("/theme", getTheme);
 //Router Media Related
-router.use("/:domain/media", getMedia);
-
+router.use("/media", getMedia);
 //Router Form Related
-router.use("/:domain/form", getForm);
+router.use("/form", getForm);
 
 export default router;

@@ -25,7 +25,9 @@ import { useEffect, useState } from "react"
 import { verifyMe } from "@/Api/Auth/VerifyAuth"
 import { useRouter } from "next/navigation"
 import LoadingScreen from "@/lib/loading"
-import {fetchMenu as loadNavigation } from "@/Api/Navigation/Navigation"
+import {fetchMenu as loadNavigation } from "@/Api/ExternalCall/Navigation"
+import { fetchFooter } from "@/Api/ExternalCall/Footer"
+import Footer from "@/components/Footer"
 
 interface MenuItem {
   _id: string;
@@ -39,33 +41,42 @@ interface MenuItem {
 
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
-  const[menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const router = useRouter();
-  
-//loading MenuItem Dynamically
-  useEffect(()=>{
-    const loadApi = async ()=>{
-      const res = await loadNavigation();
-      if(!res.ok){
-        console.error("Failed to load navigation items");
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [footerData, setFooterData] = useState<any >(null)
 
+  const router = useRouter();
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const navRes = await loadNavigation()
+        if (navRes.ok) {
+          setMenuItems(navRes.data[0].items)
+        }
+
+        const footerRes = await fetchFooter()
+        console.log("Footer response", footerRes)
+        setFooterData(footerRes?.data)
+        
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
       }
-      console.log("Data form CMS", res.data);
-      setMenuItems(res.data[0].items);
-      setLoading(false);
     }
-    loadApi();
-  },[])
+    
+    loadAll()
+  }, [])
+  
 
   useEffect(() => {
     const directMe = async () => {
       try {
         const res = await verifyMe();
         if (!res.ok) {
-          // user not verified → stay on landing/login page
+       
           setLoading(false);
         } 
-        // user verified → redirect to dashboard
+       
           router.push("/cms");
       } catch (err) {
         console.error(err);
@@ -157,40 +168,8 @@ export default function LandingPage() {
     },
   ]
 
-  // const pricing = [
-  //   {
-  //     name: "Starter",
-  //     price: "$29",
-  //     period: "/month",
-  //     description: "Perfect for small websites",
-  //     features: ["1 Website", "10GB Storage", "Basic Support", "All Features"],
-  //   },
-  //   {
-  //     name: "Professional",
-  //     price: "$79",
-  //     period: "/month",
-  //     description: "For growing businesses",
-  //     features: ["5 Websites", "50GB Storage", "Priority Support", "Advanced Analytics", "Custom Domain"],
-  //     popular: true,
-  //   },
-  //   {
-  //     name: "Enterprise",
-  //     price: "$199",
-  //     period: "/month",
-  //     description: "For large organizations",
-  //     features: [
-  //       "Unlimited Websites",
-  //       "500GB Storage",
-  //       "24/7 Support",
-  //       "Custom Integrations",
-  //       "Dedicated Manager",
-  //       "SLA Guarantee",
-  //     ],
-  //   },
-  // ]
-
   if (loading) {
-    return <LoadingScreen />; // show your logo/login bar while verifying
+    return <LoadingScreen />;
   }
 
   return (
@@ -368,77 +347,63 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing
-      <section id="pricing" className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-muted-foreground">Choose the plan that fits your needs</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricing.map((plan, idx) => (
-              <Card key={idx} className={`relative ${plan.popular ? "border-primary border-2 shadow-lg" : "border-2"}`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm font-medium rounded-full">
-                    Most Popular
-                  </div>
-                )}
-                <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                  <div className="mb-2">
-                    <span className="text-5xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
-                  </div>
-                  <CardDescription className="text-base">{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, fidx) => (
-                      <li key={fidx} className="flex items-center gap-2">
-                        <Check className="h-5 w-5 text-primary shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button className="w-full" variant={plan.popular ? "default" : "outline"} asChild>
-                    <Link href="/signup">Get Started</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section> */}
+      {/* <footer className="py-12 border-t"> */}
+        {/* <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
 
-      {/* CTA Section */}
-      {/* <section className="py-20 bg-primary text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-3xl md:text-5xl font-bold">Ready to Build Your Website?</h2>
-            <p className="text-xl text-white/90">
-              Join thousands of users who trust ContentFlow to power their websites
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="secondary" asChild className="text-base">
-                <Link href="/signup">
-                  Start Free Trial <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-base border-white text-white hover:bg-white hover:text-primary bg-transparent"
-                asChild
-              >
-                <Link href="/login">Sign In</Link>
-              </Button>
-            </div>
+            {/* BRAND COLUMN */}
+            {/* {brandBlock && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {brandBlock.data.title.slice(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="font-bold text-lg">
+                    {brandBlock.data.title}
+                  </span>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  {brandBlock.data.content}
+                </p>
+              </div>
+            )} */}
+
+            {/* MENU COLUMNS */}
+            {/* {menuBlocks.map(menu => (
+              <div key={menu.id}>
+                <h4 className="font-semibold mb-4">
+                  {menu.data.title}
+                </h4>
+
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  {menu.data.links?.map(link => (
+                    <li key={link.id}>
+                      <Link href={link.slug} className="hover:text-primary">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+
+          </div> */}
+
+          {/* BOTTOM BAR */}
+          {/* <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+            {footer.bottomBar.copyrightText}
           </div>
-        </div>
-      </section> */}
+        </div> */}
+      {/* </footer> */} 
 
       {/* Footer */}
-      <footer className="py-12 border-t">
+
+      {footerData && <Footer footer={footerData} />}
+
+      {/* <footer className="py-12 border-t">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -510,7 +475,7 @@ export default function LandingPage() {
             © 2025 ContentFlow. All rights reserved.
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   )
 }
