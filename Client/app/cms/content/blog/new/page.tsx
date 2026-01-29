@@ -82,8 +82,6 @@ export default function NewBlogPost() {
         tenantId: selectedTenantId,
       })
 
-      console.log("Blog Post Creation Response:", blogPost)
-
       if (blogPost?.blogId) {
         router.push(`/cms/content/blog/${blogPost.blogId}`)
       }

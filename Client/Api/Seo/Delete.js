@@ -1,5 +1,7 @@
 const DELETE_SEO_BY_ID = "http://localhost:5000/api/v1/delete-seo/seo";
 
+
+//Delete Seo by id
 export const deleteSeoById = async (seoId) => {
   try {
     const response = await fetch(`${DELETE_SEO_BY_ID}/${seoId}`, {

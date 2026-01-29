@@ -1,5 +1,7 @@
 const CMS_FOOTER_API = "http://localhost:5000/api/v1/external-request/contentFlow.com/footer";
 
+
+//Api call to fetch footer data form this cms
 export const fetchFooter = async () => {
     try {
         const response = await fetch(CMS_FOOTER_API, {

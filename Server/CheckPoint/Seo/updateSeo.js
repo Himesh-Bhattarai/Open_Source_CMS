@@ -6,7 +6,7 @@ export const updateSeoCheckpoint = async (req, res, next) => {
     const userId = req.user?.userId;
     const { seoId } = req.params;
     const payload = req.body;
-    console.log("Updating SEO:", seoId, "by user:", userId);
+
     if (!userId) throw new Error("Unauthorized");
     if (!seoId) throw new Error("SEO id is required");
     if (!payload) throw new Error("Payload is required");

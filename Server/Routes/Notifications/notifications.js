@@ -9,7 +9,6 @@ router.get("/get-notification", verificationMiddleware,
      async (req, res) => {
     try {
         const userId = req.user?.userId;
-        console.log(userId, "For NOtification")
         if(!userId) throw new Error("Unauthorized");
         const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
 

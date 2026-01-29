@@ -36,8 +36,6 @@ export default function FooterPage() {
                 if (!response?.ok) {
                     throw new Error("Failed to load footers")
                 }
-
-                // 🔥 THIS LINE FIXES map() ERROR
                 const footersArray = Array.isArray(response.data)
                     ? response.data
                     : [response.data]

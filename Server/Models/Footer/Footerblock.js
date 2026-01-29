@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 export const FooterBlockSchema = new Schema(
   {
-    id: { type: String, required: true }, // frontend UUID
+    id: { type: String, required: true }, 
     type: {
       type: String,
       enum: ["text", "menu", "logo", "social", "newsletter", "html"],

@@ -1,7 +1,7 @@
 // services/notification.service.js
 import { onEvent } from "../core/eventBus.js"
 import Notification from "../Models/Notification/Notification.js"
-console.log("Notification service loaded ✅");
+
 
 // Helper function to create notification
 async function createNotification({ userId, type, title, message, entity }) {

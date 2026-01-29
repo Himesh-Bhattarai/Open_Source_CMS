@@ -516,46 +516,40 @@ export default function SEOSettingsPage() {
           throw new Error("SEO data not found");
         }
 
-        // FIX: The API returns { data: { ... } } structure
         const fetchedSeo = response.data || response;
-        console.log("✅ SEO Data fetched:", fetchedSeo);
-        console.log("📊 Raw response:", response);
-        console.log("📊 Scope from API:", fetchedSeo.scope);
-
         setSeoData(fetchedSeo);
 
         // Set scope from fetched data
         const scope = fetchedSeo.scope || "global";
-        console.log("🔧 Setting seoScope to:", scope);
         setSeoScope(scope);
 
         if (scope === "global") {
-          console.log("🌍 Processing GLOBAL SEO data");
+       
           if (fetchedSeo.globalSEO) {
-            console.log("Setting globalSEO:", fetchedSeo.globalSEO);
+         
             setGlobalSEO(fetchedSeo.globalSEO);
           }
         } else {
-          console.log("📄 Processing PAGE SEO data");
+      
           if (fetchedSeo.pageSEO) {
-            console.log("Setting pageSEO:", fetchedSeo.pageSEO);
+        
             setPageSEO(fetchedSeo.pageSEO);
           }
 
           // Set page if available
           if (fetchedSeo.pageId) {
-            console.log("🔍 Setting pageId:", fetchedSeo.pageId);
+         
             setSelectedPageId(fetchedSeo.pageId);
 
             // Find and set the active page if pages are loaded
             if (pages.length > 0) {
               const page = pages.find((p) => p._id === fetchedSeo.pageId);
               if (page) {
-                console.log("✅ Found associated page:", page.title);
+            
                 setActivePage(page);
               } else {
                 console.warn(
-                  "❌ Page not found in pages list:",
+                  "Page not found in pages list:",
                   fetchedSeo.pageId
                 );
               }
@@ -579,23 +573,6 @@ export default function SEOSettingsPage() {
     loadSeoData();
   }, [isEditMode, seoId, pages]);
 
-  // Also add this debug effect to verify the actual response structure:
-  useEffect(() => {
-    if (seoData) {
-      console.log("🔍 Current seoData structure:", seoData);
-      console.log("🔍 Does it have data property?", "data" in seoData);
-      console.log("🔍 Direct scope access:", seoData.scope);
-      console.log("🔍 Data.scope access:", seoData.data?.scope);
-    }
-  }, [seoData]);
-
-  //debug
-  // Add this debug effect to track scope changes
-  useEffect(() => {
-    console.log("🔄 seoScope state changed to:", seoScope);
-    console.log("isEditMode:", isEditMode);
-    console.log("hasHydrated:", hasHydrated.current);
-  }, [seoScope]);
 
   // Update activePage when pages are loaded in edit mode
   useEffect(() => {
@@ -610,7 +587,6 @@ export default function SEOSettingsPage() {
     ) {
       const page = pages.find((p) => p._id === seoData.pageId);
       if (page) {
-        console.log("🔄 Updating active page after pages load:", page.title);
         setActivePage(page);
         setSelectedPageId(seoData.pageId);
       }
@@ -722,12 +698,9 @@ export default function SEOSettingsPage() {
       let response;
 
       if (isEditMode && seoId) {
-        // EDIT MODE - Update existing
-        console.log("Updating SEO with ID:", seoId);
         response = await updateSeo(seoId, seoDataToSave);
       } else {
         // CREATE MODE - Make new
-        console.log("Creating new SEO");
         response = await createSeo(seoDataToSave);
       }
 
@@ -749,16 +722,11 @@ export default function SEOSettingsPage() {
   // Handle scope change - disabled in edit mode
   const handleScopeChange = (value: "global" | "page") => {
     if (isEditMode) {
-      // In edit mode, scope should be immutable from fetched data
-      console.log(
-        "⚠️ Scope change blocked in edit mode. Current scope:",
-        seoScope
-      );
+      // In edit mode, scope should be immutable from fetched dat
       return;
     }
 
     const previousScope = seoScope;
-    console.log("🔄 Changing scope from", previousScope, "to", value);
     setSeoScope(value);
 
     // Reset active page if switching scopes
@@ -1370,7 +1338,7 @@ export default function SEOSettingsPage() {
                       },
                     })
                   }
-                  className="max-w-[100px]"
+                  className="max-w-25"
                 />
                 <p className="text-xs text-muted-foreground">
                   Character between page title and site name

@@ -28,7 +28,7 @@ router.get("/load-all", verificationMiddleware, async (req, res, next) => {
     const userBlogs = await BlogPost.find({ authorId: userId });
     if (!userBlogs)
       return res.status(404).json({ message: "No blog posts found" });
-    console.log("User Blogs: is sending");
+
     res.status(200).json(userBlogs);
   } catch (err) {
     next(err);

@@ -30,35 +30,6 @@ interface Form{
   lastSubmission: string
 }
 export default function FormsPage() {
-  // const forms = [
-  //   {
-  //     id: 1,
-  //     name: "Contact Form",
-  //     type: "contact",
-  //     submissions: 45,
-  //     status: "published",
-  //     lastSubmission: "2 hours ago",
-  //     fields: 5,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Newsletter Signup",
-  //     type: "newsletter",
-  //     submissions: 234,
-  //     status: "published",
-  //     lastSubmission: "10 minutes ago",
-  //     fields: 2,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Job Application",
-  //     type: "application",
-  //     submissions: 12,
-  //     status: "draft",
-  //     lastSubmission: "Never",
-  //     fields: 8,
-  //   },
-  // ]
 
   const [loading, setLoading] = useState(false);
   const [forms, setForms] = useState([]);
@@ -75,14 +46,14 @@ export default function FormsPage() {
           throw new Error("Failed to load forms");
         }
 
-        // 🔥 Normalize here
+      
         const normalizedForms = response.data.map((form:Form) => ({
           _id: form._id,
           name: form.name,
           status: form.status,
           fieldsCount: form.fields?.length ?? 0,
-          submissions: 0, // placeholder
-          lastSubmission: "Never", // placeholder
+          submissions: 0,
+          lastSubmission: "Never",
         }));
 
         setForms(normalizedForms);

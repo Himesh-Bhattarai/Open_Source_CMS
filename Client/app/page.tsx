@@ -54,7 +54,7 @@ export default function LandingPage() {
         }
 
         const footerRes = await fetchFooter()
-        console.log("Footer response", footerRes)
+
         setFooterData(footerRes?.data)
         
       } catch (err) {

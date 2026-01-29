@@ -1,5 +1,6 @@
 const INTEGRATIONS_URL = "http://localhost:5000/api/v1/integrations/get-api";
 
+//load all available integrations or api from backend
 export const integrationsApi = async () => {
   try {
     const response = await fetch(INTEGRATIONS_URL, {

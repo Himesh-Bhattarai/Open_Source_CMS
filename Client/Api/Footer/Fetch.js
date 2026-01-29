@@ -1,6 +1,8 @@
 const FETCH_FOOTER_URL = "http://localhost:5000/api/v1/footer/get-footer";
 const FETCH_FOOTER_BY_ID = "http://localhost:5000/api/v1/footer/get-footer";
 
+
+//get footer
 export const fetchFooter = async () => {
   const response = await fetch(FETCH_FOOTER_URL, {
     credentials: "include",
@@ -16,6 +18,7 @@ export const fetchFooter = async () => {
   };
 };
 
+//get specified footer
 export const fetchFooterById = async (footerId) => {
   try {
     const response = await fetch(`${FETCH_FOOTER_BY_ID}/${footerId}`, {

@@ -9,7 +9,7 @@ export default function AboutPage() {
       <nav className="border-b bg-background">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
               <span className="text-white font-bold text-sm">CF</span>
             </div>
             <span className="font-bold text-xl">ContentFlow</span>

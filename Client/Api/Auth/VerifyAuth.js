@@ -1,5 +1,8 @@
 const VERIFY_ME = process.env.NEXT_PUBLIC_VERIFY_ME;
 
+
+
+//Verify user when login
 export const verifyMe = async () => {
   const response = await fetch(VERIFY_ME, {
     method: "GET",

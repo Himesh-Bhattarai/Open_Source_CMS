@@ -2,7 +2,7 @@
 const listeners = {}
 
 export const emitEvent = (eventName, payload) => {
-    console.log("EMIT_EVENT called:", eventName, payload); // <--- add this
+
     if (!listeners[eventName]) return
     listeners[eventName].forEach((handler) => handler(payload))
 }

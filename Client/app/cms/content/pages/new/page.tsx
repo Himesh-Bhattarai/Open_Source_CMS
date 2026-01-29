@@ -497,11 +497,7 @@ export default function NewPageEditor() {
         settings: page.settings,
       }
 
-      console.log("CREATE PAGE PAYLOAD:", pageData)
-
       const createdPage = await createPage(pageData)
-      console.log("CREATED PAGE:", createdPage)
-
       router.push(`/cms/content/pages/${createdPage.pageId}`)
     } catch (error) {
       console.error("Failed to create page:", error)

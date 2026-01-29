@@ -15,11 +15,6 @@ export const extractDomain = (req, res, next) => {
 
     req.url = remainingPath;
 
-    console.log({
-        originalUrl: fullPath,
-        domain: req.domain,
-        rewrittenUrl: req.url,
-    });
 
     next();
 };

@@ -28,7 +28,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const refreshTenants = async () => {
     if (!user) return;
     const data = await getUserTenants();
-    console.log("Tenant Context", data);
+
     setTenants(data?.tenants);
     setActiveTenant(data?.tenants[0] ?? null);
   };

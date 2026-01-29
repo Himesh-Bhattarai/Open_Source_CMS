@@ -1056,7 +1056,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Adding child to:", item.id, item.label); // Debug log
+
                 addChildItem(item.id);
               }}
               className="p-1 hover:bg-background rounded"

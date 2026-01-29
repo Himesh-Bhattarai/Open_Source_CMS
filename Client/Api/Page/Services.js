@@ -12,6 +12,8 @@ const DELETE_USER_PAGES_BY_ID = "http://localhost:5000/api/v1/delete/user-page";
 
 const BULK_PAGES_DEL_BY_ADMIN =
   "http://localhost:5000/api/v1/delete/pages/bulk-delete/byAdmin";
+
+  //check slug
 export const checkSlugAvailability = async (slug, tenantId) => {
   try {
     const response = await fetch(
@@ -36,6 +38,8 @@ export const checkSlugAvailability = async (slug, tenantId) => {
   }
 };
 
+
+// restore page but may not using 
 export const restorePageVersion = async (versionId) => {
   try {
     const response = await fetch(`${RESTORE_PAGE_VERSION_URL}/${versionId}`, {

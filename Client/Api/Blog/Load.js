@@ -1,6 +1,9 @@
 const ALL_BLOG_LOAD_API = "http://localhost:5000/api/v1/user-blog/load-all";
 const BLOG_LOAD_BY_ID_API = "http://localhost:5000/api/v1/blog/load";
 
+
+
+//Load all Blogs for user
 export const loadAllBlogs = async () => {
   try {
     const response = await fetch(ALL_BLOG_LOAD_API, {
@@ -17,7 +20,8 @@ export const loadAllBlogs = async () => {
   }
 };
 
-//load blog by id
+
+///specified blog load
 export const loadBlogById = async (blogId) => {
   try {
     const response = await fetch(`${BLOG_LOAD_BY_ID_API}/${blogId}`, {

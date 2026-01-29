@@ -1,5 +1,7 @@
 const LOAD_MEDIA = "http://localhost:5000/api/v1/media/get-media";
 
+
+//load media
 export const loadMedia = async () => {
   try {
     const response = await fetch(LOAD_MEDIA, {

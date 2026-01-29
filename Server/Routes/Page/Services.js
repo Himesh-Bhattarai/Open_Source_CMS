@@ -9,7 +9,7 @@ router.get("/slug", verificationMiddleware, async (req, res, next) => {
   try {
     const { tenantId, slug } = req.query;
     const userId = req.user?.userId;
-    console.log("Slug check", tenantId, slug, userId);
+ 
 
     if (!tenantId || !slug || !userId) {
       throw new Error("Missing required fields");
@@ -39,7 +39,7 @@ router.get("/slug", verificationMiddleware, async (req, res, next) => {
 router.get("/user-pages", verificationMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.userId;
-    console.log("Fetching pages for user", userId);
+   
     if (!userId) throw new Error("Unauthorized Access");
 
     const pages = await Page.find({ authorId: userId });
@@ -55,14 +55,12 @@ router.get("/selected-page", verificationMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.userId;
     const pageId = req.query?.pageId;
-    console.log("Did i am here ?");
-    console.log("Let me see i get Page Id", pageId);
 
     if (!pageId) throw new Error("Missing fields required");
 
     const page = await Page.findById({ _id: pageId });
     if (!page) throw new Error("Page Not Found");
-    console.log("Returning Page", page);
+  
     res.status(200).json(page);
   } catch (err) {
     next(err);

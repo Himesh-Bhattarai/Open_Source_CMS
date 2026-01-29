@@ -1,5 +1,8 @@
 const LOAD_FORMS_DATA = "http://localhost:5000/api/v1/form/get-form";
 const LOAD_FORMS_DATA_BY_ID = "http://localhost:5000/api/v1/form/get-form";
+
+
+//load form data
 export const loadFormsData = async () => {
   try {
     const response = await fetch(LOAD_FORMS_DATA, {
@@ -24,6 +27,8 @@ export const loadFormsData = async () => {
   }
 };
 
+
+//load particular form
 export const loadFormsDataById = async (formId) => {
   try {
     const response = await fetch(`${LOAD_FORMS_DATA_BY_ID}/${formId}`, {

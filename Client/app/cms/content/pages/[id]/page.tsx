@@ -51,7 +51,7 @@ interface SlugHistoryItem {
 }
 
 // Declare missing APIs that are required for production
-import { useAuth } from "@/hooks/useAuth"   // adjust path to your project
+import { useAuth } from "@/hooks/useAuth"   
 
 // ====================================
 // PHASE-1 IMMUTABLE FIELDS (READ-ONLY)

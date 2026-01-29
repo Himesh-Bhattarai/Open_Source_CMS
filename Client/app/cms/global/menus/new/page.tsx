@@ -139,8 +139,6 @@ export default function NewMenuPage() {
               <option value="header">Header Navigation</option>
               <option value="footer">Footer Menu</option>
               <option value="sidebar">Sidebar Navigation</option>
-              {/* <option value="mobile">Mobile Menu</option>
-              <option value="custom">Custom Location</option> */}
             </select>
           </div>
 

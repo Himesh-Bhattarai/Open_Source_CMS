@@ -1,6 +1,8 @@
 const FOOTER_URL = "http://localhost:5000/api/v1/create-footer/footer";
 const UPDATE_FOOTER_URL = " http://localhost:5000/api/v1/update-footer/footer";
 
+
+//create footer
 export const createFooter = async (data) => {
   const response = await fetch(FOOTER_URL, {
     method: "POST",
@@ -21,6 +23,8 @@ export const createFooter = async (data) => {
     };
 };
 
+
+//update footer
 export const updateFooter = async (id, data) => {
   const response = await fetch(`${UPDATE_FOOTER_URL}/${id}`, {
     method: "PUT",

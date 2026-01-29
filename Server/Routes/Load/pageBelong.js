@@ -11,8 +11,6 @@ router.get(
     try {
       const userId = req.user?.userId;
       const tenantId = req.params.tenantId;
-      console.log("Tenant Id", tenantId);
-      console.log("User Id", userId);
 
       if (!userId) throw new Error("Forbidden");
       if (!tenantId) throw new Error("Missing required fields");

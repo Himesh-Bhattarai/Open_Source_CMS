@@ -45,8 +45,6 @@ export default function PagesPage() {
       try {
         const apiPages = await getUserPages()
 
-        console.log("RAW API RESPONSE:", apiPages)
-
         // backend returns ARRAY
         if (!Array.isArray(apiPages)) {
           console.error("API did not return array:", apiPages)
@@ -61,9 +59,6 @@ export default function PagesPage() {
           lastEdited: new Date(p.updatedAt).toLocaleString(),
           author: p.authorId || "Unknown",
         }))
-
-        console.log("UI PAGES:", normalized)
-
         setPages(normalized)
       } catch (err) {
         console.error("Failed to load pages", err)

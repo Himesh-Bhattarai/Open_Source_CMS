@@ -46,7 +46,7 @@ export const tenantCheckpoint = async (req, res, next) => {
 
     // 2️⃣ Generate raw API key
     const rawApiKey = crypto.randomBytes(32).toString("hex");
-    console.log("RAW API KEY (save this):", rawApiKey);
+
 
     // 3️⃣ Hash API key
     const keyHash = crypto.createHash("sha256").update(rawApiKey).digest("hex");

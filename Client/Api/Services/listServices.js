@@ -1,5 +1,7 @@
 const CHECK_SLUG_AVAILABILITY_URL =
   "http://localhost:5000/api/v2/check-slug/slug";
+
+  //check slug
 export const checkSlugAvailability = async (slug, tenantId, value) => {
   try {
     const response = await fetch(

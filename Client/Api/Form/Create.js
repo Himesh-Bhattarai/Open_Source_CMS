@@ -1,6 +1,8 @@
 const CREATE_FORM_URL = "http://localhost:5000/api/v1/create-form/form";
 const UPDATE_FORM_URL = "http://localhost:5000/api/v1/update-form/form";
 
+
+//create Contact or any kind of form
 export const createForm = async (data) => {
   try {
     const response = await fetch(CREATE_FORM_URL, {
@@ -23,6 +25,8 @@ export const createForm = async (data) => {
     console.error(err);
   }
 };
+
+//update form
 
 export const updateForm = async (data, formId) => {
   try {

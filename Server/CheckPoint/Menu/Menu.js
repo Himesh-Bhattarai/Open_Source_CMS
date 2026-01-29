@@ -23,8 +23,6 @@ export const menuCheckpoint = async (req, res, next) => {
       throw err;
     }
 
-    console.log(tenantId);
-
     log.info(`Menu creation attempt by user: ${userId}`);
 
     const newMenu = await Menu.create({
