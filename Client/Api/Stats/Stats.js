@@ -1,5 +1,7 @@
 const GET_STATS_URL = "http://localhost:5000/api/v1/statistics/stats";
 
+
+//Get Stats
 export const fetchStats = async (types) => {
   const response = await fetch(`${GET_STATS_URL}/${types}`, {
     method: "GET",

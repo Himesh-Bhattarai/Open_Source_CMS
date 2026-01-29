@@ -1,6 +1,9 @@
 const MENU_URL = "http://localhost:5000/api/v1/create-menu/menu";
 const MENU_ITEM_URL = "http://localhost:5000/api/v1/create-menu/menu-item";
 const UPDATE_MENU_URL = "http://localhost:5000/api/v1/update-menu/menus";
+
+
+//create menu
 export const createMenu = async (data) => {
   try {
     const response = await fetch(MENU_URL, {
@@ -24,6 +27,8 @@ export const createMenu = async (data) => {
   }
 };
 
+
+//this may not be using but , create menu item
 export const createMenuItem = async (data) => {
   try {
     const response = await fetch(MENU_ITEM_URL, {
@@ -41,6 +46,8 @@ export const createMenuItem = async (data) => {
   }
 };
 
+
+//update menu
 export const updateMenu = async (menuId, data) => {
   try {
     const response = await fetch(`${UPDATE_MENU_URL}/${menuId}`, {

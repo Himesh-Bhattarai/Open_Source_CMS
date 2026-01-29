@@ -38,7 +38,7 @@ const FormSchema = new Schema(
     },
 
     fields: {
-      type: Array, // frontend controls structure
+      type: Array,
       default: [],
     },
 

@@ -54,6 +54,5 @@ export const verificationMiddleware = (req, res, next) => {
   }
   const decoded = jwt.verify(token, ACCESS_TOKEN);
   req.user = decoded;
-  console.log("VerificationMiddleware", decoded);
   next();
 };

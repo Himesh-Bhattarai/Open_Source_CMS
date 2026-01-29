@@ -28,7 +28,6 @@ router.get(
       if (!userId || !formId) throw new Error("unauthorized");
 
       const getForm = await Form.findById({ _id: formId });
-      console.log("From load by id", getForm);
       if (!getForm) throw new Error("Form not found");
       return res.status(200).json({ data: getForm });
     } catch (err) {

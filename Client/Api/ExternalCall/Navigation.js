@@ -1,5 +1,7 @@
 const CMS_MENU_API = "http://localhost:5000/api/v1/external-request/contentFlow.com/menu";
 
+
+//fetch menu from cms
 export const fetchMenu = async ()=>{
     try{
         const response = await fetch(CMS_MENU_API, {
@@ -10,8 +12,7 @@ export const fetchMenu = async ()=>{
         });
 
         const data = await response.json();
-        console.log("Is nav giving me data", data);
-
+       
         if(!response.ok) throw new Error("Internal Server Error");
         return{
             ok: response.ok,

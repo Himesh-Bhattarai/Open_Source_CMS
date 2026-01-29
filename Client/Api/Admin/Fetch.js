@@ -1,5 +1,7 @@
 const GET_ALL_USER = "http://localhost:5000/api/v1/admin/get-all-users";
 
+
+//Fetch all user : Admin panel
 export const fetchAllUsers = async () => {
   try {
     const response = await fetch(GET_ALL_USER, {

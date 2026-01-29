@@ -1,5 +1,7 @@
 const LOAD_MENU_URL = "http://localhost:5000/api/v1/load-menu/menus";
 const LOAD_MENU_BY_ID = "http://localhost:5000/api/v1/load-menu/menu";
+
+//load menus
 export const loadMenus = async () => {
   try {
     const response = await fetch(LOAD_MENU_URL, {
@@ -18,6 +20,8 @@ export const loadMenus = async () => {
   }
 };
 
+
+//get particular menu
 export const loadMenuById = async (menuId) => {
   try {
     const response = await fetch(`${LOAD_MENU_BY_ID}/${menuId}`, {

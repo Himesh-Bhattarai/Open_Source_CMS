@@ -8,7 +8,6 @@ export default function Footer({ footer }: { footer: any }) {
 
     const brandBlock = footer.blocks.find((b: any) => b.type === "text")
     const menuBlocks = footer.blocks.filter((b: any) => b.type === "menu")
-    console.log("I am footer component")
 
     return (
         <footer className="py-12 border-t">

@@ -3,6 +3,8 @@ const GET_PAGE_BY_ID = "http://localhost:5000/api/v1/page/selected-page";
 const GET_ALL_PAGES_URL = "http://localhost:5000/api/v1/page/all-pages";
 const GET_PAGES_ON_WEBSITE = "http://localhost:5000/api/v1/page/belong/website";
 
+
+//Get User Pages
 export const getUserPages = async () => {
   try {
     const response = await fetch(`${GET_PAGE_URL}`, {

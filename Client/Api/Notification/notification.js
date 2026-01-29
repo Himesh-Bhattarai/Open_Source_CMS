@@ -1,5 +1,7 @@
 const NOTIFY_GET = "http://localhost:5000/api/v1/notifications/get-notification";
 
+
+//get notification
 export const getNotification = async () => {
   try {
     const response = await fetch(NOTIFY_GET,{

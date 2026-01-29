@@ -4,12 +4,12 @@ const { Schema, model, models } = mongoose;
 // Menu item schema (flexible)
 const MenuItemSchema = new Schema(
   {
-    label: String, // optional, store exactly what frontend sends
+    label: String, 
     type: String,
     link: String,
     enabled: Boolean,
     order: Number,
-    children: { type: [Schema.Types.Mixed], default: [] }, // flexible, can be empty or nested
+    children: { type: [Schema.Types.Mixed], default: [] },
   },
   { _id: true },
 );
@@ -24,7 +24,7 @@ const MenuSchema = new Schema(
     description: String,
     menuLocation: { type: String, enum: ["header", "footer", "sidebar"] },
 
-    items: { type: [MenuItemSchema], default: [] }, // stores exactly what frontend sends
+    items: { type: [MenuItemSchema], default: [] }, 
 
     status: { type: String, enum: ["draft", "published"], default: "draft" },
     publishedAt: Date,

@@ -1,5 +1,7 @@
 const CREATE_MEDIA_URL = "http://localhost:5000/api/v1/create-media/media";
 
+
+//create media
 export const createMedia = async (data) => {
   try {
     const response = await fetch(CREATE_MEDIA_URL, {
@@ -9,7 +11,7 @@ export const createMedia = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-      //media
+   
     });
 
     const request = await response.json();

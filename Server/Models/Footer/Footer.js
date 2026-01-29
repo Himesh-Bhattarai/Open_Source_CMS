@@ -30,7 +30,7 @@ const FooterSchema = new Schema(
           required: true,
         },
 
-        data: Schema.Types.Mixed, // frontend-driven CMS block data
+        data: Schema.Types.Mixed, 
       },
     ],
 

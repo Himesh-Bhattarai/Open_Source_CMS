@@ -31,7 +31,7 @@ export default function SignupPage() {
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("Register From submitted", formData)
+
     e.preventDefault()
     setIsLoading(true)
     setError("")

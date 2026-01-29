@@ -3,6 +3,8 @@ const UPDATA_PAGE_URL = "http://localhost:5000/api/v1/update-page/page";
 const CREATE_PAGE_VERSION =
   "http://localhost:5000/api/v1/create-page-version/page-version";
 
+
+  //Create Page
 export const createPage = async (data) => {
   if (!data) throw new Error("No data Provided");
 
@@ -18,6 +20,8 @@ export const createPage = async (data) => {
   return response.json();
 };
 
+
+//Create Page v1
 export const createPageVersion = async (data) => {
   try {
     const response = await fetch(CREATE_PAGE_VERSION, {
@@ -38,6 +42,7 @@ export const createPageVersion = async (data) => {
   }
 };
 
+//Update Page
 export const updatePage = async (pageId, { data, etag, options }) => {
   const response = await fetch(`${UPDATA_PAGE_URL}/${pageId}`, {
     method: "PUT",

@@ -240,10 +240,6 @@ export default function BackupsPage() {
       }
     }
 
-    console.log("[v1] Enhanced backup payload:", payload);
-
-    // Call existing API (unchanged signature)
-    // requestBackup(payload) - Would be called here
 
     // Create new backup for UI
     const newBackup: Backup = {
@@ -301,10 +297,6 @@ export default function BackupsPage() {
         },
       };
 
-      console.log("[v1] Enhanced restore payload:", payload);
-      // Call existing API (unchanged signature)
-      // restoreBackup(payload) - Would be called here
-
       alert(
         `Restoring backup: ${selectedBackup.name}\nStrategy: ${restoreStrategy}\nDry Run: ${dryRunRestore}`,
       );
@@ -330,15 +322,10 @@ export default function BackupsPage() {
       },
     };
 
-    console.log("[v1] Enhanced download payload:", payload);
-    // Call existing API (unchanged signature)
-    // downloadBackup(payload) - Would be called here
-
     alert(`Downloading: ${backup.name}`);
   };
 
   const saveSettings = () => {
-    console.log("[v0] Saving backup settings:", { frequency, retention });
     alert("Backup settings saved!");
   };
 

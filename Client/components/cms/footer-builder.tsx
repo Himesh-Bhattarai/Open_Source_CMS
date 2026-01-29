@@ -513,7 +513,6 @@ export default function FooterBuilder() {
   // Function to handle preview
   function handlePreview() {
     const footerData = gatherFooterData();
-    console.log("Preview Data:", footerData);
     toast({
       title: "Preview Mode",
       description: "Check console for footer data",

@@ -3,6 +3,8 @@ const DELETE_ALL_TENANTS =
   "http://localhost:5000/api/v1/tenants/delete-all-tenants";
 const EDIT_TENANT_BY_ID = "http://localhost:5000/api/v1/update-tenant/tenant";
 
+
+//delete tenant by id
 export const deleteTenantById = async (tenantId) => {
   const response = await fetch(`${DELETE_TENANT_BY_ID}/${tenantId}`, {
     method: "DELETE",
@@ -47,6 +49,8 @@ export const deleteAllTenants = async () => {
   }
 };
 
+
+//edit tenant
 export const editTenantById = async (tenantId, data) => {
   try {
     const response = await fetch(`${EDIT_TENANT_BY_ID}/${tenantId}`, {

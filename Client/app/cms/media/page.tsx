@@ -120,7 +120,6 @@ export default function MediaLibraryPage() {
       setError(null);
       try {
         const pagesData = await loadPages();
-        console.log("Pages Data", pagesData);
         // Transform the data to match your interface
         const transformedPages = pagesData.map((page: Page) => ({
           _id: page._id,

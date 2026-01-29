@@ -59,5 +59,5 @@ export const getAllTenants = async () => {
 };
 
 export const deleteTenant = async (tenantId) => {
-  console.log("Deleting Tenant", tenantId);
+ 
 };

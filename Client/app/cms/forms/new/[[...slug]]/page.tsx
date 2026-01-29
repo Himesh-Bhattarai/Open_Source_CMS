@@ -181,7 +181,7 @@ export default function NewFormPage() {
 
   // Load existing form for edit mode
   useEffect(() => {
-    // 🚫 Do NOTHING in create mode
+   
     if (!isEditMode || !formId) {
       setIsLoading(false);
       return;
@@ -193,9 +193,6 @@ export default function NewFormPage() {
       try {
         setIsLoading(true);
         const response = await loadFormsDataById(formId);
-        console.log("Existing Form Response", response);
-        console.log("Exesting form data on .data", response?.data);
-
         if (!cancelled && response?.ok && response.data) {
           const existingForm = response.data.data;
 
@@ -231,7 +228,7 @@ export default function NewFormPage() {
             },
           });
 
-          // ✅ ONLY set selected website
+       
           if (existingForm.tenantId) {
             const website = tenantWebsites.find(
               (w) => w.id === existingForm.tenantId
@@ -399,11 +396,10 @@ export default function NewFormPage() {
           behavior: formState.behavior,
           fields: formState.fields,
           metadata: {
-            version: formState.metadata.version + 1, // Increment version on update
+            version: formState.metadata.version + 1, 
           },
         };
 
-        console.log("[CMS] Updating form payload:", updatePayload);
         await updateForm(updatePayload, formId);
       } else {
         // Create new form
@@ -422,7 +418,6 @@ export default function NewFormPage() {
           },
         };
 
-        console.log("[CMS] Creating new form payload:", createPayload);
         await createForm(createPayload);
       }
 
@@ -488,7 +483,7 @@ export default function NewFormPage() {
           <Button
             onClick={handleSave}
             disabled={saveState === "saving" || !selectedWebsite}
-            className="min-w-[120px]"
+            className="min-w-30"
           >
             {saveState === "saving" ? (
               <>
@@ -521,7 +516,7 @@ export default function NewFormPage() {
       {saveState === "error" && saveError && (
         <div className="p-4 border border-red-200 bg-red-50 rounded-lg animate-in fade-in">
           <div className="flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
             <div className="space-y-1">
               <p className="text-red-700 font-medium text-sm">
                 Unable to {isEditMode ? "update" : "save"} form
@@ -543,7 +538,7 @@ export default function NewFormPage() {
       {!selectedWebsite && (
         <div className="p-4 border border-amber-200 bg-amber-50 rounded-lg">
           <div className="flex items-center gap-2.5">
-            <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
             <div>
               <p className="text-amber-800 font-medium text-sm">
                 Select a website
@@ -1194,7 +1189,7 @@ export default function NewFormPage() {
                         <Textarea
                           placeholder={field.placeholder}
                           defaultValue={field.defaultValue}
-                          className="min-h-[100px]"
+                          className="min-h-25"
                         />
                       ) : field.type === "select" ? (
                         <Select defaultValue={field.defaultValue}>
@@ -1302,7 +1297,7 @@ export default function NewFormPage() {
                         <span>Email notifications</span>
                         <Badge
                           variant="secondary"
-                          className="text-xs truncate max-w-[140px]"
+                          className="text-xs truncate max-w-35"
                         >
                           {formState.behavior.notifyEmail}
                         </Badge>

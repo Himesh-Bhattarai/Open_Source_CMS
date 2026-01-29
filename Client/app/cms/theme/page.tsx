@@ -572,7 +572,7 @@ export default function ThemePage() {
       } else {
         // FALLBACK: Use mock data
         setEnvironmentMode("mock")
-        console.log('Using mock theme data for website:', websiteId)
+
 
         const mockData = getMockThemeByWebsiteId(websiteId)
 

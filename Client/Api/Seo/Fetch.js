@@ -3,6 +3,8 @@ const FETCH_SEO_URL =
 const LOAD_SEO_BY_ID =
   "http://localhost:5000/api/v1/seo/load-seo/get-seo-settings";
 
+
+  //Fetch Seo
 export const fetchSeo = async () => {
   const response = await fetch(FETCH_SEO_URL, {
     method: "GET",
@@ -18,6 +20,8 @@ export const fetchSeo = async () => {
   return json.data ?? json;
 };
 
+
+//Fetch Seo
 export const fetchSeoById = async (seoId) => {
   try {
     const response = await fetch(`${LOAD_SEO_BY_ID}/${seoId}`, {

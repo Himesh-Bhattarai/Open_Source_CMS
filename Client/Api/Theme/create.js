@@ -1,5 +1,7 @@
 const CREATE_THEME_URL = "http://localhost:5000/api/v1/create-theme/theme";
 
+
+//create theme
 export const createTheme = async (data) => {
   try {
     const response = await fetch(CREATE_THEME_URL, {

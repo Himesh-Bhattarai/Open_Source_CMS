@@ -1,5 +1,7 @@
 const DELETE_BLOG_BY_ID = "http://localhost:5000/api/v1/delete-blog/blog";
 
+
+//delete Blog by id
 export const deleteBlogById = async (blogId) => {
   try {
     const response = await fetch(`${DELETE_BLOG_BY_ID}/${blogId}`, {

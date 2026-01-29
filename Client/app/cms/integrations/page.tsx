@@ -52,7 +52,6 @@ export default function IntegrationsPage() {
 
       try {
         const loadApi = await integrationsApi()
-        console.log("Load Api", loadApi)
 
         if (loadApi?.ok && Array.isArray(loadApi.data)) {
       
