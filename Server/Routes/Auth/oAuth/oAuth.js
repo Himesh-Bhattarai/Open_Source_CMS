@@ -11,7 +11,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
-        maxAge: 1000 * 60 * 60, // 1 hour
+        maxAge: 1000 * 60 * 60, 
     });
 
     // Refresh token cookie
@@ -19,7 +19,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
-        maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+        maxAge: 1000 * 60 * 60 * 24 * 30, 
     });
 };
 
