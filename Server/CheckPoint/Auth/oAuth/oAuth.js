@@ -61,6 +61,17 @@ passport.use(
     },
     async (_, __, profile, done) => {
       let user = await User.findOne({ facebookId: profile.id });
+
+
+      //merge user if already exist
+      if (!user && profile.emails?.[0].value) {
+        user = await User.findOne({ email: profile.emails?.[0].value });
+        if (user && !user.facebookId) {
+          user.facebookId = profile.id;
+          await user.save();
+        }
+      }
+
       if (!user) {
         user = await User.create({
           name: profile.displayName,
