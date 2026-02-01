@@ -21,6 +21,7 @@ export const verifyMe = async (req, res, next) => {
     return res.status(200).json({
       id: user._id,
       name: user.name,
+      email: user.email,
       role: user.role,
       tenantName: user.tenantName,
     });
