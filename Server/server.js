@@ -1,4 +1,3 @@
-// server.js
 import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
@@ -43,6 +42,7 @@ import deleteSeo from "./Routes/Delete/seoDelete.js";
 import deleteForm from "./Routes/Delete/formDelete.js";
 import loadForms from "./Routes/Load/form.js";
 import updateForm from "./Routes/Form/Form.js";
+import deleteFooter from "./Routes/Delete/footerDelete.js";
 import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
 import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
@@ -122,6 +122,7 @@ app.use("/api/v1/delete-menu", deleteMenu);
 app.use("/api/v1/delete-tenant", deleteTenant);
 app.use("/api/v1/delete-seo", deleteSeo);
 app.use("/api/v1/delete-form", deleteForm);
+app.use("/api/v1/delete-footer", deleteFooter);
 
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);

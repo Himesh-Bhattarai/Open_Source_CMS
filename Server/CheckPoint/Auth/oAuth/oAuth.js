@@ -23,6 +23,16 @@ passport.use(
     },
     async (_, __, profile, done) => {
       let user = await User.findOne({ googleId: profile.id });
+
+
+      ///merge user if already exist
+      if(!user && profile.emails?.[0].value){
+        user = await User.findOne({email : profile.emails?.[0].value});
+        if(user && !user.googleId){
+          user.googleId = profile.id;
+          await user.save();
+        }
+      }
       if (!user) {
         //create user in database
         user = await User.create({
@@ -40,8 +50,7 @@ passport.use(
   ),
 );
 
-// Facebook OAuth ----- Its not working idk why?? if someone know please tell me how its work explain here
-// Ans--->
+// Facebook OAuth
 passport.use(
   new FacebookStrategy(
     {
