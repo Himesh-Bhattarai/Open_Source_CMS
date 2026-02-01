@@ -32,7 +32,7 @@ export function useAuth() {
   return {
     user,
     loading,
-
+    email: user?.email,
     // roles
     isAdmin: user?.role === "admin",
     isOwner: user?.role === "web-owner",
