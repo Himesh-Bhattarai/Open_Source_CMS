@@ -19,12 +19,15 @@ export default function SettingsPage() {
   console.log(user);
   // General Settings
   const [adminEmail, setAdminEmail] = useState("");
+  const [timezone, setTimezone] = useState("UTC");
 
-  useEffect(() => {
-    if (user?.email) {
-      setAdminEmail(user.email);
-    }
-  }, [user]);
+  // useEffect to set userEmil
+  useEffect (()=>{
+    if(user?.email){
+      setAdminEmail(user?.email);
+    };
+    setAdminEmail(user?.email);
+  },[user])
 
   // API & Limits
   const [apiKey, setApiKey] = useState("");
@@ -104,36 +107,11 @@ export default function SettingsPage() {
     toast.success("Feedback submitted successfully");
   };
 
-  const handleUpdateGeneral = () => {
-    toast.success("General settings updated");
-  };
-
-  const handleUpdateNotifications = () => {
-    toast.success("Notification preferences saved");
-  };
-
-  const handleUpdateBackups = () => {
-    toast.success("Backup configuration updated");
-  };
-
-  const handleRateLimitChange = (val: string) => {
-    const num = parseInt(val);
-    if (!isNaN(num)) setRateLimit(num);
-  };
-
-  const handleSaveAll = () => {
-    toast.success("All settings have been synchronized");
-  };
-
   return (
     <div className="container mx-auto p-6 space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">Manage your project settings and preferences</p>
-      </div>
-
-      <div className="flex justify-end">
-        <Button onClick={handleSaveAll}><Save className="mr-2 h-4 w-4" /> Save All Changes</Button>
       </div>
 
       {/* General Settings */}
@@ -152,9 +130,6 @@ export default function SettingsPage() {
               onChange={(e) => setAdminEmail(e.target.value)}
               disabled
             />
-          </div>
-          <div className="pt-2">
-            <Button onClick={handleUpdateGeneral} variant="outline">Update General</Button>
           </div>
         </CardContent>
       </Card>
@@ -261,7 +236,7 @@ export default function SettingsPage() {
               id="rate-limit"
               type="number"
               value={rateLimit}
-              onChange={(e) => handleRateLimitChange(e.target.value)}
+              onChange={(e) => setRateLimit(parseInt(e.target.value))}
               min={1}
               max={1000}
             />
@@ -305,9 +280,6 @@ export default function SettingsPage() {
               <p className="text-sm text-muted-foreground">Daily backup completion reports</p>
             </div>
             <Switch checked={backupEmails} onCheckedChange={setBackupEmails} />
-          </div>
-          <div className="pt-2">
-            <Button onClick={handleUpdateNotifications} variant="outline">Save Preferences</Button>
           </div>
         </CardContent>
       </Card>
@@ -369,9 +341,6 @@ export default function SettingsPage() {
                 </div>
               </div>
             </>
-          )}
-          {enableBackups && (
-            <Button onClick={handleUpdateBackups} variant="outline">Update Backup Policy</Button>
           )}
         </CardContent>
       </Card>
