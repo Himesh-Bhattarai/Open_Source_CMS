@@ -10,29 +10,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Copy, Key, Shield, Trash2, AlertTriangle, Mail, Clock, Save, Eye, EyeOff } from "lucide-react";
+import { Copy, Key, Shield, Trash2, AlertTriangle, Mail, Save, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
+import { deleteAccount } from "@/Api/Settings/delete";
 import { useAuth } from "@/hooks/useAuth";
+import {validateUser} from "@/Api/Settings/service"
+
 export default function SettingsPage() {
+  const router = useRouter();
   const { user } = useAuth();
-  console.log(user);
+
   // General Settings
   const [adminEmail, setAdminEmail] = useState("");
-  const [timezone, setTimezone] = useState("UTC");
 
-  // useEffect to set userEmil
-  useEffect (()=>{
-    if(user?.email){
-      setAdminEmail(user?.email);
-    };
-    setAdminEmail(user?.email);
-  },[user])
+
+  // useEffect to set userEmail
+  useEffect(() => {
+    if (user?.email) {
+      setAdminEmail(user.email);
+    }
+  }, [user]);
 
   // API & Limits
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState("sk_live_51NzR2S...");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [lastUsed, setLastUsed] = useState("2024-01-15 14:30:22 UTC");
+
   const [rateLimit, setRateLimit] = useState(100);
   const [isRegenerateDialogOpen, setIsRegenerateDialogOpen] = useState(false);
   const [regenerateForm, setRegenerateForm] = useState({
@@ -64,8 +67,27 @@ export default function SettingsPage() {
     password: ""
   });
 
+
+
   // Feedback & Complaints
   const [feedback, setFeedback] = useState("");
+
+  //Check user password and email is correct to allow delete his account
+  const validateDeleteConfirm = ()=>{
+    const performValidation = async()=>{
+      try{
+        const request = await validateUser(deleteConfirm.email, deleteConfirm.password);
+
+        if (!request?.ok && request?.shouting === "!Kill it" ) throw new Error(request?.message);
+        setIsDeleteDialogOpen(true);
+
+
+      }catch(err){
+        console.log(err);
+      }
+    }
+    performValidation();
+  }
 
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
@@ -75,7 +97,6 @@ export default function SettingsPage() {
   const handleRegenerateApiKey = () => {
     const newKey = `sk_live_${Math.random().toString(36).substring(2, 30)}`;
     setApiKey(newKey);
-    setLastUsed("Just now");
     setIsRegenerateDialogOpen(false);
     setRegenerateForm({
       fullName: "",
@@ -97,9 +118,19 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = () => {
-    setDeleteConfirm({ email: "", password: "" });
-    setIsDeleteDialogOpen(false);
-    toast.error("Account deletion scheduled. You will receive a confirmation email.");
+    const performDeletion = async () => {
+      try {
+      const response = await deleteAccount();
+        if (!response?.ok) throw new Error("Failed to delete account");
+        
+        setIsDeleteDialogOpen(false);
+        toast.success("Account deleted successfully");
+        router.push("/");
+      } catch (error) {
+        toast.error("Failed to delete account");
+      }
+    };
+    performDeletion();
   };
 
   const handleSubmitFeedback = () => {
@@ -110,7 +141,7 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto p-6 space-y-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Project Settings</h1>
         <p className="text-muted-foreground">Manage your project settings and preferences</p>
       </div>
 
