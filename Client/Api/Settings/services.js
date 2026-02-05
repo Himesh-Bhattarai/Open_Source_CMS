@@ -1,6 +1,6 @@
 const VALIDATE_USER = "http://localhost:5000/api/v1/validate-user-payload";
 
-export  const validateUser = async (par1, par2)=>{
+export const validateUser = async (par1, par2)=>{
     try{
         const response = await fetch(VALIDATE_USER,{
             method:"POST",

@@ -48,7 +48,7 @@ import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
 import oAuth from "./Routes/Auth/oAuth/oAuth.js";
 import { extractDomain } from "./Validation/middleware/extractDomain.js";
-
+import deleteUser from "./Routes/Delete/deleteUser.js"
 import externalRequest from "./Routes/Api/oneRoutes.js";
 
 const app = express();
@@ -123,6 +123,8 @@ app.use("/api/v1/delete-tenant", deleteTenant);
 app.use("/api/v1/delete-seo", deleteSeo);
 app.use("/api/v1/delete-form", deleteForm);
 app.use("/api/v1/delete-footer", deleteFooter);
+// Delete-Whole Account 
+app.use("/api/v1/user/delete", deleteUser)
 
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);
@@ -134,6 +136,7 @@ app.use("/api/v1/update-seo", seoRoutes);
 app.use("/api/v1/update-form", updateForm);
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);
+
 
 //external request routes
 app.use("/api/v1/external-request", extractDomain, externalRequest);
