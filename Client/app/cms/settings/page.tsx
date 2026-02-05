@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { deleteAccount } from "@/Api/Settings/delete";
 import { useAuth } from "@/hooks/useAuth";
-import {validateUser} from "@/Api/Settings/service"
+import {validateUser} from "@/Api/Settings/services";
 
 export default function SettingsPage() {
   const router = useRouter();
