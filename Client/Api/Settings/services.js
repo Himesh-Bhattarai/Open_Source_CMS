@@ -1,4 +1,4 @@
-const VALIDATE_USER = "http://localhost:5000/api/v1/validate-user-payload";
+const VALIDATE_USER = "http://localhost:5000/api/v1/validate/user-payload";
 
 export const validateUser = async (par1, par2)=>{
     try{
