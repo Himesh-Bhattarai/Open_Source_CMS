@@ -5,6 +5,7 @@ const { Schema, model, models } = mongoose;
 const ApiKeySchema = new Schema(
   {
     tenantId: { type: String, required: true, index: true },
+    userId: { type: String},
     keyHash: { type: String, required: true },
     permissions: { type: [String], default: ["read:pages"] },
     isActive: { type: Boolean, default: true },
