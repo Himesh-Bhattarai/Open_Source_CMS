@@ -53,6 +53,7 @@ export const tenantCheckpoint = async (req, res, next) => {
 
     // 4️⃣ Store hash only
     await ApiKey.create({
+      userId: createdBy,
       tenantId: tenant._id.toString(),
       keyHash,
       permissions: ["read:pages"],
