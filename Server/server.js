@@ -47,7 +47,7 @@ import integrationsApi from "./Routes/integrationsApi/integrationsApi.js";
 import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
 import oAuth from "./Routes/Auth/oAuth/oAuth.js";
-import { extractDomain } from "./Validation/middleware/extractDomain.js;
+import { extractDomain } from "./Validation/middleware/extractDomain.js";
 import deleteUser from "./Routes/Delete/deleteUser.js"
 
 import externalRequest from "./Routes/Api/oneRoutes.js";
@@ -126,7 +126,6 @@ app.use("/api/v1/delete-seo", deleteSeo);
 app.use("/api/v1/delete-form", deleteForm);
 app.use("/api/v1/delete-footer", deleteFooter);
 // Delete-Whole Account 
-
 app.use("/api/v1/user/delete", deleteUser);
 app.use("/api/v1/user/validate/user-payload", validateUser);
 
