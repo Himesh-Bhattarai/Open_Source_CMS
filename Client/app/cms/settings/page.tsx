@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { deleteAccount } from "@/Api/Settings/delete";
 import { useAuth } from "@/hooks/useAuth";
 import {validateUser} from "@/Api/Settings/services";
-
+import { feedbackCollector } from "@/Api/Settings/services";
 export default function SettingsPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -133,10 +133,21 @@ export default function SettingsPage() {
     }
     }
 
-  const handleSubmitFeedback = () => {
-    setFeedback("");
-    toast.success("Feedback submitted successfully");
-  };
+  const handleSubmitFeedback =async () => {
+   try{
+     const feedBack = await feedbackCollector(feedback);
+     if(!feedBack.ok) {
+      throw new Error("Failed to send feedback");
+      setFeedback("")
+     }
+     toast.success("Feedback sent successfully");
+     setFeedback("")
+   }catch(err){
+    console.log(err);
+    toast.error("Failed to send feedback");
+   };
+   
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-8">
