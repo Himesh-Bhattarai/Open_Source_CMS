@@ -49,7 +49,7 @@ import notificationRoutes from "./Routes/Notifications/notifications.js";
 import oAuth from "./Routes/Auth/oAuth/oAuth.js";
 import { extractDomain } from "./Validation/middleware/extractDomain.js";
 import deleteUser from "./Routes/Delete/deleteUser.js"
-
+import feedback from "./Services/feedBack.js";
 import externalRequest from "./Routes/Api/oneRoutes.js";
 import validateUser from "./Services/validateUser.js"
 
@@ -115,6 +115,7 @@ app.use("/api/v1/admin/get-all-users", adminLoad);
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
 app.use("/api/v2/check-slug", slugServices);
+app.use("/api/v1/feedback", feedback);
 app.use("/api/v1/notifications", notificationRoutes);
 
 //deletion routes
