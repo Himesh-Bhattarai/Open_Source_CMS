@@ -49,12 +49,6 @@ export default function SettingsPage() {
   const [securityAlerts, setSecurityAlerts] = useState(true);
   const [backupEmails, setBackupEmails] = useState(false);
 
-  // Backups
-  const [enableBackups, setEnableBackups] = useState(true);
-  const [frequency, setFrequency] = useState("weekly");
-  const [retention, setRetention] = useState("30");
-  const [lastBackup, setLastBackup] = useState("2024-01-14 02:00:00 UTC");
-
   // Security & Auth
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -73,21 +67,21 @@ export default function SettingsPage() {
   const [feedback, setFeedback] = useState("");
 
   //Check user password and email is correct to allow delete his account
-  const validateDeleteConfirm = ()=>{
-    const performValidation = async()=>{
-      try{
-        const request = await validateUser(deleteConfirm.email, deleteConfirm.password);
+  const validateDeleteConfirm = async () => {
+    try {
+      const request = await validateUser(deleteConfirm.email, deleteConfirm.password);
 
-        if (!request?.ok && request?.shouting === "!Kill it" ) throw new Error(request?.message);
-        setIsDeleteDialogOpen(true);
-
-
-      }catch(err){
-        console.log(err);
+      if (!request?.ok) {
+        toast.error(request?.message || "Invalid credentials");
+        return false;
       }
+      return true;
+    } catch (err) {
+      console.error(err);
+      toast.error("Validation failed. Please try again.");
+      return false;
     }
-    performValidation();
-  }
+  };
 
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
@@ -118,20 +112,26 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = () => {
-    const performDeletion = async () => {
-      try {
-      const response = await deleteAccount();
-        if (!response?.ok) throw new Error("Failed to delete account");
-        
-        setIsDeleteDialogOpen(false);
-        toast.success("Account deleted successfully");
-        router.push("/");
-      } catch (error) {
-        toast.error("Failed to delete account");
-      }
-    };
-    performDeletion();
-  };
+    try{
+      validateDeleteConfirm();
+      const performDeletion = async () => {
+        try {
+        const response = await deleteAccount();
+          if (!response?.ok) throw new Error("Failed to delete account");
+          
+          setIsDeleteDialogOpen(false);
+          toast.success("Account deleted successfully");
+          router.push("/");
+        } catch (error) {
+          toast.error("Failed to delete account");
+        }
+      };
+      performDeletion();
+    }catch(err){
+      console.log(err);
+      setIsDeleteDialogOpen(false);
+    }
+    }
 
   const handleSubmitFeedback = () => {
     setFeedback("");
@@ -312,67 +312,6 @@ export default function SettingsPage() {
             </div>
             <Switch checked={backupEmails} onCheckedChange={setBackupEmails} />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Backups */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Backups</CardTitle>
-          <CardDescription>Configure automated backup settings</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Enable Automated Backups</Label>
-              <p className="text-sm text-muted-foreground">Automatically backup your data</p>
-            </div>
-            <Switch checked={enableBackups} onCheckedChange={setEnableBackups} />
-          </div>
-
-          {enableBackups && (
-            <>
-              <div className="space-y-2">
-                <Label>Frequency</Label>
-                <Select value={frequency} onValueChange={setFrequency}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Retention Period</Label>
-                <Select value={retention} onValueChange={setRetention}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select retention" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="14">14 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="rounded-lg border p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Last Backup</p>
-                    <p className="text-sm text-muted-foreground">{lastBackup}</p>
-                  </div>
-                  <div className="rounded-full bg-green-100 px-3 py-1 text-green-800 text-sm">
-                    Completed
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
         </CardContent>
       </Card>
 
