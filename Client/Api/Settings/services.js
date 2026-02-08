@@ -1,5 +1,8 @@
+import { id } from "date-fns/locale";
+
 const VALIDATE_USER = "http://localhost:5000/api/v1/validate/user-payload";
-const FEEDBACK_COLLECT = "http://localhost:5000/api/v1/feedback/user/collect"
+const FEEDBACK_COLLECT = "http://localhost:5000/api/v1/feedback/user/collect";
+const CHANGE_PASSWORD = "http://localhost:5000/api/v1/user/password//change-password";
 
 export const validateUser = async (par1, par2)=>{
     try{
@@ -33,7 +36,7 @@ export const validateUser = async (par1, par2)=>{
 };
 
 
-export const feedbackCollector = async (data)=>{
+export const feedbackCollector = async (payload)=>{
     try{
         const response = await fetch(FEEDBACK_COLLECT,{
             method: "POST",
@@ -41,7 +44,7 @@ export const feedbackCollector = async (data)=>{
                 "Content-Type": "application/json",
             },
             credentials: "include",
-            body:JSON.stringify(data)
+            body:JSON.stringify(payload)
             
         });
 
@@ -58,6 +61,39 @@ export const feedbackCollector = async (data)=>{
             status: 500,
             message: "Network error",
             data: [],
+        }
+    }
+}
+
+
+//Change password
+
+export const changePassword = async (payload)=>{
+    try{
+        const response = await fetch(CHANGE_PASSWORD, {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+
+            },
+            credentials: "include",
+            body:JSON.stringify(payload)
+        });
+
+        const data = response.json();
+
+        if(!data.ok) throw new Error("Internal server error");
+
+        return{
+            ok: response.ok,
+            status: response.status,
+            message: data.message,
+        }
+    }catch(err){
+        return{
+            ok: false,
+            status: 500,
+            message: "Network error",
         }
     }
 }

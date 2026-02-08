@@ -1,4 +1,4 @@
-import { FeedBack } from "../Models/Feedback/Feedback.js";
+import { Feedback as FeedBack } from "../Models/Feedback/Feedback.js";
 import { User } from "../Models/Client/User.js";
 import express from "express";
 import { verificationMiddleware } from "../Utils/Jwt/Jwt.js";

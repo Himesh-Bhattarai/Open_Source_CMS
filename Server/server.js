@@ -52,6 +52,7 @@ import deleteUser from "./Routes/Delete/deleteUser.js"
 import feedback from "./Services/feedBack.js";
 import externalRequest from "./Routes/Api/oneRoutes.js";
 import validateUser from "./Services/validateUser.js"
+import changePassword from "./Services/changePassword.js"
 
 const app = express();
 import passport from "./config/password.js";
@@ -117,6 +118,7 @@ app.use("/api/v1/check-slug", FetchPageRoutes);
 app.use("/api/v2/check-slug", slugServices);
 app.use("/api/v1/feedback", feedback);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/user/password", changePassword);
 
 //deletion routes
 app.use("/api/v1/delete", deleteRoutes);
