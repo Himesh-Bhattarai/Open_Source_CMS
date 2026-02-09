@@ -53,6 +53,7 @@ import feedback from "./Services/feedBack.js";
 import externalRequest from "./Routes/Api/oneRoutes.js";
 import validateUser from "./Services/validateUser.js"
 import changePassword from "./Services/changePassword.js"
+import getApiKeys from "./Routes/Load/getApi.js"
 
 const app = express();
 import passport from "./config/password.js";
@@ -109,6 +110,7 @@ app.use("/api/v1/page/belong", loadBelongPage);
 app.use("/api/v1/seo/load-seo", loadSeo);
 app.use("/api/v1/form", loadForms);
 app.use("/api/v1/integrations", integrationsApi);
+app.use("/api/v1/api-keys", apiKeys);
 
 //fetch routes for ADMIN
 app.use("/api/v1/admin/get-all-users", adminLoad);
