@@ -1,4 +1,3 @@
-import { id } from "date-fns/locale";
 
 const VALIDATE_USER = "http://localhost:5000/api/v1/validate/user-payload";
 const FEEDBACK_COLLECT = "http://localhost:5000/api/v1/feedback/user/collect";
