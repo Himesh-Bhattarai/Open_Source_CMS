@@ -53,7 +53,8 @@ import feedback from "./Services/feedBack.js";
 import externalRequest from "./Routes/Api/oneRoutes.js";
 import validateUser from "./Services/validateUser.js"
 import changePassword from "./Services/changePassword.js"
-import getApiKeys from "./Routes/Load/getApi.js"
+import apiKeys from "./Routes/Load/getApi.js"
+import { rateLimiter } from "./Validation/middleware/rateLimiter.js";
 
 const app = express();
 import passport from "./config/password.js";
@@ -80,6 +81,7 @@ app.use(
 // Passport middlewares
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 //Create Routes
 app.use("/api/v1/auth", authRoutes);
@@ -149,7 +151,7 @@ app.use("/api/v1/statistics", statsRoutes);
 
 
 //external request routes
-app.use("/api/v1/external-request", extractDomain, externalRequest);
+app.use("/api/v1/external-request", rateLimiter, extractDomain, externalRequest);
 
 // Error handler
 app.use(errorHandler);
