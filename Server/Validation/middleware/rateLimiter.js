@@ -33,12 +33,12 @@ export const rateLimiter = async (req, res, next) => {
         const redisKey = `rate_limit:${apiKeyRecord._id}`;
 
         // Increment the counter and set expiry in one atomic operation (pipeline)
-        const [count] = await redis.multi()
+        const results = await redis.multi()
             .incr(redisKey)
-            .expire(redisKey, DEFAULT_WINDOW, "NX") 
+            .expire(redisKey, DEFAULT_WINDOW) 
             .exec();
 
-        const currentUsage = count[1];
+        const currentUsage = results[0][1];
 
         res.setHeader("X-RateLimit-Limit", DEFAULT_LIMIT);
         res.setHeader("X-RateLimit-Remaining", Math.max(0, DEFAULT_LIMIT - currentUsage));

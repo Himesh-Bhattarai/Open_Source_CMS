@@ -1,4 +1,4 @@
-const CMS_MENU_API = "http://localhost:5000/api/v1/external-request/contentFlow.com/menu";
+const CMS_MENU_API = "http://localhost:5000/api/v1/external-request/contentFlow.com.np/menu";
 
 
 //fetch menu from cms
@@ -7,7 +7,7 @@ export const fetchMenu = async ()=>{
         const response = await fetch(CMS_MENU_API, {
             method: "GET",
             headers: {
-                Authorization: "Bearer 5df6f0394cb54ff74c0519f04b311be2c3e9b01d10f28ec95f2892a0c7237665"
+                Authorization: "Bearer 1b6758ca1b4e451d34ea9f215b9c3ff924b2627ca984188d6a5165fe2e7e1d17"
             }
         });
 
