@@ -46,7 +46,7 @@ router.get(
                 .select("name")
                 .lean();
 
-            // 4️⃣ Build final response
+         
             const response = tenants.map(t => ({
                 tenantId: t._id,
                 tenantName: t.name,
