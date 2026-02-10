@@ -56,6 +56,7 @@ export const tenantCheckpoint = async (req, res, next) => {
       userId: createdBy,
       tenantId: tenant._id.toString(),
       keyHash,
+      rawKey: rawApiKey,
       permissions: ["read:pages"],
       name: "Default Public Key",
     });
