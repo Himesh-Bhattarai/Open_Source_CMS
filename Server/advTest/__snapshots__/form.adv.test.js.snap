@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Form load integration loads forms with schema snapshot 1`] = `
+{
+  "data": [
+    {
+      "__v": 0,
+      "_id": "<id>",
+      "createdAt": "<createdAt>",
+      "createdBy": "user-adv",
+      "fields": [],
+      "scope": "global",
+      "status": "draft",
+      "tenantId": "t1",
+      "updatedAt": "<updatedAt>",
+      "userId": "user-adv",
+    },
+  ],
+}
+`;
