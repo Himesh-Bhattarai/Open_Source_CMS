@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Auth advanced schema stability via snapshot 1`] = `
+{
+  "message": "Cast to ObjectId failed for value "user-adv" (type string) at path "_id" for model "User"",
+}
+`;
