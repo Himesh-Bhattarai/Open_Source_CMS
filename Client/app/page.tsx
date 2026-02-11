@@ -44,13 +44,95 @@ export default function LandingPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [footerData, setFooterData] = useState<any >(null)
 
+
+  // Fall back to default menu if API fails
+  const defaultMenu=[
+    {
+      _id: "1",
+      label: "Features",
+      link: "#features",
+      enabled: true,
+      order: 1,
+    },
+    {
+      _id: "2",
+      label: "Use Cases",
+      link: "#use-cases",
+      enabled: true,
+      order: 2,
+    },
+    {
+      _id: "3",
+      label: "Contact",
+      link: "#contact",
+      enabled: true,
+      order: 3,
+    },
+  ]
+
   const router = useRouter();
+  //falback for footer data if API fails
+const footerFallback = {
+    layout: "custom",
+    blocks: [
+      {
+        id: "fallback-text",
+        type: "text",
+        data: {
+          title: "ContentFlow",
+          content: "Build and manage beautiful websites without code",
+        },
+      },
+      {
+        id: "fallback-product",
+        type: "menu",
+        data: {
+          title: "Product",
+          links: [
+            { id: "features", label: "Features", slug: "#features" },
+            { id: "docs", label: "Documentation", slug: "/docs" },
+          ],
+        },
+      },
+      {
+        id: "fallback-company",
+        type: "menu",
+        data: {
+          title: "Company",
+          links: [
+            { id: "about", label: "About", slug: "/about" },
+            { id: "contact", label: "Contact", slug: "/contact" },
+          ],
+        },
+      },
+      {
+        id: "fallback-legal",
+        type: "menu",
+        data: {
+          title: "Legal",
+          links: [
+            { id: "privacy", label: "Privacy Policy", slug: "/privacy" },
+            { id: "terms", label: "Terms of Service", slug: "/terms" },
+          ],
+        },
+      },
+    ],
+    bottomBar: {
+      copyrightText: "© 2025 ContentFlow. All rights reserved.",
+      socialLinks: [],
+    },
+  }
+
+  
+
   useEffect(() => {
     const loadAll = async () => {
       try {
         const navRes = await loadNavigation()
         if (navRes.ok) {
           setMenuItems(navRes.data[0].items)
+        } else {
+          setMenuItems(defaultMenu as MenuItem[])
         }
 
         const footerRes = await fetchFooter()
@@ -59,6 +141,7 @@ export default function LandingPage() {
         
       } catch (err) {
         console.error(err)
+        setMenuItems(defaultMenu as MenuItem[])
       } finally {
         setLoading(false)
       }
@@ -169,8 +252,9 @@ export default function LandingPage() {
   ]
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen />
   }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,7 +269,7 @@ export default function LandingPage() {
           </div>
           <div className="hidden md:flex items-center gap-6">
             {menuItems.map(item => (
-              item?.enabled && (
+              item?.enabled  && (
                 <Link
                   key={item?._id}
                   href={item?.link}
@@ -401,7 +485,7 @@ export default function LandingPage() {
 
       {/* Footer */}
 
-      {footerData && <Footer footer={footerData} />}
+      <Footer footer={footerData || footerFallback} />
 
       {/* <footer className="py-12 border-t">
         <div className="container mx-auto px-4">
