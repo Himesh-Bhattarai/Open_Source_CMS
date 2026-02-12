@@ -1,7 +1,6 @@
-const FETCH_SEO_URL =
-  "http://localhost:5000/api/v1/seo/load-seo/get-seo-settings";
+const FETCH_SEO_URL = process.env.NEXT_PUBLIC_FETCH_SEO_URL;
 const LOAD_SEO_BY_ID =
-  "http://localhost:5000/api/v1/seo/load-seo/get-seo-settings";
+  process.env.NEXT_PUBLIC_LOAD_SEO_BY_ID;
 
 
   //Fetch Seo

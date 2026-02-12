@@ -1,5 +1,5 @@
-const FETCH_FOOTER_URL = "http://localhost:5000/api/v1/footer/get-footer";
-const FETCH_FOOTER_BY_ID = "http://localhost:5000/api/v1/footer/get-footer";
+const FETCH_FOOTER_URL = process.env.NEXT_PUBLIC_FETCH_FOOTER_URL;
+const FETCH_FOOTER_BY_ID = process.env.NEXT_PUBLIC_FETCH_FOOTER_BY_ID;
 
 
 //get footer

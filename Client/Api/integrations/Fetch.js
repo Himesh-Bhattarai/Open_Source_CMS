@@ -1,4 +1,4 @@
-const INTEGRATIONS_URL = "http://localhost:5000/api/v1/integrations/get-api";
+const INTEGRATIONS_URL = process.env.NEXT_PUBLIC_INTEGRATIONS_URL;
 
 //load all available integrations or api from backend
 export const integrationsApi = async () => {

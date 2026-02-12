@@ -1,4 +1,4 @@
-const CREATE_THEME_URL = "http://localhost:5000/api/v1/create-theme/theme";
+const CREATE_THEME_URL = process.env.NEXT_PUBLIC_CREATE_THEME_URL;
 
 
 //create theme

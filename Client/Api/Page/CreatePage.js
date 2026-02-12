@@ -1,7 +1,6 @@
-const CREATE_PAGE_URL = "http://localhost:5000/api/v1/create-page/page";
-const UPDATA_PAGE_URL = "http://localhost:5000/api/v1/update-page/page";
-const CREATE_PAGE_VERSION =
-  "http://localhost:5000/api/v1/create-page-version/page-version";
+const CREATE_PAGE_URL = process.env.NEXT_PUBLIC_CREATE_PAGE_URL;
+const UPDATA_PAGE_URL = process.env.NEXT_PUBLIC_UPDATE_PAGE_URL;
+const CREATE_PAGE_VERSION = process.env.NEXT_PUBLIC_CREATE_PAGE_VERSION;
 
 
   //Create Page

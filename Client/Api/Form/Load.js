@@ -1,5 +1,5 @@
-const LOAD_FORMS_DATA = "http://localhost:5000/api/v1/form/get-form";
-const LOAD_FORMS_DATA_BY_ID = "http://localhost:5000/api/v1/form/get-form";
+const LOAD_FORMS_DATA = process.env.NEXT_PUBLIC_LOAD_FORMS_DATA;
+const LOAD_FORMS_DATA_BY_ID = process.env.NEXT_PUBLIC_LOAD_FORMS_DATA_BY_ID;
 
 
 //load form data

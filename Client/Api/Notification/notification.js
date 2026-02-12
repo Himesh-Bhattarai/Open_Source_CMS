@@ -1,4 +1,4 @@
-const NOTIFY_GET = "http://localhost:5000/api/v1/notifications/get-notification";
+const NOTIFY_GET = process.env.NEXT_PUBLIC_NOTIFY_GET;
 
 
 //get notification

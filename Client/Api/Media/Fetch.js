@@ -1,4 +1,4 @@
-const LOAD_MEDIA = "http://localhost:5000/api/v1/media/get-media";
+const LOAD_MEDIA = process.env.NEXT_PUBLIC_LOAD_MEDIA;
 
 
 //load media

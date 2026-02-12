@@ -1,4 +1,4 @@
-const DELETE_SEO_BY_ID = "http://localhost:5000/api/v1/delete-seo/seo";
+const DELETE_SEO_BY_ID = process.env.NEXT_PUBLIC_DELETE_SEO_BY_ID;
 
 
 //Delete Seo by id

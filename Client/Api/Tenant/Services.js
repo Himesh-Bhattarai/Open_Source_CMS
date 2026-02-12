@@ -1,7 +1,7 @@
-const DELETE_TENANT_BY_ID = "http://localhost:5000/api/v1/delete-tenant";
+const DELETE_TENANT_BY_ID = process.env.NEXT_PUBLIC_DELETE_TENANT_BY_ID;
 const DELETE_ALL_TENANTS =
-  "http://localhost:5000/api/v1/tenants/delete-all-tenants";
-const EDIT_TENANT_BY_ID = "http://localhost:5000/api/v1/update-tenant/tenant";
+  process.env.NEXT_PUBLIC_DELETE_ALL_TENANTS;
+const EDIT_TENANT_BY_ID = process.env.NEXT_PUBLIC_EDIT_TENANT_BY_ID;
 
 
 //delete tenant by id

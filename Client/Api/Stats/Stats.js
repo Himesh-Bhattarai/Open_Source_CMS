@@ -1,4 +1,4 @@
-const GET_STATS_URL = "http://localhost:5000/api/v1/statistics/stats";
+const GET_STATS_URL = process.env.NEXT_PUBLIC_GET_STATS_URL;
 
 
 //Get Stats

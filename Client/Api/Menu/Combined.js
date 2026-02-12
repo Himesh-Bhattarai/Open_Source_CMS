@@ -1,6 +1,6 @@
-const MENU_URL = "http://localhost:5000/api/v1/create-menu/menu";
-const MENU_ITEM_URL = "http://localhost:5000/api/v1/create-menu/menu-item";
-const UPDATE_MENU_URL = "http://localhost:5000/api/v1/update-menu/menus";
+const MENU_URL = process.env.NEXT_PUBLIC_CREATE_MENU_URL;
+const MENU_ITEM_URL = process.env.NEXT_PUBLIC_CREATE_MENU_ITEM_URL;
+const UPDATE_MENU_URL = process.env.NEXT_PUBLIC_UPDATE_MENU_URL;
 
 
 //create menu

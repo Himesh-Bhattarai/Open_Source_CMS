@@ -1,4 +1,4 @@
-const DELETE_FORM_BY_ID = "http://localhost:5000/api/v1/delete-form/form";
+const DELETE_FORM_BY_ID = process.env.NEXT_PUBLIC_DELETE_FORM_BY_ID;
 
 
 //delete form  by id

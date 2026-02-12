@@ -1,4 +1,4 @@
-const DELETE_FOOTER_BY_ID = "http://localhost:5000/api/v1/delete-footer/footer";
+const DELETE_FOOTER_BY_ID = process.env.NEXT_PUBLIC_DELETE_FOOTER_BY_ID;
 
 
 //delete footer by id

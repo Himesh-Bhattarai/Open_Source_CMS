@@ -1,19 +1,15 @@
-const CHECK_SLUG_AVAILABILITY_URL =
-  "http://localhost:5000/api/v1/check-slug/slug";
-const RESTORE_PAGE_VERSION_URL =
-  "http://localhost:5000/api/v1/restore-page-version/page-version";
+const CHECK_SLUG_AVAILABILITY_URL = process.env.NEXT_PUBLIC_CHECK_SLUG_AVAILABILITY_URL;
+const RESTORE_PAGE_VERSION_URL = process.env.NEXT_PUBLIC_RESTORE_PAGE_VERSION_URL;
 // Delete User Pages for Admin by Id
-const DELETE_USER_PAGES_URL = "http://localhost:5000/api/v1/delete/user-pages";
+const DELETE_USER_PAGES_URL = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_URL;
 //delete User All page selected by user
-const DELETE_USER_SELECTED_PAGE_URL =
-  "http://localhost:5000/api/v1/delete/user-selected-page";
+const DELETE_USER_SELECTED_PAGE_URL =process.env.NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL;
 //Delete User Specific selected Page by ID
-const DELETE_USER_PAGES_BY_ID = "http://localhost:5000/api/v1/delete/user-page";
+const DELETE_USER_PAGES_BY_ID = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_BY_ID;
 
-const BULK_PAGES_DEL_BY_ADMIN =
-  "http://localhost:5000/api/v1/delete/pages/bulk-delete/byAdmin";
+const BULK_PAGES_DEL_BY_ADMIN = process.env.NEXT_PUBLIC_BULK_PAGES_DEL_BY_ADMIN;
 
-  //check slug
+//check slug
 export const checkSlugAvailability = async (slug, tenantId) => {
   try {
     const response = await fetch(
@@ -38,8 +34,7 @@ export const checkSlugAvailability = async (slug, tenantId) => {
   }
 };
 
-
-// restore page but may not using 
+// restore page but may not using
 export const restorePageVersion = async (versionId) => {
   try {
     const response = await fetch(`${RESTORE_PAGE_VERSION_URL}/${versionId}`, {

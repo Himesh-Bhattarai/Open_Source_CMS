@@ -1,6 +1,6 @@
 import express from "express";
 import footer from "./Footer.js";
-import footerBlock from "./FooterBlock.js";
+
 import { Footer } from "../../Models/Footer/Footer.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import {cmsEventService as notif} from "../../Services/notificationServices.js"
@@ -8,7 +8,7 @@ import {cmsEventService as notif} from "../../Services/notificationServices.js"
 const router = express.Router();
 
 router.use("/footer", footer);
-router.use("/footer-block", footerBlock);
+
 router.put("/footer/:id", verificationMiddleware, async (req, res, next) => {
   try {
     const footerId = req.params.id;

@@ -1,4 +1,4 @@
-const DELETE_TENANT_URL = "http://localhost:5000/api/v1/delete/delete-tanent";
+const DELETE_TENANT_URL = process.env.NEXT_PUBLIC_DELETE_TENANT_URL;
 
 //delete tenant by id
 export const deleteTenantById = async (tenantId) => {

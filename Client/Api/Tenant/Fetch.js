@@ -1,7 +1,6 @@
-const LOAD_TENANTS_URL = "http://localhost:5000/api/v1/tenants/get-tenant";
-const LOAD_TENANTS_BY_ID =
-  "http://localhost:5000/api/v1/tenants/get-selcted-tenant";
-const GET_ALL_TENANTS_URL = "http://localhost:5000/api/v1/tenants/all-tenants";
+const LOAD_TENANTS_URL = process.env.NEXT_PUBLIC_LOAD_TENANTS_URL;
+const LOAD_TENANTS_BY_ID =process.env.NEXT_PUBLIC_LOAD_TENANTS_BY_ID;
+const GET_ALL_TENANTS_URL = process.env.NEXT_PUBLIC_GET_ALL_TENANTS_URL;
 
 //Get user tenants (ALL TENANTS)
 export const getUserTenants = async () => {

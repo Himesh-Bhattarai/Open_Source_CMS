@@ -1,5 +1,5 @@
-const BLOG_CREATE_URL = "http://localhost:5000/api/v1/create-blog/blog";
-const UPDATE_BLOG_URL = "http://localhost:5000/api/v1/blog/update-blog";
+const BLOG_CREATE_URL = process.env.NEXT_PUBLIC_BLOG_CREATE_URL;
+const UPDATE_BLOG_URL = process.env.NEXT_PUBLIC_UPDATE_BLOG_URL;
 
 
 //First step of create Blog

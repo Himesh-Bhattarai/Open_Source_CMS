@@ -1,5 +1,5 @@
 
-const DELETE_ACCOUNT_URL = "http://localhost:5000/api/v1/user/delete/permanent";
+const DELETE_ACCOUNT_URL = process.env.NEXT_PUBLIC_DELETE_ACCOUNT_URL;
 
 export const deleteAccount = async () => {
   try {

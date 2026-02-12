@@ -1,4 +1,4 @@
-const DELETE_BLOG_BY_ID = "http://localhost:5000/api/v1/delete-blog/blog";
+const DELETE_BLOG_BY_ID = process.env.NEXT_PUBLIC_DELETE_BLOG_BY_ID;
 
 
 //delete Blog by id

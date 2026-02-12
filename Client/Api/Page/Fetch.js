@@ -1,7 +1,7 @@
-const GET_PAGE_URL = "http://localhost:5000/api/v1/page/user-pages";
-const GET_PAGE_BY_ID = "http://localhost:5000/api/v1/page/selected-page";
-const GET_ALL_PAGES_URL = "http://localhost:5000/api/v1/page/all-pages";
-const GET_PAGES_ON_WEBSITE = "http://localhost:5000/api/v1/page/belong/website";
+const GET_PAGE_URL = process.env.NEXT_PUBLIC_GET_PAGE_URL;
+const GET_PAGE_BY_ID = process.env.NEXT_PUBLIC_GET_PAGE_BY_ID;
+const GET_ALL_PAGES_URL = process.env.NEXT_PUBLIC_GET_ALL_PAGES_URL;
+const GET_PAGES_ON_WEBSITE = process.env.NEXT_PUBLIC_GET_PAGES_ON_WEBSITE;
 
 
 //Get User Pages

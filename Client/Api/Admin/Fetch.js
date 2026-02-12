@@ -1,4 +1,4 @@
-const GET_ALL_USER = "http://localhost:5000/api/v1/admin/get-all-users";
+const GET_ALL_USER = process.env.NEXT_PUBLIC_GET_ALL_USER;
 
 
 //Fetch all user : Admin panel
