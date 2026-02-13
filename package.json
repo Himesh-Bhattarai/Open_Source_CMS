@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "start": "concurrently \"npm run start --prefix server\" \"npm run start --prefix client\""
+    "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client -- -H 0.0.0.0 -p 3000\"",
+    "start": "concurrently \"npm run start --prefix Server\" \"npm run start --prefix Client -- -H 0.0.0.0 -p 3000\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

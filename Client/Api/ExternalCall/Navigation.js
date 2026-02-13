@@ -1,4 +1,4 @@
-const CMS_MENU_API = "http://localhost:5000/api/v1/external-request/contentFlow.com.np/menu";
+const CMS_MENU_API = process.env.NEXT_PUBLIC_CMS_MENU_API;
 
 
 //fetch menu from cms

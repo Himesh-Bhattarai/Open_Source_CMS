@@ -1,5 +1,5 @@
-const FOOTER_URL = "http://localhost:5000/api/v1/create-footer/footer";
-const UPDATE_FOOTER_URL = " http://localhost:5000/api/v1/update-footer/footer";
+const FOOTER_URL = process.env.NEXT_PUBLIC_FOOTER_URL;
+const UPDATE_FOOTER_URL = process.env.NEXT_PUBLIC_UPDATE_FOOTER_URL;
 
 
 //create footer

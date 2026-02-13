@@ -1,8 +1,8 @@
 
-const VALIDATE_USER = "http://localhost:5000/api/v1/validate/user-payload";
-const FEEDBACK_COLLECT = "http://localhost:5000/api/v1/feedback/user/collect";
-const CHANGE_PASSWORD = "http://localhost:5000/api/v1/user/password//change-password";
-const GET_API_KEYS = "http://localhost:5000/api/v1/api-keys/user/get-keys";
+const VALIDATE_USER = process.env.NEXT_PUBLIC_VALIDATE_USER;
+const FEEDBACK_COLLECT = process.env.NEXT_PUBLIC_FEEDBACK_COLLECT;
+const CHANGE_PASSWORD = process.env.NEXT_PUBLIC_CHANGE_PASSWORD;
+const GET_API_KEYS = process.env.NEXT_PUBLIC_GET_API_KEYS;
 export const validateUser = async (par1, par2)=>{
     try{
         const response = await fetch(VALIDATE_USER,{

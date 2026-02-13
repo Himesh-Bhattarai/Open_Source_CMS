@@ -1,5 +1,5 @@
-const ALL_BLOG_LOAD_API = "http://localhost:5000/api/v1/user-blog/load-all";
-const BLOG_LOAD_BY_ID_API = "http://localhost:5000/api/v1/blog/load";
+const ALL_BLOG_LOAD_API = process.env.NEXT_PUBLIC_ALL_BLOG_LOAD_API;
+const BLOG_LOAD_BY_ID_API = process.env.NEXT_PUBLIC_BLOG_LOAD_BY_ID_API;
 
 
 

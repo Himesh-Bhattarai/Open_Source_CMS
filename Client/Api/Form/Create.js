@@ -1,5 +1,5 @@
-const CREATE_FORM_URL = "http://localhost:5000/api/v1/create-form/form";
-const UPDATE_FORM_URL = "http://localhost:5000/api/v1/update-form/form";
+const CREATE_FORM_URL = process.env.NEXT_PUBLIC_CREATE_FORM_URL;
+const UPDATE_FORM_URL = process.env.NEXT_PUBLIC_UPDATE_FORM_URL;
 
 
 //create Contact or any kind of form

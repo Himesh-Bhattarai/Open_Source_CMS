@@ -1,5 +1,4 @@
-const CHECK_SLUG_AVAILABILITY_URL =
-  "http://localhost:5000/api/v2/check-slug/slug";
+const CHECK_SLUG_AVAILABILITY_URL = process.env.NEXT_PUBLIC_CHECK_SLUG_AVAILABILITY_URL;
 
   //check slug
 export const checkSlugAvailability = async (slug, tenantId, value) => {

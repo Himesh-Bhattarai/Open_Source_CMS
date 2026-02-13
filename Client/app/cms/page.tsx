@@ -256,7 +256,7 @@ function OwnerDashboard({ user }: { user: any }) {
 
     getStats()
 
-    // Optional: poll every 5 seconds
+    
     const interval = setInterval(getStats, 5000)
     return () => clearInterval(interval)
   }, [])

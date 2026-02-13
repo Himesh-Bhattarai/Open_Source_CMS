@@ -1,4 +1,4 @@
-const CREATE_MEDIA_URL = "http://localhost:5000/api/v1/create-media/media";
+const CREATE_MEDIA_URL = process.env.NEXT_PUBLIC_CREATE_MEDIA_URL;
 
 
 //create media

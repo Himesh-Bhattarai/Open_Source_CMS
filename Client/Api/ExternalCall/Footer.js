@@ -1,4 +1,4 @@
-const CMS_FOOTER_API = "http://localhost:5000/api/v1/external-request/contentFlow.com.np/footer";
+const CMS_FOOTER_API = process.env.NEXT_PUBLIC_CMS_FOOTER_API;
 
 
 //Api call to fetch footer data form this cms

@@ -1,6 +1,6 @@
-const UPDATE_SEO_URL = "http://localhost:5000/api/v1/update-seo/seo";
+const UPDATE_SEO_URL = process.env.NEXT_PUBLIC_UPDATE_SEO_URL;
 
-const CREATE_SEO_URL = "http://localhost:5000/api/v1/create-seo/seo";
+const CREATE_SEO_URL = process.env.NEXT_PUBLIC_CREATE_SEO_URL;
 
 
 //Create Seo

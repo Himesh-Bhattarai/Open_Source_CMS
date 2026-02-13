@@ -1,5 +1,5 @@
-const LOAD_MENU_URL = "http://localhost:5000/api/v1/load-menu/menus";
-const LOAD_MENU_BY_ID = "http://localhost:5000/api/v1/load-menu/menu";
+const LOAD_MENU_URL = process.env.NEXT_PUBLIC_LOAD_MENU_URL;  
+const LOAD_MENU_BY_ID = process.env.NEXT_PUBLIC_LOAD_MENU_BY_ID;
 
 //load menus
 export const loadMenus = async () => {

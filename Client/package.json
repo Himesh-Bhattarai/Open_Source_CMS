@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+	"dev": "next dev -H 0.0.0.0 -p 3000 --hostname 0.0.0.0"
+    ,
     "lint": "eslint .",
     "start": "next start"
   },
@@ -49,7 +50,7 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.454.0",
     "mongoose": "9.0.2",
-    "next": "16.0.10",
+    "next": "^16.1.6",
     "next-themes": "^0.4.6",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",

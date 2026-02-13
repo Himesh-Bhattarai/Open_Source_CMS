@@ -72,15 +72,15 @@ export const loginCheckpoint = async (req, res, next) => {
     //send token in cookies both access and refresh
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: false, // Set to true in production with HTTPS
+      sameSite: "lax",
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: false, // Set to true in production with HTTPS
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     //send response with user details except password

@@ -1,4 +1,4 @@
-const CREATE_TENANT_URL = "http://localhost:5000/api/v1/create-tenant/tenant";
+const CREATE_TENANT_URL = process.env.NEXT_PUBLIC_CREATE_TENANT_URL;
 
 
 //create tenant

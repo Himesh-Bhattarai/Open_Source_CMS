@@ -15,7 +15,6 @@ import { loginApi } from "@/Api/Auth/Login"
 
 export default function LoginPage() {
 
-
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -39,8 +38,9 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
       }
-
-      router.push("/cms");
+      setTimeout(() => {
+        router.push("/cms");
+      }, 2000)
     } catch (err) {
       setError("An error occurred");
     } finally {
@@ -51,12 +51,12 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     setIsLoading(true)
-    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/google"
+    window.location.href = "http://150.136.244.32:5000/api/v1/oAuth/auth/google"
   }
 
   const handleFacebookLogin = () => {
     setIsLoading(true)
-    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/facebook"
+    window.location.href = "http://150.136.244.32:5000/api/v1/oAuth/auth/facebook"
   }
 
   return (

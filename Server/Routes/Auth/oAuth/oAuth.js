@@ -10,7 +10,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60, 
     });
 
@@ -18,7 +18,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24 * 30, 
     });
 };
@@ -45,7 +45,7 @@ router.get(
             setAuthCookies(res, accessToken, refreshToken);
 
             // Redirect to frontend
-            res.redirect("http://localhost:3000/cms");
+            res.redirect("http://150.136.244.32:5000/cms");
         } catch (err) {
             console.error("OAuth Google Callback Error:", err);
             res.redirect("/login");
@@ -75,7 +75,7 @@ router.get(
             setAuthCookies(res, accessToken, refreshToken);
 
             // Redirect to frontend
-            res.redirect("http://localhost:3000/cms");
+            res.redirect("http://150.136.244.32:5000/cms");
         } catch (err) {
             console.error("OAuth Facebook Callback Error:", err);
             res.redirect("/login");

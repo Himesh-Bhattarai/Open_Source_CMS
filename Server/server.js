@@ -6,7 +6,6 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import "./Services/notification.js";
 
-
 import { connectDB } from "./Database/db.js";
 import { errorHandler } from "./Utils/Logger/errorHandler.js";
 
@@ -48,12 +47,12 @@ import adminLoad from "./Routes/Load/adminLoad.js";
 import notificationRoutes from "./Routes/Notifications/notifications.js";
 import oAuth from "./Routes/Auth/oAuth/oAuth.js";
 import { extractDomain } from "./Validation/middleware/extractDomain.js";
-import deleteUser from "./Routes/Delete/deleteUser.js"
+import deleteUser from "./Routes/Delete/deleteUser.js";
 import feedback from "./Services/feedBack.js";
 import externalRequest from "./Routes/Api/oneRoutes.js";
-import validateUser from "./Services/validateUser.js"
-import changePassword from "./Services/changePassword.js"
-import apiKeys from "./Routes/Load/getApi.js"
+import validateUser from "./Services/validateUser.js";
+import changePassword from "./Services/changePassword.js";
+import apiKeys from "./Routes/Load/getApi.js";
 import { rateLimiter } from "./Validation/middleware/rateLimiter.js";
 
 const app = express();
@@ -62,10 +61,13 @@ import passport from "./config/password.js";
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   }),
 );
+
+console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
@@ -153,6 +155,10 @@ app.use("/api/v1/statistics", statsRoutes);
 //external request routes
 app.use("/api/v1/external-request", rateLimiter, extractDomain, externalRequest);
 
+
+app.use("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 // Error handler
 app.use(errorHandler);
 
@@ -161,6 +167,7 @@ connectDB();
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+const HOST = process.env.HOST;
+app.listen(PORT,'0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT} and host ${HOST}`);
 });

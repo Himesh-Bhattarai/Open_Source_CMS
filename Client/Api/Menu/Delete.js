@@ -1,5 +1,5 @@
-const DELETE_MENU_ITEM = "http://localhost:5000/api/v1/delete-menu/menus";
-const DELETE_MENU_BY_ID = "http://localhost:5000/api/v1/delete-menu/menu";
+const DELETE_MENU_ITEM = process.env.NEXT_PUBLIC_DELETE_MENU_ITEM;
+const DELETE_MENU_BY_ID = process.env.NEXT_PUBLIC_DELETE_MENU_BY_ID;
 
 
 
