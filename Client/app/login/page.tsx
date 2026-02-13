@@ -15,7 +15,6 @@ import { loginApi } from "@/Api/Auth/Login"
 
 export default function LoginPage() {
 
-
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -39,8 +38,9 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
       }
-
-      router.push("/cms");
+      setTimeout(() => {
+        router.push("/cms");
+      }, 2000)
     } catch (err) {
       setError("An error occurred");
     } finally {
