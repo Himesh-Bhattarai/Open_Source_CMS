@@ -51,12 +51,12 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     setIsLoading(true)
-    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/google"
+    window.location.href = "http://150.136.244.32:5000/api/v1/oAuth/auth/google"
   }
 
   const handleFacebookLogin = () => {
     setIsLoading(true)
-    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/facebook"
+    window.location.href = "http://150.136.244.32:5000/api/v1/oAuth/auth/facebook"
   }
 
   return (
