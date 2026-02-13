@@ -1,0 +1,30 @@
+# name: Deploy on Push
+
+# # Trigger this workflow when deploy branch receives push
+# on:
+#   push:
+#     branches:
+#       - deploy
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Repo
+#         uses: actions/checkout@v3
+
+#       - name: Deploy via SSH
+#         uses: appleboy/ssh-action@v0.1.9
+#         with:
+#           host: ${{ secrets.SERVER_HOST }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             cd ${{ secrets.SERVER_APP_PATH }}
+#             git fetch --all
+#             git reset --hard origin/deploy
+#             # Optional: install dependencies if needed
+#             npm install
+#             # Restart your Node app (or whatever server)
+#             pm2 restart all
