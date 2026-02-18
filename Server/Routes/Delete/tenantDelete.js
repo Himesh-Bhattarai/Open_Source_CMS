@@ -4,6 +4,7 @@ import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
 import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { ApiKey } from "../../Models/ApiKey/apiKey.js";
 
 const router = express.Router();
 
@@ -27,6 +28,9 @@ router.delete("/:tenantId", verificationMiddleware, async (req, res) => {
       await session.abortTransaction();
       return res.status(404).json({ error: "Tenant not found" });
     }
+
+    ///before delete tenant delete all the related data link to that tenant
+    await ApiKey.deleteOne({tenantId: tenantId}).session(session);
 
     // 2️⃣ Delete tenant (later you add cascading deletes here)
     await Tenant.deleteOne({ _id: tenantId }).session(session);
