@@ -48,9 +48,15 @@ export const getPageById = async (pageId) => {
     });
 
     const request = await response.json();
+    if (!response.ok) {
+      const error = new Error(request?.message || `HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
     return request;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 

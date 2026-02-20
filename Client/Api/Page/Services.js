@@ -42,12 +42,16 @@ export const restorePageVersion = async (versionId) => {
       credentials: "include",
     });
 
-    const request = response.json();
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const request = await response.json();
+    if (!response.ok) {
+      const error = new Error(request?.message || `HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
     return request;
   } catch (err) {
     console.log(err);
-    const error = new Error(`HTTP error! status: ${response.status}`);
+    throw err;
   }
 };
 

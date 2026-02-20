@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -29,6 +30,7 @@ interface Page {
 }
 
 export default function PagesPage() {
+  const searchParams = useSearchParams()
   const [pages, setPages] = useState<Page[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
@@ -36,6 +38,13 @@ export default function PagesPage() {
   const [authorFilter, setAuthorFilter] = useState("all")
   const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set())
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const redirectedMessage = searchParams.get("message")
+    if (redirectedMessage) {
+      setMessage(redirectedMessage)
+    }
+  }, [searchParams])
 
   // =========================
   // FETCH & NORMALIZE
@@ -52,7 +61,7 @@ export default function PagesPage() {
         }
 
         const normalized: Page[] = apiPages.map((p: any) => ({
-          id: p._id,
+          id: String(p._id || p.id || ""),
           title: p.title,
           path: "/" + p.slug,
           status: p.status,
@@ -206,7 +215,7 @@ export default function PagesPage() {
                 </div>
 
                 <Button asChild size="sm" variant="outline">
-                  <Link href={`/cms/content/pages/${page.id}`}>
+                  <Link href={page.id ? `/cms/content/pages/${page.id}` : "/cms/content/pages"}>
                     <Edit className="h-4 w-4 mr-1" /> Edit
                   </Link>
                 </Button>
