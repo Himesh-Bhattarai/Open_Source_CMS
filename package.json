@@ -3,18 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client -- -H 0.0.0.0 -p 3000\"",
     "start": "concurrently \"npm run start --prefix Server\" \"npm run start --prefix Client -- -H 0.0.0.0 -p 3000\""
-=======
-    "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client\"",
-    "start": "concurrently \"npm run start --prefix Server\" \"npm run start --prefix Client\""
->>>>>>> 2ba1fc1 (status(201) : Server some edited thing)
-=======
-    "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client -- -H 0.0.0.0 -p 3000\"",
-    "start": "concurrently \"npm run start --prefix Server\" \"npm run start --prefix Client -- -H 0.0.0.0 -p 3000\""
->>>>>>> 4a0448f (status(301) : Server need attention)
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
