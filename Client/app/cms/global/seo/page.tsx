@@ -17,13 +17,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { MoreVertical, Edit, Trash2, Eye, Globe, FileText } from "lucide-react";
 
 export default function SeoOverview() {
     const [seoList, setSeoList] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [message, setMessage] = useState<string | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -46,7 +46,6 @@ export default function SeoOverview() {
     const deleteSeo = async (id: string) => {
         try {
             setLoading(true);
-            setMessage(null);
 
             const response = await deleteSeoById(id);
 
@@ -56,14 +55,14 @@ export default function SeoOverview() {
 
             setSeoList((prev) => prev.filter((seo) => seo._id !== id));
 
-            setMessage("SEO deleted successfully");
+            toast.success("SEO deleted successfully");
 
             setTimeout(() => {
                 router.push("/cms/global/seo");
             }, 1000);
         } catch (err) {
             console.error(err);
-            setMessage("Failed to delete SEO");
+            toast.error("Failed to delete SEO");
         } finally {
             setLoading(false);
         }

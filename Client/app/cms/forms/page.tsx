@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { loadFormsData } from "@/Api/Form/Load"
 import { deleteFormById } from "@/Api/Form/Delete"
+import { toast } from "sonner"
 
 interface Form {
   _id: string
@@ -31,8 +32,6 @@ interface Form {
 export default function FormsPage() {
   const [loading, setLoading] = useState(false)
   const [forms, setForms] = useState<Form[]>([])
-  const [message, setMessage] = useState("")
-  const [messageType, setMessageType] = useState<"success" | "error">("success")
 
   useEffect(() => {
     const loadForms = async () => {
@@ -57,8 +56,7 @@ export default function FormsPage() {
         setForms(normalizedForms)
       } catch (err) {
         console.error(err)
-        setMessageType("error")
-        setMessage("Failed to load forms")
+        toast.error("Failed to load forms")
       } finally {
         setLoading(false)
       }
@@ -73,19 +71,15 @@ export default function FormsPage() {
     try {
       const response = await deleteFormById(formId)
       if (response.ok) {
-        setMessageType("success")
-        setMessage("Form deleted successfully")
+        toast.success("Form deleted successfully")
         setForms((prevForms) => prevForms.filter((form) => form._id !== formId))
       } else {
-        setMessageType("error")
-        setMessage("Failed to delete form")
+        toast.error("Failed to delete form")
       }
     } catch {
-      setMessageType("error")
-      setMessage("Failed to delete form")
+      toast.error("Failed to delete form")
     } finally {
       setLoading(false)
-      setTimeout(() => setMessage(""), 2500)
     }
   }
 
@@ -100,9 +94,6 @@ export default function FormsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Forms</h1>
           <p className="text-muted-foreground mt-2">Build and manage custom forms</p>
         </div>
-        {message && (
-          <Badge variant={messageType === "success" ? "default" : "destructive"}>{message}</Badge>
-        )}
         <Button asChild>
           <Link href="/cms/forms/new">
             <Plus className="h-4 w-4 mr-2" />
