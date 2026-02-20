@@ -25,3 +25,30 @@ export const createTheme = async (data) => {
     console.error(err);
   }
 };
+
+export const fetchThemeSetting = async (websiteId) => {
+  try {
+    const response = await fetch(`${CREATE_THEME_URL}/${websiteId}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const request = await response.json();
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      ok: false,
+      status: 500,
+      data: null,
+    };
+  }
+};
