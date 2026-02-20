@@ -1,5 +1,7 @@
 # ContentFlow CMS
 
+[![Deploy](https://github.com/Himesh-Bhattarai/Open_Source_CMS/actions/workflows/deploy.yml/badge.svg?branch=deploy)](https://github.com/Himesh-Bhattarai/Open_Source_CMS/actions/workflows/deploy.yml)
+
 ContentFlow is a monorepo CMS with:
 
 - `Client/`: Next.js App Router frontend (CMS UI + website rendering)
@@ -91,6 +93,7 @@ Detailed map:
 - `docs/ENVIRONMENT_REFERENCE.md`
 - `docs/API_ROUTE_MAP.md`
 - `docs/CODEBASE_MAP.md`
+- `docs/DEPLOYMENT_GUIDE.md`
 - `CODE_OF_CONDUCT.md`
 - `SECURITY.md`
 - `SUPPORT.md`
