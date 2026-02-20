@@ -432,6 +432,10 @@ export default function SEOSettingsPage() {
   const [pages, setPages] = useState<Page[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string>("");
   const [seoData, setSeoData] = useState<any>(null);
+  const [messageBox, setMessageBox] = useState<{
+    type: "success" | "error" | "warning";
+    text: string;
+  } | null>(null);
 
   // Add a ref to track initial hydration
   const hasHydrated = useRef(false);
@@ -671,13 +675,20 @@ export default function SEOSettingsPage() {
 
   // Handle form submission
   const handleSubmit = async () => {
+    setMessageBox(null);
     if (!activeTenant?._id) {
-      alert("Please select a tenant first");
+      setMessageBox({
+        type: "warning",
+        text: "Please select a tenant first.",
+      });
       return;
     }
 
     if (seoScope === "page" && !selectedPageId) {
-      alert("Please select a page first");
+      setMessageBox({
+        type: "warning",
+        text: "Please select a page first.",
+      });
       return;
     }
 
@@ -689,7 +700,10 @@ export default function SEOSettingsPage() {
     }
 
     if (!validation.isValid) {
-      alert("Cannot save: Please fix validation errors");
+      setMessageBox({
+        type: "error",
+        text: "Cannot save: Please fix validation errors.",
+      });
       return;
     }
 
@@ -705,15 +719,25 @@ export default function SEOSettingsPage() {
       }
 
       if (response?.ok) {
-        const message = isEditMode ? "SEO updated!" : "SEO created!";
-        alert(message);
-        router.push("/cms/global/seo");
+        const successMessage = isEditMode
+          ? "SEO updated successfully."
+          : "SEO created successfully.";
+        setMessageBox({
+          type: "success",
+          text: successMessage,
+        });
+        setTimeout(() => {
+          router.push("/cms/global/seo");
+        }, 1200);
       } else {
         throw new Error(response?.error || "Failed to save");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert(isEditMode ? "Failed to update SEO" : "Failed to create SEO");
+      setMessageBox({
+        type: "error",
+        text: isEditMode ? "Failed to update SEO." : "Failed to create SEO.",
+      });
     } finally {
       setLoadingState((prev) => ({ ...prev, loadingSeo: false }));
     }
@@ -797,6 +821,20 @@ export default function SEOSettingsPage() {
               <Badge variant="outline" className="text-xs">
                 ID: {seoId.substring(0, 8)}...
               </Badge>
+            </div>
+          )}
+          {messageBox && (
+            <div
+              className={`mt-3 rounded-md px-3 py-2 text-sm ${
+                messageBox.type === "success"
+                  ? "bg-green-100 text-green-800"
+                  : messageBox.type === "warning"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+              role="alert"
+            >
+              {messageBox.text}
             </div>
           )}
         </div>

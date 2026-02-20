@@ -34,16 +34,28 @@ export default function FooterPage() {
                 const response = await fetchFooter()
 
                 if (!response?.ok) {
-                    throw new Error("Failed to load footers")
+                    const serverMessage =
+                        response?.data?.message || response?.data?.error || ""
+                    if (
+                        typeof serverMessage === "string" &&
+                        serverMessage.toLowerCase().includes("footer not found")
+                    ) {
+                        setFooters([])
+                        return
+                    }
+                    throw new Error(serverMessage || "Failed to load footers")
                 }
                 const footersArray = Array.isArray(response.data)
                     ? response.data
-                    : [response.data]
+                    : response.data
+                        ? [response.data]
+                        : []
 
                 setFooters(footersArray)
 
             } catch (err: any) {
-                pushToast(err.message || "Failed to load footers", "error")
+                console.error("Footer load skipped:", err?.message || err)
+                setFooters([])
             } finally {
                 setLoading(false)
             }

@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,32 +13,18 @@ import { Separator } from "@/components/ui/separator"
 import { Palette, Type, LayoutIcon, Sparkles, Save, RotateCcw, CheckCircle, XCircle, AlertCircle, Globe, Server, Zap, Building, Monitor, Activity, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import {createTheme} from "@/Api/Theme/create";
-import UnderConstruction404  from "@/notNow/UnderConstruction404";
+import { createTheme, fetchThemeSetting } from "@/Api/Theme/create";
+import { useTenant } from "@/context/TenantContext";
 
 const loadThemeSetting = async (websiteId: string) => {
   try {
-    const response = await fetch(`/api/websites/${websiteId}/theme`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetchThemeSetting(websiteId);
+    if (!response?.ok) throw new Error("Failed to load theme from backend");
 
-    if (response.ok) {
-      const data = await response.json()
-
-      // ENFORCE GLOBAL THEME SCOPE
-      // Reject or ignore page-level data
-      if (data.theme?.metadata?.scope !== "global") {
-        console.warn('Rejecting non-global theme data. Scope must be "global"')
-        return null
-      }
-
-      return data
-    } else {
-      throw new Error('Failed to load theme from backend')
-    }
+    const data = response.data || {};
+    if (!data.theme) return null;
+    if (data.theme?.metadata?.scope !== "global") return null;
+    return data;
   } catch (error) {
     console.warn('Backend unavailable, using mock data:', error)
     // Fall through to mock data
@@ -331,13 +317,26 @@ const MOCK_WEBSITES = [
 const DEFAULT_THEME_NAME = "Global Theme"
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
 
+const normalizeLayoutForBackend = (layout: any) => {
+  const containerWidth =
+    layout?.containerWidth === "full" ? "full" : "boxed";
+  const sectionSpacing =
+    layout?.sectionSpacing === "relaxed" ? "spacious" : layout?.sectionSpacing || "normal";
+  const headerStyle =
+    layout?.headerStyle === "static" ? "standard" : layout?.headerStyle || "fixed";
+
+  return {
+    ...layout,
+    containerWidth,
+    sectionSpacing,
+    headerStyle,
+  };
+};
+
 //remove later
 export default function ThemePage() {
-  const isUpdating = true;
+  const { tenants, activeTenant, setActiveTenant } = useTenant()
   
-  if(isUpdating){
-    return <UnderConstruction404 />
-  }
   // ==================== EXISTING STATE VARIABLES (DO NOT RENAME) ====================
   const [primaryColor, setPrimaryColor] = useState("#8b5cf6")
   const [secondaryColor, setSecondaryColor] = useState("#10b981")
@@ -369,6 +368,26 @@ export default function ThemePage() {
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string>("yellow-site")
   const [selectedWebsite, setSelectedWebsite] = useState<any>(MOCK_WEBSITES.find(w => w.id === "yellow-site"))
   const [availableWebsites, setAvailableWebsites] = useState(MOCK_WEBSITES.filter(w => w.tenantId === "tenant-a"))
+
+  const tenantOptions = useMemo(() => {
+    if (!tenants?.length) return MOCK_TENANTS
+    return tenants.map((t) => ({
+      id: t._id,
+      name: t.name,
+      status: "active",
+    }))
+  }, [tenants])
+
+  const websiteOptions = useMemo(() => {
+    if (!tenants?.length) return MOCK_WEBSITES
+    return tenants.map((t) => ({
+      id: t._id,
+      name: t.name,
+      domain: t.domain,
+      tenantId: t._id,
+      status: "active",
+    }))
+  }, [tenants])
 
   // ==================== STRUCTURED THEME PAYLOAD ====================
   const themePayload = useRef({
@@ -511,7 +530,7 @@ export default function ThemePage() {
     setSelectedTenantId(tenantId)
 
     // Filter websites for selected tenant
-    const tenantWebsites = MOCK_WEBSITES.filter(w => w.tenantId === tenantId)
+    const tenantWebsites = websiteOptions.filter(w => w.tenantId === tenantId)
     setAvailableWebsites(tenantWebsites)
 
     // Auto-select first website in tenant if available
@@ -519,6 +538,8 @@ export default function ThemePage() {
       const firstWebsite = tenantWebsites[0]
       setSelectedWebsiteId(firstWebsite.id)
       setSelectedWebsite(firstWebsite)
+      const tenant = tenants.find((t) => t._id === firstWebsite.id)
+      if (tenant) setActiveTenant(tenant as any)
 
       // Reset unsaved changes state
       setHasUnsavedChanges(false)
@@ -526,7 +547,7 @@ export default function ThemePage() {
       // Load theme for the new website
       setTimeout(() => loadThemeForWebsite(firstWebsite.id), 100)
     }
-  }, [hasUnsavedChanges])
+  }, [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant])
 
   const handleWebsiteChange = useCallback((websiteId: string) => {
     if (hasUnsavedChanges) {
@@ -536,18 +557,20 @@ export default function ThemePage() {
       if (!confirmChange) return
     }
 
-    const website = MOCK_WEBSITES.find(w => w.id === websiteId)
+    const website = websiteOptions.find(w => w.id === websiteId)
     if (!website) return
 
     setSelectedWebsiteId(websiteId)
     setSelectedWebsite(website)
+    const tenant = tenants.find((t) => t._id === websiteId)
+    if (tenant) setActiveTenant(tenant as any)
 
     // Reset unsaved changes state
     setHasUnsavedChanges(false)
 
     // Load theme for the new website
     loadThemeForWebsite(websiteId)
-  }, [hasUnsavedChanges])
+  }, [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant])
 
   // ==================== BACKEND INTEGRATION ====================
   const loadThemeForWebsite = useCallback(async (websiteId: string) => {
@@ -610,6 +633,7 @@ export default function ThemePage() {
         ...themePayload.current,
         theme: {
           ...themePayload.current.theme,
+          layout: normalizeLayoutForBackend(themePayload.current.theme.layout),
           metadata: {
             ...themePayload.current.theme.metadata,
             scope: "global" // Force global scope
@@ -657,14 +681,27 @@ export default function ThemePage() {
 
   // Helper function to hydrate state from theme data
   const hydrateStateFromTheme = useCallback((theme: any) => {
+    const uiContainerWidth =
+      theme.layout?.containerWidth === "boxed"
+        ? "1280"
+        : (theme.layout?.containerWidth || "1280");
+    const uiSectionSpacing =
+      theme.layout?.sectionSpacing === "spacious"
+        ? "relaxed"
+        : (theme.layout?.sectionSpacing || "normal");
+    const uiHeaderStyle =
+      theme.layout?.headerStyle === "standard"
+        ? "static"
+        : (theme.layout?.headerStyle || "fixed");
+
     setPrimaryColor(theme.colors?.primary || "#8b5cf6")
     setSecondaryColor(theme.colors?.secondary || "#10b981")
     setFontHeading(theme.typography?.headingFont || "Inter")
     setFontBody(theme.typography?.bodyFont || "Inter")
-    setContainerWidth(theme.layout?.containerWidth || "1280")
+    setContainerWidth(uiContainerWidth)
     setBorderRadius(theme.layout?.borderRadius || "medium")
-    setSectionSpacing(theme.layout?.sectionSpacing || "normal")
-    setHeaderStyle(theme.layout?.headerStyle || "fixed")
+    setSectionSpacing(uiSectionSpacing)
+    setHeaderStyle(uiHeaderStyle)
     setThemeName(theme.name || DEFAULT_THEME_NAME)
     setThemeVersion(theme.metadata?.version || 1)
     setLastUpdatedAt(theme.metadata?.lastUpdated || null)
@@ -745,6 +782,25 @@ export default function ThemePage() {
     loadThemeForWebsite(selectedWebsiteId)
   }, [loadThemeForWebsite, selectedWebsiteId])
 
+  useEffect(() => {
+    if (!tenants?.length) return
+    const initial = activeTenant || tenants[0]
+    if (!initial) return
+
+    setSelectedTenantId(initial._id)
+    setSelectedWebsiteId(initial._id)
+    setSelectedWebsite({
+      id: initial._id,
+      name: initial.name,
+      domain: initial.domain,
+      tenantId: initial._id,
+      status: "active",
+    })
+    setAvailableWebsites(
+      websiteOptions.filter((w) => w.tenantId === initial._id)
+    )
+  }, [tenants, activeTenant, websiteOptions])
+
   const fonts = ["Inter", "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins", "Playfair Display", "Merriweather"]
 
   return (
@@ -781,7 +837,7 @@ export default function ThemePage() {
                   <SelectValue placeholder="Select tenant" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MOCK_TENANTS.map((tenant) => (
+                  {tenantOptions.map((tenant) => (
                     <SelectItem key={tenant.id} value={tenant.id} className="h-11">
                       <div className="flex items-center justify-between w-full">
                         <span>{tenant.name}</span>
@@ -799,14 +855,10 @@ export default function ThemePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="website-selector" className="flex items-center gap-2">
-                <Monitor className="h-4 w-4" />
-                Page
-              </Label>
-              <Label htmlFor="website-selector" className="flex items-center gap-2">
-                <Monitor className="h-4 w-4" />
-               Page - Note: This feature is under development and will be available in a future release.
-              </Label>
+                  <Label htmlFor="website-selector" className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    Website
+                  </Label>
               <Select
                 value={selectedWebsiteId}
                 onValueChange={handleWebsiteChange}
