@@ -34,4 +34,24 @@ router.delete(
   },
 );
 
+// Delete all menus owned by current user
+router.delete(
+  "/menus",
+  verificationMiddleware,
+  async (req, res, next) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) throw new Error("Unauthorized");
+
+      const result = await Menu.deleteMany({ userId: String(userId) });
+      return res.status(200).json({
+        message: "Menus deleted successfully",
+        deletedCount: result.deletedCount || 0,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 export default router;

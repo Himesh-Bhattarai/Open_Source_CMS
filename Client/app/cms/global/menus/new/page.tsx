@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,20 +20,42 @@ export default function NewMenuPage() {
   const [menuDescription, setMenuDescription] = useState("")
   const [menuLocation, setMenuLocation] = useState("")
   const [tenantId, setTenantId] = useState(selectedTenantId || "");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!tenantId && tenants.length > 0) {
+      setTenantId(String(selectedTenantId || tenants[0]?._id || ""));
+    }
+  }, [tenantId, tenants, selectedTenantId]);
 
 
 
   const handleCreate = async() => {
+    if (!tenantId) {
+      toast.error("Please select a tenant");
+      return;
+    }
+    if (!menuName.trim()) {
+      toast.error("Menu name is required");
+      return;
+    }
+
     const data = {
       tenantId: tenantId,
-      title: menuName,
+      title: menuName.trim(),
       description: menuDescription,
       menuLocation: menuLocation
     }
     try{
+      setIsSaving(true);
       const response = await createMenu(data);
-      if(response?.ok && response?.menuId){
-        router.push(`/cms/global/menus/${response.menuId}`)
+      const targetMenuId =
+        response?.menuId && response.menuId !== "undefined"
+          ? String(response.menuId)
+          : "";
+
+      if(response?.ok && targetMenuId){
+        router.push(`/cms/global/menus/${targetMenuId}`)
       } else if (response?.ok && !response?.menuId) {
         toast.error("Menu created but ID missing in response.");
       } else {
@@ -43,31 +65,9 @@ export default function NewMenuPage() {
       console.error(err);
       toast.error("Failed to create menu.");
     }finally{
-      {
-        setMenuName("")
-        setMenuDescription("")
-        setMenuLocation("")
-    }
+      setIsSaving(false);
     }
    
-  }
-
-  if (!tenantId) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/cms/global/menus">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Create New Menu</h1>
-            <p className="text-muted-foreground">Set up a new navigation menu for your website</p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -152,8 +152,8 @@ export default function NewMenuPage() {
             <Button variant="outline" asChild>
               <Link href="/cms/global/menus">Cancel</Link>
             </Button>
-            <Button onClick={handleCreate} disabled={!menuName.trim() || !tenantId}>
-              Create Menu
+            <Button onClick={handleCreate} disabled={!menuName.trim() || !tenantId || isSaving}>
+              {isSaving ? "Creating..." : "Create Menu"}
             </Button>
           </div>
         </CardContent>

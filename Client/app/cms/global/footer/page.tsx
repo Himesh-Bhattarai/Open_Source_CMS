@@ -5,22 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import {fetchFooter } from "@/Api/Footer/Fetch"
 import { deleteFooterById } from "@/Api/Footer/Delete"
-
-type Toast = {
-    id: number
-    message: string
-    type: "error" | "success"
-}
+import { toast } from "sonner"
 
 export default function FooterPage() {
     const [loading, setLoading] = useState(false)
     const [footers, setFooters] = useState<any[]>([])
-    const [toasts, setToasts] = useState<Toast[]>([])
-
-    const toastCounter = useRef(0)
 
     const truncate = (text = "", length = 50) =>
         text.length > length ? text.slice(0, length) + "..." : text
@@ -73,21 +65,11 @@ export default function FooterPage() {
         try {
             const response = await deleteFooterById(footerId)
             if (!response?.ok) throw new Error("Delete failed")
-            pushToast("Footer deleted", "success")
+            toast.success("Footer deleted")
         } catch (err: any) {
             setFooters(previous)
-            pushToast(err.message || "Failed to delete footer", "error")
+            toast.error(err.message || "Failed to delete footer")
         }
-    }
-
-    /* ---------------- TOAST SYSTEM ---------------- */
-    const pushToast = (message: string, type: "success" | "error") => {
-        const id = ++toastCounter.current
-        setToasts((t) => [...t, { id, message, type }])
-
-        setTimeout(() => {
-            setToasts((t) => t.filter((x) => x.id !== id))
-        }, 2500)
     }
 
     /* ---------------- UI ---------------- */
@@ -178,20 +160,6 @@ export default function FooterPage() {
                             </div>
                         </CardContent>
                     </Card>
-                ))}
-            </div>
-
-            {/* Toasts */}
-            <div className="fixed bottom-6 right-6 space-y-2 z-50">
-                {toasts.map((t) => (
-                    <div
-                        key={t.id}
-                        className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium
-              ${t.type === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white"}
-              animate-in slide-in-from-right`}
-                    >
-                        {t.message}
-                    </div>
                 ))}
             </div>
         </div>

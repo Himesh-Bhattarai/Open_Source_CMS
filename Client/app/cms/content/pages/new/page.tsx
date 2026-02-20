@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge"
 import { useTenant } from "@/context/TenantContext"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import type { PageType, Visibility } from "@/lib/types/page"
+import { toast } from "sonner"
 
 
 
@@ -482,7 +483,7 @@ export default function NewPageEditor() {
 
   const handleCreate = async () => {
     if (!slugValidation.isValid) {
-      alert("Please fix slug validation errors before creating")
+      toast.error("Please fix slug validation errors before creating")
       return
     }
 
@@ -501,6 +502,7 @@ export default function NewPageEditor() {
       router.push(`/cms/content/pages/${createdPage.pageId}`)
     } catch (error) {
       console.error("Failed to create page:", error)
+      toast.error("Failed to create page")
     }
   }
 

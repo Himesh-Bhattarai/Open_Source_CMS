@@ -6,7 +6,7 @@ import { trackIntegrationUsage } from "../../Validation/middleware/trackIntegrat
 const router = express.Router({ mergeParams: true });
 
 router.get(
-  "/:",
+  "/",
   tenantVerification,
   apiKeyVerification,
   trackIntegrationUsage({ featureKey: "media" }),

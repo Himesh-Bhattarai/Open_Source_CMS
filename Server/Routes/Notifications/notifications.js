@@ -1,6 +1,7 @@
 import express from "express";
 import  Notification  from "../../Models/Notification/Notification.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -9,10 +10,10 @@ router.get("/get-notification", verificationMiddleware,
      async (req, res) => {
     try {
         const userId = req.user?.userId;
-        if(!userId) throw new Error("Unauthorized");
+        if(!userId) return res.status(401).json({ ok: false, message: "Unauthorized" });
         const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
 
-        res.json({ ok: true, notifications });
+        res.status(200).json({ ok: true, notifications });
     } catch (err) {
         res.status(500).json({ ok: false, message: err.message });
     }
@@ -23,7 +24,10 @@ router.post("/read/:notificationId", verificationMiddleware, async (req, res) =>
     try {
         const userId = req.user?.userId;
         const { notificationId } = req.params;
-        if (!userId) throw new Error("Unauthorized");
+        if (!userId) return res.status(401).json({ ok: false, message: "Unauthorized" });
+        if (!mongoose.Types.ObjectId.isValid(notificationId)) {
+          return res.status(400).json({ ok: false, message: "Invalid notification id" });
+        }
 
         const notification = await Notification.findOneAndUpdate(
             { _id: notificationId, userId },
@@ -31,9 +35,9 @@ router.post("/read/:notificationId", verificationMiddleware, async (req, res) =>
             { new: true }
         );
 
-        if (!notification) throw new Error("Notification not found");
+        if (!notification) return res.status(404).json({ ok: false, message: "Notification not found" });
 
-        res.json({ ok: true, notification });
+        res.status(200).json({ ok: true, notification });
     } catch (err) {
         res.status(500).json({ ok: false, message: err.message });
     }
@@ -43,10 +47,10 @@ router.post("/read/:notificationId", verificationMiddleware, async (req, res) =>
 router.post("/read-all", verificationMiddleware, async (req, res) => {
     try {
         const userId = req.user?.userId;
-        if (!userId) throw new Error("Unauthorized");
+        if (!userId) return res.status(401).json({ ok: false, message: "Unauthorized" });
 
         await Notification.updateMany({ userId, read: false }, { $set: { read: true } });
-        res.json({ ok: true, message: "All notifications marked as read" });
+        res.status(200).json({ ok: true, message: "All notifications marked as read" });
     } catch (err) {
         res.status(500).json({ ok: false, message: err.message });
     }
@@ -57,12 +61,15 @@ router.delete("/:notificationId", verificationMiddleware, async (req, res) => {
     try {
         const userId = req.user?.userId;
         const { notificationId } = req.params;
-        if (!userId) throw new Error("Unauthorized");
+        if (!userId) return res.status(401).json({ ok: false, message: "Unauthorized" });
+        if (!mongoose.Types.ObjectId.isValid(notificationId)) {
+          return res.status(400).json({ ok: false, message: "Invalid notification id" });
+        }
 
         const deleted = await Notification.findOneAndDelete({ _id: notificationId, userId });
-        if (!deleted) throw new Error("Notification not found");
+        if (!deleted) return res.status(404).json({ ok: false, message: "Notification not found" });
 
-        res.json({ ok: true, message: "Notification deleted" });
+        res.status(200).json({ ok: true, message: "Notification deleted" });
     } catch (err) {
         res.status(500).json({ ok: false, message: err.message });
     }

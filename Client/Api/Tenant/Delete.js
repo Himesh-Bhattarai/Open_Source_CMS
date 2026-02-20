@@ -12,15 +12,16 @@ export const deleteTenantById = async (tenantId) => {
     if (!response.ok) throw new Error("Internal Server Error");
     return {
       ok: response.ok,
-      status: response.ok,
-      data: request.data,
+      status: response.status,
+      data: request?.data || null,
+      message: request?.message || "Tenant deleted",
     };
   } catch (err) {
     console.log(err);
     return {
       ok: false,
-      status: response.status,
-      message: "Internal server may error",
+      status: 500,
+      message: err?.message || "Internal server may error",
     };
   }
 };

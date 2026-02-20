@@ -21,12 +21,12 @@ router.post("/change-password",
                 throw new Error("New password must be at least 8 characters long");
             }
 
-            const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+            const isPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
             if(!isPasswordValid) throw new Error("Old password is not correct");
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-            user.password = hashedPassword;
+            user.passwordHash = hashedPassword;
             await user.save();
 
             return res.status(200).json({

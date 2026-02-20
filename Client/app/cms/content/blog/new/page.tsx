@@ -27,6 +27,7 @@ import {
 import { blogPostApi } from "@/Api/Blog/createBlog"
 import { useTenant } from "@/context/TenantContext"
 import { checkSlugAvailability } from "@/Api/Services/listServices.js"
+import { toast } from "sonner"
 
 export default function NewBlogPost() {
   const router = useRouter()
@@ -67,12 +68,12 @@ export default function NewBlogPost() {
 
   const handleCreate = async () => {
     if (!selectedTenantId) {
-      alert("Select a website first")
+      toast.error("Select a website first")
       return
     }
 
     if (slugStatus !== "available") {
-      alert("Slug is not available")
+      toast.error("Slug is not available")
       return
     }
 
@@ -83,10 +84,12 @@ export default function NewBlogPost() {
       })
 
       if (blogPost?.blogId) {
+        toast.success("Blog post created")
         router.push(`/cms/content/blog/${blogPost.blogId}`)
       }
     } catch (err) {
       console.error(err)
+      toast.error("Failed to create blog post")
     }
   }
 

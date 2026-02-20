@@ -60,6 +60,7 @@ import { fetchPagesByTenant } from "@/Api/Page/Fetch";
 import { useParams, useRouter } from "next/navigation";
 import { fetchSeoById } from "@/Api/Seo/Fetch";
 import { updateSeo } from "@/Api/Seo/Create";
+import { toast } from "sonner";
 
 // Types - Simplified Page interface
 interface Page {
@@ -364,7 +365,7 @@ export default function SEOSettingsPage() {
       metaDescription: "Build and manage your websites with ContentFlow CMS",
       defaultOgImage: "/og-image.jpg",
       favicon: "/favicon.ico",
-      siteUrl: "https://example.com",
+      siteUrl: "",
     },
     robots: {
       indexPages: true,
@@ -432,10 +433,6 @@ export default function SEOSettingsPage() {
   const [pages, setPages] = useState<Page[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string>("");
   const [seoData, setSeoData] = useState<any>(null);
-  const [messageBox, setMessageBox] = useState<{
-    type: "success" | "error" | "warning";
-    text: string;
-  } | null>(null);
 
   // Add a ref to track initial hydration
   const hasHydrated = useRef(false);
@@ -452,6 +449,24 @@ export default function SEOSettingsPage() {
   const autoCanonical = useMemo(() => {
     return generateCanonical(globalSEO.general.siteUrl, activePage.slug);
   }, [globalSEO.general.siteUrl, activePage.slug]);
+
+  useEffect(() => {
+    const fallbackOrigin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    const tenantOrigin = activeTenant?.domain
+      ? `https://${activeTenant.domain.replace(/^https?:\/\//, "")}`
+      : "";
+    const resolvedSiteUrl = tenantOrigin || fallbackOrigin;
+
+    if (!resolvedSiteUrl) return;
+    setGlobalSEO((prev) => ({
+      ...prev,
+      general: {
+        ...prev.general,
+        siteUrl: prev.general.siteUrl || resolvedSiteUrl,
+      },
+    }));
+  }, [activeTenant?.domain]);
 
   // Final canonical URL
   const finalCanonical = pageSEO.canonicalUrl || autoCanonical;
@@ -675,20 +690,13 @@ export default function SEOSettingsPage() {
 
   // Handle form submission
   const handleSubmit = async () => {
-    setMessageBox(null);
     if (!activeTenant?._id) {
-      setMessageBox({
-        type: "warning",
-        text: "Please select a tenant first.",
-      });
+      toast.error("Please select a tenant first.");
       return;
     }
 
     if (seoScope === "page" && !selectedPageId) {
-      setMessageBox({
-        type: "warning",
-        text: "Please select a page first.",
-      });
+      toast.error("Please select a page first.");
       return;
     }
 
@@ -700,10 +708,7 @@ export default function SEOSettingsPage() {
     }
 
     if (!validation.isValid) {
-      setMessageBox({
-        type: "error",
-        text: "Cannot save: Please fix validation errors.",
-      });
+      toast.error("Cannot save: Please fix validation errors.");
       return;
     }
 
@@ -722,10 +727,7 @@ export default function SEOSettingsPage() {
         const successMessage = isEditMode
           ? "SEO updated successfully."
           : "SEO created successfully.";
-        setMessageBox({
-          type: "success",
-          text: successMessage,
-        });
+        toast.success(successMessage);
         setTimeout(() => {
           router.push("/cms/global/seo");
         }, 1200);
@@ -734,10 +736,7 @@ export default function SEOSettingsPage() {
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessageBox({
-        type: "error",
-        text: isEditMode ? "Failed to update SEO." : "Failed to create SEO.",
-      });
+      toast.error(isEditMode ? "Failed to update SEO." : "Failed to create SEO.");
     } finally {
       setLoadingState((prev) => ({ ...prev, loadingSeo: false }));
     }
@@ -823,20 +822,6 @@ export default function SEOSettingsPage() {
               </Badge>
             </div>
           )}
-          {messageBox && (
-            <div
-              className={`mt-3 rounded-md px-3 py-2 text-sm ${
-                messageBox.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : messageBox.type === "warning"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-              role="alert"
-            >
-              {messageBox.text}
-            </div>
-          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowPreview(true)}>
@@ -855,7 +840,7 @@ export default function SEOSettingsPage() {
               : "Save SEO"}
           </Button>
           {seoId && (
-            <Button variant="outline" onClick={() => router.push("/cms/seo")}>
+            <Button variant="outline" onClick={() => router.push("/cms/global/seo")}>
               Cancel
             </Button>
           )}

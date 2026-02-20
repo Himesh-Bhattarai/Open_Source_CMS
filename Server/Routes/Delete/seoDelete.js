@@ -5,24 +5,40 @@ import { Seo } from "../../Models/Seo/Seo.js";
 
 const router = express.Router();
 
-router.delete("/seo/:seoId", verificationMiddleware, async (req, res) => {
-  const userId = req.user?.userId;
-  if (!userId) throw new Error("Unauthorized");
-  const seoId = req.params.seoId;
+router.delete("/seo/:seoId", verificationMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const seoId = req.params.seoId;
 
-  if (!seoId) throw new Error("Missing seoId");
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (!seoId) {
+      return res.status(400).json({ message: "Missing seoId" });
+    }
 
-  const seo = await Seo.findById({ _id: seoId });
+    const seo = await Seo.findById(seoId);
+    if (!seo) {
+      return res.status(404).json({ message: "Seo not found" });
+    }
 
-  if (!seo) throw new Error("Seo not found");
+    if (String(seo.userId) !== String(userId)) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
 
-  if (seo.userId !== userId) throw new Error("Unauthorized");
+    const deleteSeo = await Seo.findByIdAndDelete(seoId);
 
-  const deleteSeo = await Seo.findByIdAndDelete({ _id: seoId });
+    notif.deleteSEO({
+      userId,
+      seoName: deleteSeo?.seoName,
+      seoId: deleteSeo?._id,
+      websiteId: deleteSeo?.websiteId,
+    });
 
-  notif.deleteSEO({ userId, seoName: deleteSeo.seoName, seoId: deleteSeo._id, websiteId: deleteSeo.websiteId });
-
-  res.status(200).json({ message: "Seo deleted successfully" });
+    return res.status(200).json({ message: "Seo deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

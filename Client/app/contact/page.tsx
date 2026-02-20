@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Mail, MapPin, Phone, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -26,7 +27,7 @@ export default function ContactPage() {
 
     // Simulate form submission
     setTimeout(() => {
-      alert("Message sent successfully! We'll get back to you soon.")
+      toast.success("Message sent successfully! We'll get back to you soon.")
       setFormData({ name: "", email: "", subject: "", message: "" })
       setIsSubmitting(false)
     }, 1500)

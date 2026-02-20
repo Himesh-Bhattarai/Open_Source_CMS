@@ -38,14 +38,15 @@ export const deleteAllTenants = async () => {
     });
 
     const request = await response.json();
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request,
-      };
+    if (!response.ok) throw new Error(request?.message || "Delete all failed");
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request,
+    };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, data: null };
   }
 };
 
@@ -64,13 +65,14 @@ export const editTenantById = async (tenantId, data) => {
 
     const request = await response.json();
 
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request.data,
-      };
+    if (!response.ok) throw new Error(request?.message || "Tenant update failed");
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request.data,
+    };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, data: null };
   }
 };

@@ -2,7 +2,30 @@ import crypto from "crypto";
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { ApiKey } from "../../Models/ApiKey/apiKey.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
+
+const normalizeDomain = (value = "") => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\/.*$/, "")
+    .replace(/\./g, "-")
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+};
+
+const normalizeName = (value = "") => {
+  const trimmed = String(value || "").trim();
+  return trimmed || `Website ${Date.now().toString().slice(-4)}`;
+};
+
+const buildAutoDomain = (name = "") => {
+  const base = normalizeDomain(name) || "website";
+  return `${base}-${Math.floor(1000 + Math.random() * 9000)}`;
+};
 
 export const tenantCheckpoint = async (req, res, next) => {
   try {
@@ -16,64 +39,80 @@ export const tenantCheckpoint = async (req, res, next) => {
       settings,
       subdomain,
       createdBy,
-    } = req.body;
+    } = req.body || {};
     const resolvedUserId = authUserId || createdBy;
 
-    if (!name || !domain || !ownerEmail) {
-      const err = new Error("Missing required fields");
-      err.statusCode = 400;
-      throw err;
-    }
     if (!resolvedUserId) {
       const err = new Error("Unauthorized");
       err.statusCode = 401;
       throw err;
     }
 
-    log.info(`Tenant creation attempt by ${ownerEmail}, name: ${name}`);
+    const safeName = normalizeName(name);
+    const requestedDomain = normalizeDomain(domain);
+    const safeOwnerEmail = String(ownerEmail || "").trim();
+    let safeDomain = requestedDomain || buildAutoDomain(safeName);
 
-    const isTenantExist = await Tenant.findOne({ domain });
-    if (isTenantExist) {
-      const err = new Error("Tenant already exists");
-      err.statusCode = 400;
+    log.info(`Tenant creation attempt by user=${resolvedUserId}, name=${safeName}`);
+
+    const existingByDomain = await Tenant.findOne({
+      domain: new RegExp(`^${safeDomain}$`, "i"),
+    }).lean();
+
+    if (requestedDomain && existingByDomain) {
+      const err = new Error("Domain is already in use");
+      err.statusCode = 409;
       throw err;
     }
 
-    // 1️⃣ Create tenant
+    while (!requestedDomain) {
+      const taken = await Tenant.findOne({
+        domain: new RegExp(`^${safeDomain}$`, "i"),
+      }).lean();
+      if (!taken) break;
+      safeDomain = buildAutoDomain(`${safeName}-${Date.now()}`);
+    }
+
     const tenant = await Tenant.create({
-      userId: resolvedUserId,
-      name,
-      domain,
-      subdomain,
-      ownerEmail,
-      status,
-      plan,
-      settings,
+      userId: String(resolvedUserId),
+      name: safeName,
+      domain: safeDomain,
+      subdomain: subdomain ? String(subdomain).trim() : "",
+      ownerEmail: safeOwnerEmail,
+      status: status || "active",
+      plan: plan || "free",
+      settings: settings || {},
     });
 
-    // 2️⃣ Generate raw API key
     const rawApiKey = crypto.randomBytes(32).toString("hex");
-
-
-    // 3️⃣ Hash API key
     const keyHash = crypto.createHash("sha256").update(rawApiKey).digest("hex");
 
-    // 4️⃣ Store hash only
-    await ApiKey.create({
-      userId: resolvedUserId,
-      tenantId: tenant._id.toString(),
-      keyHash,
-      rawKey: rawApiKey,
-      permissions: ["read:pages"],
-      name: "Default Public Key",
+    try {
+      await ApiKey.create({
+        userId: String(resolvedUserId),
+        tenantId: tenant._id.toString(),
+        keyHash,
+        rawKey: rawApiKey,
+        permissions: ["read:pages"],
+        isActive: true,
+        name: "Default Public Key",
+      });
+    } catch (apiErr) {
+      await Tenant.findByIdAndDelete(tenant._id);
+      throw apiErr;
+    }
+
+    log.info(`Tenant created successfully: ${safeName}`);
+
+    notif.createWebsite({
+      userId: String(resolvedUserId),
+      domain: safeDomain,
+      name: safeName,
+      websiteId: tenant._id,
     });
 
-    log.info(`Tenant created successfully: ${name}`);
-
-    notif.createWebsite({ userId: resolvedUserId, domain, name, websiteId: tenant._id });
-
-    // 5️⃣ Return RAW key once
-    res.status(201).json({
+    return res.status(201).json({
+      ok: true,
       message: "Tenant created successfully",
       apiKey: rawApiKey,
       tenant: {
@@ -83,6 +122,10 @@ export const tenantCheckpoint = async (req, res, next) => {
       },
     });
   } catch (err) {
+    if (err?.code === 11000) {
+      err.statusCode = 409;
+      err.message = "Domain is already in use";
+    }
     err.statusCode = err.statusCode || 500;
     next(err);
   }

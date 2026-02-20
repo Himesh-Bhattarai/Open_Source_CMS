@@ -9,12 +9,12 @@ export const fetchAllUsers = async () => {
       credentials: "include",
     });
     const request = await response.json();
-    if (!request.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
     return {
       ok: response.ok,
       status: response.status,
       message: response.statusText || "Users Fetched Successfully",
-      data: request.data,
+      data: Array.isArray(request?.data) ? request.data : [],
     };
   } catch (err) {
     console.error(err);

@@ -4,7 +4,7 @@ const RESTORE_PAGE_VERSION_URL = process.env.NEXT_PUBLIC_RESTORE_PAGE_VERSION_UR
 const DELETE_USER_PAGES_URL = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_URL;
 //delete User All page selected by user
 const DELETE_USER_SELECTED_PAGE_URL =process.env.NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL;
-//Delete User Specific selected Page by ID
+
 const DELETE_USER_PAGES_BY_ID = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_BY_ID;
 
 const BULK_PAGES_DEL_BY_ADMIN = process.env.NEXT_PUBLIC_BULK_PAGES_DEL_BY_ADMIN;
@@ -120,7 +120,6 @@ export const deleteUserSelectedPage = async (pageIds) => {
     };
   }
 };
-
 //delete all user pages for admin by id
 export const deleteUserPages = async () => {
   try {

@@ -5,22 +5,37 @@ import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 const router = express.Router();
 
-router.delete("/form/:formId", verificationMiddleware, async (req, res) => {
-  const userId = req.user?.userId;
-  const formId = req.params.formId;
-  if (!userId || !formId) throw new Error("Unauthorized");
+router.delete("/form/:formId", verificationMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const formId = req.params.formId;
+    if (!userId || !formId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  const form = await Form.findById({ _id: formId });
-  if (!form) throw new Error("Form not found");
-  if (String(form.userId) !== String(userId)) throw new Error("Forbidden");
+    const form = await Form.findById(formId);
+    if (!form) {
+      return res.status(404).json({ message: "Form not found" });
+    }
+    if (String(form.userId) !== String(userId)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
-  const deleteForm = await Form.findByIdAndDelete({ _id: formId });
+    const deleteForm = await Form.findByIdAndDelete(formId);
 
-  notif.deleteForm({ userId, formName: form.name, formId: form._id, websiteId: form.tenantId });
+    notif.deleteForm({
+      userId,
+      formName: form.name,
+      formId: form._id,
+      websiteId: form.tenantId,
+    });
 
-  res
-    .status(200)
-    .json({ message: "Form Deleted Successfully", data: deleteForm });
+    return res
+      .status(200)
+      .json({ message: "Form Deleted Successfully", data: deleteForm });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;

@@ -1,26 +1,16 @@
 import express from "express";
 import passport from "passport";
-import { generateTokens } from "../../../Utils/Jwt/Jwt.js";
+import bcrypt from "bcrypt";
+import { generateTokens, getCookieOptions } from "../../../Utils/Jwt/Jwt.js";
+import { Session } from "../../../Models/Client/Session.js";
 
 const router = express.Router();
+const authRedirect = process.env.FRONTEND_AUTH_REDIRECT || "http://localhost:3000/cms";
 
 // --- Helper to set cookies ---
 const setAuthCookies = (res, accessToken, refreshToken) => {
-    // Access token cookie
-    res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        maxAge: 1000 * 60 * 60, 
-    });
-
-    // Refresh token cookie
-    res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        maxAge: 1000 * 60 * 60 * 24 * 30, 
-    });
+    res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
+    res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 };
 
 // ---------------- Google OAuth ----------------
@@ -40,12 +30,23 @@ router.get(
                 role: req.user.role,
             });
 
+            await Session.findOneAndUpdate(
+                { userId: req.user._id.toString() },
+                {
+                    $set: {
+                        email: req.user.email || `oauth-${req.user._id}@local.invalid`,
+                        refreshToken: await bcrypt.hash(refreshToken, 10),
+                        isActive: true,
+                    },
+                },
+                { upsert: true, new: true },
+            );
 
             // Set cookies
             setAuthCookies(res, accessToken, refreshToken);
 
             // Redirect to frontend
-            res.redirect("http://150.136.244.32:5000/cms");
+            res.redirect(authRedirect);
         } catch (err) {
             console.error("OAuth Google Callback Error:", err);
             res.redirect("/login");
@@ -70,12 +71,23 @@ router.get(
                 role: req.user.role,
             });
 
+            await Session.findOneAndUpdate(
+                { userId: req.user._id.toString() },
+                {
+                    $set: {
+                        email: req.user.email || `oauth-${req.user._id}@local.invalid`,
+                        refreshToken: await bcrypt.hash(refreshToken, 10),
+                        isActive: true,
+                    },
+                },
+                { upsert: true, new: true },
+            );
 
             // Set cookies
             setAuthCookies(res, accessToken, refreshToken);
 
             // Redirect to frontend
-            res.redirect("http://150.136.244.32:5000/cms");
+            res.redirect(authRedirect);
         } catch (err) {
             console.error("OAuth Facebook Callback Error:", err);
             res.redirect("/login");

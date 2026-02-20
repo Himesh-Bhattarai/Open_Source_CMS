@@ -6,19 +6,33 @@ import { Footer } from "../../Models/Footer/Footer.js";
 const router = express.Router();
 
 router.delete("/footer/:footerId", verificationMiddleware,
-    async(req, res)=>{
-        const userId = req.user?.userId;
-        const footerId = req.params?.footerId;
+    async(req, res, next)=>{
+        try {
+            const userId = req.user?.userId;
+            const footerId = req.params?.footerId;
 
-        if(!userId || !footerId) throw new Error("Unauthorized");
-        const footer = await Footer.findOne({_id: footerId, userId});
-        if(!footer) throw new Error("Footer not found");
+            if(!userId || !footerId) {
+                return res.status(401).json({ message: "Unauthorized" });
+            }
 
-        const deleteFooter = await Footer.deleteOne({_id: footerId, userId});
+            const footer = await Footer.findOne({_id: footerId, userId});
+            if(!footer) {
+                return res.status(404).json({ message: "Footer not found" });
+            }
 
-        notif.deleteFooter({ userId, footerName: deleteFooter.footerName, footerId: deleteFooter._id, websiteId: deleteFooter.websiteId })
+            await Footer.deleteOne({_id: footerId, userId});
 
-        res.status(200).json(deleteFooter)
+            notif.deleteFooter({
+                userId,
+                footerName: footer.footerName,
+                footerId: footer._id,
+                websiteId: footer.websiteId,
+            })
+
+            return res.status(200).json({ message: "Footer deleted successfully" })
+        } catch (err) {
+            next(err);
+        }
     }
 );
 

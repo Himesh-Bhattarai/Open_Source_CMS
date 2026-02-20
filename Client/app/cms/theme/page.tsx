@@ -18,21 +18,15 @@ import { useTenant } from "@/context/TenantContext";
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
 
 const loadThemeSetting = async (websiteId: string) => {
-  try {
-    const response = await fetchThemeSetting(websiteId);
-    if (!response?.ok) throw new Error("Failed to load theme from backend");
-
-    const data = response.data || {};
-    if (!data.theme) return null;
-    if (data.theme?.metadata?.scope !== "global") return null;
-    return data;
-  } catch (error) {
-    if (USE_MOCK_DATA) {
-      console.warn("Backend unavailable, using mock data:", error);
-      return null;
-    }
-    throw error;
+  const response = await fetchThemeSetting(websiteId);
+  if (!response?.ok) {
+    throw new Error(response?.message || "Failed to load theme from backend");
   }
+
+  const data = response.data || {};
+  if (!data.theme) return null;
+  if (data.theme?.metadata?.scope !== "global") return null;
+  return data;
 }
 
 /**
@@ -41,281 +35,12 @@ const loadThemeSetting = async (websiteId: string) => {
  * @returns Promise with response data
  */
 const createThemeSetting = async (payload: any) => {
-  try {
-    const response = await createTheme(payload);
-
-    if (!response?.ok) {
-      throw new Error('Failed to save theme')
-    }
-
-    return response
-  } catch (error) {
-    console.error('Error saving theme:', error)
-    throw error
+  const response = await createTheme(payload);
+  if (!response?.ok) {
+    throw new Error(response?.message || "Failed to save theme");
   }
+  return response;
 }
-
-// ==================== TENANT-AWARE MOCK DATA ====================
-/**
- * Generate mock theme data based on website ID with tenant context
- * Demonstrates comprehensive multi-tenant global website theming
- */
-const getMockThemeByWebsiteId = (websiteId: string) => {
-  const now = new Date().toISOString()
-
-  // Tenant-aware theme definitions
-  const tenantThemes: Record<string, Record<string, any>> = {
-    // Tenant A: Corporate clients
-    "tenant-a": {
-      "yellow-site": {
-        name: "Sunshine Corp",
-        colors: {
-          primary: "#f59e0b", // Yellow
-          secondary: "#d97706", // Darker yellow
-        },
-        typography: {
-          headingFont: "Poppins",
-          bodyFont: "Open Sans",
-        },
-        layout: {
-          containerWidth: "full",
-          borderRadius: "large",
-          sectionSpacing: "relaxed",
-          headerStyle: "sticky",
-        },
-        metadata: {
-          scope: "global",
-          version: 2,
-          lastUpdated: now,
-        }
-      },
-      "green-site": {
-        name: "Eco Solutions Inc",
-        colors: {
-          primary: "#10b981", // Green
-          secondary: "#059669", // Darker green
-        },
-        typography: {
-          headingFont: "Montserrat",
-          bodyFont: "Lato",
-        },
-        layout: {
-          containerWidth: "1280",
-          borderRadius: "small",
-          sectionSpacing: "compact",
-          headerStyle: "fixed",
-        },
-        metadata: {
-          scope: "global",
-          version: 1,
-          lastUpdated: now,
-        }
-      },
-      "corporate-site": {
-        name: "Enterprise Portal",
-        colors: {
-          primary: "#6b7280", // Gray
-          secondary: "#4b5563", // Darker gray
-        },
-        typography: {
-          headingFont: "Roboto",
-          bodyFont: "Roboto",
-        },
-        layout: {
-          containerWidth: "1024",
-          borderRadius: "none",
-          sectionSpacing: "compact",
-          headerStyle: "static",
-        },
-        metadata: {
-          scope: "global",
-          version: 1,
-          lastUpdated: now,
-        }
-      }
-    },
-
-    // Tenant B: Creative agencies
-    "tenant-b": {
-      "blue-site": {
-        name: "Ocean Creative",
-        colors: {
-          primary: "#3b82f6", // Blue
-          secondary: "#1d4ed8", // Darker blue
-        },
-        typography: {
-          headingFont: "Playfair Display",
-          bodyFont: "Merriweather",
-        },
-        layout: {
-          containerWidth: "1536",
-          borderRadius: "medium",
-          sectionSpacing: "normal",
-          headerStyle: "static",
-        },
-        metadata: {
-          scope: "global",
-          version: 3,
-          lastUpdated: now,
-        }
-      },
-      "red-site": {
-        name: "Bold Agency",
-        colors: {
-          primary: "#ef4444", // Red
-          secondary: "#dc2626", // Darker red
-        },
-        typography: {
-          headingFont: "Montserrat",
-          bodyFont: "Inter",
-        },
-        layout: {
-          containerWidth: "full",
-          borderRadius: "large",
-          sectionSpacing: "relaxed",
-          headerStyle: "sticky",
-        },
-        metadata: {
-          scope: "global",
-          version: 1,
-          lastUpdated: now,
-        }
-      },
-      "purple-site": {
-        name: "Innovation Studio",
-        colors: {
-          primary: "#8b5cf6", // Purple
-          secondary: "#7c3aed", // Darker purple
-        },
-        typography: {
-          headingFont: "Inter",
-          bodyFont: "Inter",
-        },
-        layout: {
-          containerWidth: "1536",
-          borderRadius: "medium",
-          sectionSpacing: "normal",
-          headerStyle: "fixed",
-        },
-        metadata: {
-          scope: "global",
-          version: 2,
-          lastUpdated: now,
-        }
-      }
-    },
-
-    // Tenant C: E-commerce businesses
-    "tenant-c": {
-      "shop-site": {
-        name: "Premium Store",
-        colors: {
-          primary: "#f97316", // Orange
-          secondary: "#ea580c", // Darker orange
-        },
-        typography: {
-          headingFont: "Poppins",
-          bodyFont: "Open Sans",
-        },
-        layout: {
-          containerWidth: "full",
-          borderRadius: "medium",
-          sectionSpacing: "compact",
-          headerStyle: "sticky",
-        },
-        metadata: {
-          scope: "global",
-          version: 1,
-          lastUpdated: now,
-        }
-      },
-      "market-site": {
-        name: "Marketplace Hub",
-        colors: {
-          primary: "#84cc16", // Lime
-          secondary: "#65a30d", // Darker lime
-        },
-        typography: {
-          headingFont: "Lato",
-          bodyFont: "Roboto",
-        },
-        layout: {
-          containerWidth: "1280",
-          borderRadius: "small",
-          sectionSpacing: "normal",
-          headerStyle: "fixed",
-        },
-        metadata: {
-          scope: "global",
-          version: 1,
-          lastUpdated: now,
-        }
-      }
-    }
-  }
-
-  // Find which tenant owns this website
-  for (const [tenantId, websites] of Object.entries(tenantThemes)) {
-    if (websites[websiteId]) {
-      return {
-        theme: websites[websiteId]
-      }
-    }
-  }
-
-  // Return default theme for unknown websites
-  return {
-    theme: {
-      name: "Global Theme",
-      colors: {
-        primary: "#8b5cf6",
-        secondary: "#10b981",
-      },
-      typography: {
-        headingFont: "Inter",
-        bodyFont: "Inter",
-      },
-      layout: {
-        containerWidth: "1280",
-        borderRadius: "medium",
-        sectionSpacing: "normal",
-        headerStyle: "fixed",
-      },
-      metadata: {
-        scope: "global",
-        version: 1,
-        lastUpdated: now,
-      }
-    }
-  }
-}
-
-// Mock tenant and website data
-const MOCK_TENANTS = [
-  { id: "tenant-a", name: "Enterprise Corp", status: "active" },
-  { id: "tenant-b", name: "Creative Agency Group", status: "active" },
-  { id: "tenant-c", name: "E-commerce Network", status: "active" },
-  { id: "tenant-d", name: "Startup Hub", status: "draft" },
-]
-
-const MOCK_WEBSITES = [
-  // Tenant A websites
-  { id: "yellow-site", name: "Sunshine Corp", domain: "sunshine.example.com", tenantId: "tenant-a", status: "active" },
-  { id: "green-site", name: "Eco Solutions Inc", domain: "eco.example.com", tenantId: "tenant-a", status: "active" },
-  { id: "corporate-site", name: "Enterprise Portal", domain: "portal.example.com", tenantId: "tenant-a", status: "draft" },
-
-  // Tenant B websites
-  { id: "blue-site", name: "Ocean Creative", domain: "ocean.example.com", tenantId: "tenant-b", status: "active" },
-  { id: "red-site", name: "Bold Agency", domain: "bold.example.com", tenantId: "tenant-b", status: "active" },
-  { id: "purple-site", name: "Innovation Studio", domain: "innovation.example.com", tenantId: "tenant-b", status: "active" },
-
-  // Tenant C websites
-  { id: "shop-site", name: "Premium Store", domain: "premium.example.com", tenantId: "tenant-c", status: "active" },
-  { id: "market-site", name: "Marketplace Hub", domain: "market.example.com", tenantId: "tenant-c", status: "draft" },
-
-  // Default fallback
-  { id: "default-website-id", name: "Default Website", domain: "default.example.com", tenantId: "tenant-a", status: "active" },
-]
 
 const DEFAULT_THEME_NAME = "Global Theme"
 const normalizeLayoutForBackend = (layout: any) => {
@@ -334,23 +59,6 @@ const normalizeLayoutForBackend = (layout: any) => {
   };
 };
 
-const normalizeLayoutForBackend = (layout: any) => {
-  const containerWidth =
-    layout?.containerWidth === "full" ? "full" : "boxed";
-  const sectionSpacing =
-    layout?.sectionSpacing === "relaxed" ? "spacious" : layout?.sectionSpacing || "normal";
-  const headerStyle =
-    layout?.headerStyle === "static" ? "standard" : layout?.headerStyle || "fixed";
-
-  return {
-    ...layout,
-    containerWidth,
-    sectionSpacing,
-    headerStyle,
-  };
-};
-
-//remove later
 export default function ThemePage() {
   const { tenants, activeTenant, setActiveTenant } = useTenant()
   
@@ -378,17 +86,33 @@ export default function ThemePage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState<any>(null)
-  const [environmentMode, setEnvironmentMode] = useState<"live" | "mock">("live")
+  const [environmentMode, setEnvironmentMode] = useState<"live" | "offline">("live")
   const [backendUnavailable, setBackendUnavailable] = useState(false)
 
   // ==================== MULTI-TENANT STATE VARIABLES ====================
-  const [selectedTenantId, setSelectedTenantId] = useState<string>("tenant-a")
-  const [selectedWebsiteId, setSelectedWebsiteId] = useState<string>("yellow-site")
-  const [selectedWebsite, setSelectedWebsite] = useState<any>(MOCK_WEBSITES.find(w => w.id === "yellow-site"))
-  const [availableWebsites, setAvailableWebsites] = useState(MOCK_WEBSITES.filter(w => w.tenantId === "tenant-a"))
+  const [selectedTenantId, setSelectedTenantId] = useState<string>("")
+  const [selectedWebsiteId, setSelectedWebsiteId] = useState<string>("")
+  const [selectedWebsite, setSelectedWebsite] = useState<any>(null)
+  const [availableWebsites, setAvailableWebsites] = useState<any[]>([])
+
+  const resetEditorToDefaults = useCallback(() => {
+    setPrimaryColor("#8b5cf6")
+    setSecondaryColor("#10b981")
+    setFontHeading("Inter")
+    setFontBody("Inter")
+    setContainerWidth("1280")
+    setBorderRadius("medium")
+    setSectionSpacing("normal")
+    setHeaderStyle("fixed")
+    setThemeName(DEFAULT_THEME_NAME)
+    setThemeVersion(1)
+    setLastUpdatedAt(null)
+    setLastSavedSnapshot(null)
+    setHasUnsavedChanges(false)
+  }, [])
 
   const tenantOptions = useMemo(() => {
-    if (!tenants?.length) return MOCK_TENANTS
+    if (!tenants?.length) return []
     return tenants.map((t) => ({
       id: t._id,
       name: t.name,
@@ -397,7 +121,7 @@ export default function ThemePage() {
   }, [tenants])
 
   const websiteOptions = useMemo(() => {
-    if (!tenants?.length) return MOCK_WEBSITES
+    if (!tenants?.length) return []
     return tenants.map((t) => ({
       id: t._id,
       name: t.name,
@@ -562,8 +286,6 @@ export default function ThemePage() {
       // Reset unsaved changes state
       setHasUnsavedChanges(false)
 
-      // Load theme for the new website
-      setTimeout(() => loadThemeForWebsite(firstWebsite.id), 100)
     }
   }, [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant])
 
@@ -586,14 +308,14 @@ export default function ThemePage() {
     // Reset unsaved changes state
     setHasUnsavedChanges(false)
 
-    // Load theme for the new website
-    loadThemeForWebsite(websiteId)
   }, [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant])
 
   // ==================== BACKEND INTEGRATION ====================
   const loadThemeForWebsite = useCallback(async (websiteId: string) => {
+    if (!websiteId) return
     setIsLoading(true)
     setBackendUnavailable(false)
+    setSaveStatus("idle")
 
     try {
       // Use semantic backend function with selected website ID
@@ -611,45 +333,23 @@ export default function ThemePage() {
 
         // Apply CSS variables
         applyCSSVariables(data.theme)
-      } else if (USE_MOCK_DATA) {
-        // FALLBACK: Use mock data
-        setEnvironmentMode("mock")
-
-
-        const mockData = getMockThemeByWebsiteId(websiteId)
-
-        // Hydrate state from mock data
-        hydrateStateFromTheme(mockData.theme)
-
-        // Save snapshot for reset functionality
-        setLastSavedSnapshot(mockData.theme)
-
-        // Apply CSS variables
-        applyCSSVariables(mockData.theme)
       } else {
+        // No theme exists yet for this website. Start from defaults and allow save.
         setEnvironmentMode("live")
-        setBackendUnavailable(true)
-        setSaveStatus("error")
-        toast.error("Failed to load theme from backend")
+        setBackendUnavailable(false)
+        resetEditorToDefaults()
+        toast.info("No theme exists yet. Configure and save to create one.")
       }
     } catch (error) {
       console.error('Error in theme loading process:', error)
-      if (USE_MOCK_DATA) {
-        setEnvironmentMode("mock")
-        const mockData = getMockThemeByWebsiteId(websiteId)
-        hydrateStateFromTheme(mockData.theme)
-        setLastSavedSnapshot(mockData.theme)
-        applyCSSVariables(mockData.theme)
-      } else {
-        setEnvironmentMode("live")
-        setBackendUnavailable(true)
-        setSaveStatus("error")
-        toast.error("Theme backend unavailable")
-      }
+      setEnvironmentMode("offline")
+      setBackendUnavailable(true)
+      setSaveStatus("idle")
+      toast.error("Theme backend unavailable")
     } finally {
       setIsLoading(false)
     }
-  }, [applyCSSVariables])
+  }, [applyCSSVariables, resetEditorToDefaults])
 
   const saveThemeSettings = useCallback(async () => {
     setIsSaving(true)
@@ -676,7 +376,8 @@ export default function ThemePage() {
       setHasUnsavedChanges(false)
       setLastSavedSnapshot(themePayload.current.theme)
       setLastUpdatedAt(new Date().toISOString())
-      setEnvironmentMode("live") // Successfully saved to live backend
+      setEnvironmentMode("live")
+      setBackendUnavailable(false)
 
       toast.success("Theme saved successfully", {
         description: `Global website theme has been updated for ${selectedWebsite?.name}`,
@@ -807,6 +508,7 @@ export default function ThemePage() {
 
   // ==================== INITIAL LOAD ====================
   useEffect(() => {
+    if (!selectedWebsiteId) return
     loadThemeForWebsite(selectedWebsiteId)
   }, [loadThemeForWebsite, selectedWebsiteId])
 
@@ -932,7 +634,7 @@ export default function ThemePage() {
               <div className="flex items-center gap-1 text-sm bg-primary/10 px-3 py-1 rounded-full">
                 <Monitor className="h-3 w-3" />
                 <span className="font-medium">{selectedWebsite.name}</span>
-                <span className="text-muted-foreground mx-1">•</span>
+                <span className="text-muted-foreground mx-1">|</span>
                 <span className="text-xs">{selectedWebsite.domain}</span>
               </div>
             )}
@@ -952,7 +654,7 @@ export default function ThemePage() {
               ) : (
                 <>
                   <Server className="h-3 w-3 mr-1" />
-                  Mock Data
+                  Backend Offline
                 </>
               )}
             </Badge>
@@ -1339,9 +1041,9 @@ export default function ThemePage() {
           <div className="flex items-center gap-2">
             <Globe className="h-3 w-3" />
             <span>Theme scope: <span className="font-medium">Global Website</span></span>
-            <span className="mx-2">•</span>
+            <span className="mx-2">|</span>
             <span>Version: <span className="font-medium">{themeVersion}</span></span>
-            <span className="mx-2">•</span>
+            <span className="mx-2">|</span>
             <span>Tenant: <span className="font-medium">{selectedTenantId}</span></span>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
@@ -1370,3 +1072,4 @@ export default function ThemePage() {
     </div>
   )
 }
+

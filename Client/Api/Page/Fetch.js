@@ -3,6 +3,13 @@ const GET_PAGE_BY_ID = process.env.NEXT_PUBLIC_GET_PAGE_BY_ID;
 const GET_ALL_PAGES_URL = process.env.NEXT_PUBLIC_GET_ALL_PAGES_URL;
 const GET_PAGES_ON_WEBSITE = process.env.NEXT_PUBLIC_GET_PAGES_ON_WEBSITE;
 
+const parseJsonSafe = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
 
 //Get User Pages
 export const getUserPages = async () => {
@@ -12,12 +19,13 @@ export const getUserPages = async () => {
       credentials: "include",
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     return request;
   } catch (err) {
     console.error(err);
+    return [];
   }
 };
 
@@ -29,13 +37,14 @@ export const fetchPagesByTenant = async (tenantId) => {
       credentials: "include",
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     return request.pages;
   } catch (err) {
     console.error(err);
+    return [];
   }
 };
 
@@ -47,7 +56,7 @@ export const getPageById = async (pageId) => {
       credentials: "include",
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
     if (!response.ok) {
       const error = new Error(request?.message || `HTTP error! status: ${response.status}`);
       error.status = response.status;
@@ -68,10 +77,11 @@ export const getAllPage = async () => {
       credentials: "include",
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return request;
   } catch (err) {
     console.error(err);
+    return { pages: [] };
   }
 };

@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { createFooter } from "@/Api/Footer/Create";
 import { useTenant } from "@/context/TenantContext";
 import { useRouter } from "next/navigation";
@@ -156,7 +156,22 @@ export default function FooterBuilder() {
       slug: "instagram",
     },
   ]);
-  const { toast } = useToast();
+  const toast = ({
+    title,
+    description,
+    variant,
+  }: {
+    title: string;
+    description?: string;
+    variant?: "destructive";
+  }) => {
+    const message = description || title;
+    if (variant === "destructive") {
+      sonnerToast.error(message);
+      return;
+    }
+    sonnerToast.success(message);
+  };
 
   const { tenants, activeTenant, selectedTenantId, setActiveTenant } =
     useTenant();

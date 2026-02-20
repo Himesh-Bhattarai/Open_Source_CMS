@@ -1,10 +1,25 @@
-# STATUS Commit System - inspired by HTTP, start to use and create code by HIMESHCHANCHAL BHATTARAI
+# STATUS Commit System - Inspired by HTTP
+**Created by HIMESHCHANCHAL BHATTARAI**
 
 This project uses a **STATUS-based commit convention**
 to describe the **state and reliability of the codebase** at each commit.
 
 Each commit answers:
 "What condition is this change in right now?"
+---
+
+## 💡 Quick Reference (Most Frequently Used)
+
+If you are unsure which code to use, these are the most common:
+
+| Code | Usage |
+| :--- | :--- |
+| **STATUS(301)** | **New Feature:** You added something new that works. |
+| **STATUS(601)** | **Bug Fix:** You fixed a broken part of the code. |
+| **STATUS(302)** | **Improvement:** You made an existing feature better. |
+| **STATUS(201)** | **Stable:** General logic update that is working as expected. |
+| **STATUS(300)** | **Refactor:** Cleaned up code without changing how it works. |
+| **STATUS(102)** | **WIP:** Partial work that isn't finished yet. |
 
 ---
 
@@ -14,7 +29,7 @@ Each commit answers:
 
 - STATUS(001): Initial commit / project start
 - STATUS(002): Base structure established
-- STATUS(003): Create / delete folder , file
+- STATUS(003): Create / delete folder or file
 
 ---
 
@@ -29,12 +44,14 @@ Each commit answers:
 
 - STATUS(201): Working as expected
 - STATUS(202): Verified with real usage
+- STATUS(203): Documentation updated (README, JSDoc, etc.)
 - STATUS(204): Production-ready
 
 ---
 
 ### 3xx — Change / Improvement
 
+- STATUS(300): Refactoring (no functional change)
 - STATUS(301): Feature or capability added
 - STATUS(302): Enhancement or improvement
 
@@ -44,6 +61,7 @@ Each commit answers:
 
 - STATUS(401): Incorrect data flow or usage
 - STATUS(403): Scope or responsibility issue
+- STATUS(408): Performance / Latency issues identified
 
 ---
 
@@ -51,6 +69,7 @@ Each commit answers:
 
 - STATUS(500): Not working / runtime failure
 - STATUS(502): Interface or contract mismatch
+- STATUS(503): Security vulnerability or Auth failure
 
 ---
 
@@ -63,14 +82,11 @@ Each commit answers:
 
 ### ∞ — Final
 
-- STATUS(infinity): Fully stable, tested, and trusted
+- STATUS(infinity): Gold Master / Fully stable, tested, and trusted
 
-### 404 — Human State (Non-Functional)
-### 404 -- Fun one, bored, irritation, out of mind, wasted, busted, angry, motivation, custom
-- STATUS(404) : I am death || I have no idea, why my code works || I FOUND A BUG WHICH I AM RESPONSIBLE FOR AND NOW I FIX THAT BUG , I CANNOT TELL HOW SMART I AM . || 
+### 404 — Human State / Chaos
 
-Used when the commit represents **human emotion, chaos, or debugging madness**.
-Does NOT indicate code quality or system health.
+Used when the commit represents **human emotion or debugging madness**. Does NOT indicate code quality.
 
 - STATUS(404): brain not found
 - STATUS(404): no idea why it works, but it works

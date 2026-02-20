@@ -2,6 +2,7 @@ import { Session } from "../../../Models/Client/Session.js";
 import { logger as log } from "../../../Utils/Logger/logger.js";
 import { getCookieOptions, verifyAccessToken } from "../../../Utils/Jwt/Jwt.js";
 import {cmsEventService as notif} from "../../../Services/notificationServices.js"
+import crypto from "crypto";
 
 export const logoutCheckpoint = async (req, res, next) => {
   try {
@@ -26,7 +27,13 @@ export const logoutCheckpoint = async (req, res, next) => {
     // Clear session tokens
     await Session.findOneAndUpdate(
       { userId },
-      { $set: { logoutAt: new Date(), refreshToken: null } },
+      {
+        $set: {
+          logoutAt: new Date(),
+          isActive: false,
+          refreshToken: `revoked-${crypto.randomUUID()}`,
+        },
+      },
     );
 
     log.info(`Logout Successful by: ${userId}`);
@@ -34,7 +41,7 @@ export const logoutCheckpoint = async (req, res, next) => {
     notif.logoutUser(userId);
     return res.status(200).json({ message: "Logout successful" });
   } catch (err) {
-    err.statusCode = err.statusCode || 500;
+    err.statusCode = err.statusCode || 401;
     next(err);
   }
 };

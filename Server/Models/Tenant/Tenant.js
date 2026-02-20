@@ -5,7 +5,7 @@ const TenantSchema = new Schema(
     tenantId: { type: String, unique: true },
     userId: { type: String, ref: "User" },
     name: { type: String },
-    domain: { type: String, unique: true },
+    domain: { type: String, unique: true, trim: true, lowercase: true },
     subdomain: String,
     ownerEmail: { type: String },
     status: {

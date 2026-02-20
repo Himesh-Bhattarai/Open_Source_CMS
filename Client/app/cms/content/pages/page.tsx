@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +31,7 @@ interface Page {
 }
 
 export default function PagesPage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [pages, setPages] = useState<Page[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,15 +44,9 @@ export default function PagesPage() {
     const redirectedMessage = searchParams.get("message")
     if (redirectedMessage) {
       toast.success(redirectedMessage)
+      router.replace("/cms/content/pages")
     }
-  }, [searchParams])
-
-  useEffect(() => {
-    const redirectedMessage = searchParams.get("message")
-    if (redirectedMessage) {
-      setMessage(redirectedMessage)
-    }
-  }, [searchParams])
+  }, [searchParams, router])
 
   // =========================
   // FETCH & NORMALIZE
@@ -67,14 +62,16 @@ export default function PagesPage() {
           return
         }
 
-        const normalized: Page[] = apiPages.map((p: any) => ({
-          id: String(p._id || p.id || ""),
-          title: p.title,
-          path: "/" + p.slug,
-          status: p.status,
-          lastEdited: new Date(p.updatedAt).toLocaleString(),
-          author: p.authorId || "Unknown",
-        }))
+        const normalized: Page[] = apiPages
+          .map((p: any) => ({
+            id: String(p?._id || p?.id || ""),
+            title: p?.title || "Untitled",
+            path: "/" + String(p?.slug || ""),
+            status: p?.status || "draft",
+            lastEdited: p?.updatedAt ? new Date(p.updatedAt).toLocaleString() : "N/A",
+            author: p?.authorId || "Unknown",
+          }))
+          .filter((p) => p.id && p.id !== "undefined" && p.id !== "null")
         setPages(normalized)
       } catch (err) {
         console.error("Failed to load pages", err)
@@ -162,7 +159,7 @@ export default function PagesPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" />
               <Input
                 className="pl-10"
-                placeholder="Search pages…"
+                placeholder="Search pages..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -193,7 +190,7 @@ export default function PagesPage() {
 
         <CardContent>
           {loading ? (
-            <div className="p-10 text-center">Loading pages…</div>
+            <div className="p-10 text-center">Loading pages...</div>
           ) : filteredPages.length === 0 ? (
             <div className="p-10 text-center">No pages found</div>
           ) : (
@@ -245,3 +242,4 @@ export default function PagesPage() {
     </div>
   )
 }
+

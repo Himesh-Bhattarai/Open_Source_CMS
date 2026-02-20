@@ -641,7 +641,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                         onClick={() => removeTag(tag)}
                         className="ml-2 text-xs hover:text-red-500"
                       >
-                        ✕
+                        x
                       </span>
                     </Badge>
                   ))}
@@ -673,3 +673,4 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
     </div>
   )
 }
+

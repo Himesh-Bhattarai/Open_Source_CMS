@@ -26,7 +26,7 @@ export const updateBlog = async (req, res, next) => {
     delete blogData.authorId;
 
     // Find and update the blog
-    const updatedBlog = await BlogPost.findByIdAndUpdate(blogId, blogData, {
+    const updatedBlog = await BlogPost.findOneAndUpdate({ _id: blogId, authorId: userId }, blogData, {
       new: true, // return the updated document
       runValidators: true, // enforce schema rules
     });
