@@ -8,6 +8,9 @@ import { useAuth } from "@/hooks/useAuth"
 import { useState, useEffect } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { integrationsApi } from "@/Api/integrations/Fetch"
+import { toast } from "sonner"
+import { INTEGRATION_DOCS_ROUTE, buildApiTestCommand } from "@/lib/docs/integration-guides"
+import Link from "next/link"
 
 // Type definitions for API response
 interface Endpoint {
@@ -103,6 +106,25 @@ export default function IntegrationsPage() {
     navigator.clipboard.writeText(text)
     setCopiedKey(key)
     setTimeout(() => setCopiedKey(null), 2000)
+  }
+
+  const handleCopyTestCommand = (integration: Integration) => {
+    const endpoint = getFirstEndpoint(integration)
+    if (!endpoint || endpoint === "#") {
+      toast.error("No endpoint available to test")
+      return
+    }
+
+    const command = buildApiTestCommand(endpoint)
+    if (!command) {
+      toast.error("Unable to build test command")
+      return
+    }
+
+    navigator.clipboard.writeText(command)
+    setCopiedKey(`${integration.id}-test`)
+    setTimeout(() => setCopiedKey(null), 2000)
+    toast.success("Test command copied. Run it in terminal.")
   }
 
   // Get first connected endpoint for Test API button
@@ -285,44 +307,36 @@ export default function IntegrationsPage() {
                         className="flex-1 bg-transparent"
                         asChild
                       >
-                        <a
-                          href={`/docs/API_INTEGRATION.md#${integration.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
+                        <Link href={`${INTEGRATION_DOCS_ROUTE}#${integration.id}`}>
                           <Code className="h-4 w-4 mr-2" />
                           View Docs
-                        </a>
+                        </Link>
                       </Button>
 
                       {isConnected ? (
                         <Button
                           size="sm"
                           className="flex-1"
-                          asChild
                           disabled={!integration.endpoints || integration.endpoints.length === 0}
+                          onClick={() => handleCopyTestCommand(integration)}
                         >
-                          <a
-                            href={getFirstEndpoint(integration)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => {
-                              if (!integration.endpoints || integration.endpoints.length === 0) {
-                                e.preventDefault()
-                              }
-                            }}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Test API
-                          </a>
+                          {copiedKey === `${integration.id}-test` ? (
+                            <>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Test API
+                            </>
+                          )}
                         </Button>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="default"
-                          className="flex-1"
-                        >
-                          Setup Guide
+                        <Button size="sm" variant="default" className="flex-1" asChild>
+                          <Link href={`${INTEGRATION_DOCS_ROUTE}#${integration.id}`}>
+                            Setup Guide
+                          </Link>
                         </Button>
                       )}
                     </div>
@@ -363,9 +377,8 @@ export default function IntegrationsPage() {
               <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                 <Code className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-blue-800 dark:text-blue-200">
-                  <strong>For Developers:</strong> Share the API documentation with your web developer to integrate these
-                  features. See <code className="text-xs">/docs/API_INTEGRATION.md</code> for complete implementation
-                  examples.
+                  <strong>For Developers:</strong> Use terminal docs at{" "}
+                  <code className="text-xs">{INTEGRATION_DOCS_ROUTE}</code> and test endpoints with saved cookie sessions.
                 </AlertDescription>
               </Alert>
             </CardContent>

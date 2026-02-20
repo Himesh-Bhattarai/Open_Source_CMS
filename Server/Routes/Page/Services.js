@@ -1,6 +1,8 @@
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import { Page } from "../../Models/Page/Page.js";
+import { Version } from "../../Models/Version/Version.js";
 import express from "express";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -12,7 +14,7 @@ router.get("/slug", verificationMiddleware, async (req, res, next) => {
  
 
     if (!tenantId || !slug || !userId) {
-      throw new Error("Missing required fields");
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const existing = await Page.findOne({ tenantId, slug });
@@ -40,11 +42,26 @@ router.get("/user-pages", verificationMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.userId;
    
-    if (!userId) throw new Error("Unauthorized Access");
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized access" });
+    }
 
     const pages = await Page.find({ authorId: userId });
-    if (!pages) throw new Error("No pages found for this user");
     res.status(200).json(pages);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Backward-compatible alias for legacy clients.
+router.get("/get-page", verificationMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized access" });
+    }
+    const pages = await Page.find({ authorId: userId });
+    return res.status(200).json(pages);
   } catch (err) {
     next(err);
   }
@@ -56,12 +73,58 @@ router.get("/selected-page", verificationMiddleware, async (req, res, next) => {
     const userId = req.user?.userId;
     const pageId = req.query?.pageId;
 
-    if (!pageId) throw new Error("Missing fields required");
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized access" });
+    }
+    if (!pageId) {
+      return res.status(400).json({ message: "Missing pageId" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(String(pageId))) {
+      return res.status(400).json({ message: "Invalid pageId" });
+    }
 
-    const page = await Page.findById({ _id: pageId });
-    if (!page) throw new Error("Page Not Found");
-  
-    res.status(200).json(page);
+    const page = await Page.findOne({ _id: pageId, authorId: userId }).lean();
+    if (!page) {
+      return res.status(404).json({ message: "Page not found" });
+    }
+
+    const versions = await Version.find({
+      entityType: "page",
+      entityId: String(pageId),
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const mappedVersions = versions.map((version, index) => ({
+      id: String(version._id),
+      versionNumber: versions.length - index,
+      createdAt: version.createdAt,
+      createdBy: version.createdBy,
+      autoSave: Boolean(version.data?.meta?.autoSave),
+      changes: Array.isArray(version.data?.meta?.changes)
+        ? version.data.meta.changes
+        : [],
+    }));
+
+    res.status(200).json({
+      ...page,
+      versions: mappedVersions,
+      slugHistory: Array.isArray(page.slugHistory) ? page.slugHistory : [],
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/all-pages", verificationMiddleware, async (req, res, next) => {
+  try {
+    const role = req.user?.role;
+    if (role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const pages = await Page.find({}).sort({ createdAt: -1 }).lean();
+    return res.status(200).json({ pages });
   } catch (err) {
     next(err);
   }

@@ -40,6 +40,7 @@ import { useRouter, useParams } from "next/navigation";
 import { createForm, updateForm } from "@/Api/Form/Create";
 import { loadFormsDataById } from "@/Api/Form/Load"; // Assuming this exists
 import { useTenant } from "@/context/TenantContext";
+import { toast } from "sonner";
 
 
 // Extend FormField interface with advanced CMS features
@@ -402,12 +403,14 @@ export default function NewFormPage() {
     if (errors.length > 0) {
       setSaveError(errors.join(", "));
       setSaveState("error");
+      toast.error(errors[0] || "Please fix form validation errors");
       return;
     }
 
     if (!selectedWebsite?.id) {
       setSaveError("Please select a website first");
       setSaveState("error");
+      toast.error("Please select a website first");
       return;
     }
 
@@ -461,19 +464,21 @@ export default function NewFormPage() {
 
       // Only show success and redirect after API success
       setSaveState("success");
+      toast.success(isEditMode ? "Form updated successfully" : "Form created successfully");
 
       // Show success message for 1.5 seconds before redirect
       setTimeout(() => {
         router.push("/cms/forms");
-      }, 1500);
+      }, 1000);
     } catch (err) {
       console.error("[CMS] Failed to save form:", err);
       setSaveState("error");
-      setSaveError(
+      const message =
         err instanceof Error
           ? err.message
-          : "Failed to save form. Please check your connection and try again.",
-      );
+          : "Failed to save form. Please check your connection and try again.";
+      setSaveError(message);
+      toast.error(message);
     }
   };
 
@@ -537,41 +542,6 @@ export default function NewFormPage() {
           </Button>
         </div>
       </div>
-
-      {/* Save Status Messages */}
-      {saveState === "success" && (
-        <div className="p-4 border border-green-200 bg-green-50 rounded-lg animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            <p className="text-green-700 font-medium">
-              Form {isEditMode ? "updated" : "saved"} successfully!
-              Redirecting...
-            </p>
-          </div>
-        </div>
-      )}
-
-      {saveState === "error" && saveError && (
-        <div className="p-4 border border-red-200 bg-red-50 rounded-lg animate-in fade-in">
-          <div className="flex items-start gap-2.5">
-            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
-            <div className="space-y-1">
-              <p className="text-red-700 font-medium text-sm">
-                Unable to {isEditMode ? "update" : "save"} form
-              </p>
-              <p className="text-red-600 text-sm">{saveError}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto p-0 text-red-700 hover:text-red-800 hover:bg-transparent"
-                onClick={() => setSaveState("idle")}
-              >
-                Dismiss
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {!selectedWebsite && (
         <div className="p-4 border border-amber-200 bg-amber-50 rounded-lg">

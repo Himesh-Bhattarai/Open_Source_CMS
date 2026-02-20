@@ -11,7 +11,7 @@ router.get("/load/:blogId", verificationMiddleware, async (req, res, next) => {
     if (!userId) throw new Error("Unauthorized");
     if (!blogId) throw new Error("Blog ID is required");
 
-    const blogPost = await BlogPost.findOne({ _id: blogId });
+    const blogPost = await BlogPost.findOne({ _id: blogId, authorId: userId });
     if (!blogPost)
       return res.status(404).json({ message: "Blog post not found" });
     res.status(200).json(blogPost);

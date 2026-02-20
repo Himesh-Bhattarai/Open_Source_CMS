@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 import {
@@ -20,7 +20,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Building2 } from "lucide-react";
 import { Globe } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { createTenant } from "@/Api/Tenant/Create-tenant";
 import { getUserTenants } from "@/Api/Fetch/allFetch";
 import { deleteTenantById as deleteTenant, editTenantById as updateTenant } from "@/Api/Tenant/Services";
@@ -28,17 +27,12 @@ import { toast } from "sonner";
 
 export default function MyWebsitePage() {
   const { user } = useAuth()
-  const router = useRouter()
-  const [websiteName, setWebsiteName] = useState("")
-  const [domain, setDomain] = useState("")
-  const [isCreating, setIsCreating] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenants, setTenants] = useState<any[]>([]);
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null)
-
-
-  const hasWebsite = tenants.length > 0;
+  const [createdApiKey, setCreatedApiKey] = useState("");
+  const [createdTenantName, setCreatedTenantName] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -105,7 +99,14 @@ export default function MyWebsitePage() {
 
     setLoading(true)
     try {
-      await createTenant(form)
+      const response = await createTenant(form)
+      if (!response?.ok) {
+        toast.error(response?.message || "Create tenant failed")
+        setLoading(false)
+        return
+      }
+      setCreatedApiKey(response.apiKey || "")
+      setCreatedTenantName(response.tenant?.name || form.name || "New website")
 
       const data = await getUserTenants()
       setTenants(data.tenants)
@@ -117,7 +118,6 @@ export default function MyWebsitePage() {
       console.error("Create tenant failed", err)
       toast.error("Create tenant failed")
     } finally {
-      setIsCreateDialogOpen(false)
       setLoading(false)
     }
   }
@@ -165,6 +165,47 @@ export default function MyWebsitePage() {
             {/* dialog content stays same */}
           </Dialog>
         </div>
+
+        {createdApiKey && (
+          <Card className="border-green-600/50 bg-green-500/5">
+            <CardHeader>
+              <CardTitle className="text-lg">API Key Generated</CardTitle>
+              <CardDescription>
+                Raw key for <strong>{createdTenantName}</strong>. Copy it now and store securely.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Input value={createdApiKey} readOnly className="font-mono text-xs" />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(createdApiKey)
+                      toast.success("API key copied")
+                    } catch {
+                      toast.error("Failed to copy API key")
+                    }
+                  }}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Key
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setCreatedApiKey("")
+                    setCreatedTenantName("")
+                  }}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
 
         {/* CREATE WEBSITE BUTTON — ALWAYS VISIBLE */}

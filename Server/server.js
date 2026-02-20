@@ -17,6 +17,7 @@ import combinedRoutes from "./Routes/Fields/Combined.js";
 import mediaRoutes from "./Routes/Media/Media.js";
 import menuRoutes from "./Routes/Menu/Combined.js";
 import pageRoutes from "./Routes/Page/Combined.js";
+import pageVersionRoutes from "./Routes/Page/PageVersion.js";
 import footerRoutes from "./Routes/Footer/Combined.js";
 import themeRoutes from "./Routes/Theme/Theme.js";
 import versionRoutes from "./Routes/Version/Version.js";
@@ -59,29 +60,48 @@ import { startBackupScheduler } from "./Services/backupScheduler.js";
 const app = express();
 import passport from "./config/password.js";
 const isProd = process.env.NODE_ENV === "production";
-const corsOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
-if (isProd && !process.env.SESSION_SECRET) {
-  throw new Error("SESSION_SECRET must be configured in production");
+const corsOrigins = ("http://localhost:3000" || process.env.CORS_ORIGIN || "http://localhost:3000")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be configured");
+}
+if (isProd && corsOrigins.length === 0) {
+  throw new Error("CORS_ORIGIN must be configured in production");
+}
+if (isProd) {
+  app.set("trust proxy", 1);
 }
 
 // Middleware
 app.use(
   cors({
-    origin: corsOrigin,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (corsOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
 
-console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+console.log("CORS_ORIGIN:", corsOrigins.join(","));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "dev-session-secret-change-me",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
   }),
 );
 
@@ -101,6 +121,7 @@ app.use("/api/v1/create-media", mediaRoutes);
 app.use("/api/v1/media", mediaRoutes);
 app.use("/api/v1/create-menu", menuRoutes);
 app.use("/api/v1/create-page", pageRoutes);
+app.use("/api/v1/create-page-version", pageVersionRoutes);
 app.use("/api/v1/create-theme", themeRoutes);
 app.use("/api/v1/create-version", versionRoutes);
 app.use("/api/v1/create-seo", seoRoutes);
@@ -123,7 +144,7 @@ app.use("/api/v1/integrations", integrationsApi);
 app.use("/api/v1/api-keys", apiKeys);
 
 //fetch routes for ADMIN
-app.use("/api/v1/admin/get-all-users", adminLoad);
+app.use("/api/v1/admin", adminLoad);
 
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
@@ -142,10 +163,11 @@ app.use("/api/v1/delete-form", deleteForm);
 app.use("/api/v1/delete-footer", deleteFooter);
 // Delete-Whole Account 
 app.use("/api/v1/user/delete", deleteUser);
-app.use("/api/v1/user/validate/user-payload", validateUser);
+app.use("/api/v1/user/validate", validateUser);
 
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);
+app.use("/api/v1/restore-page-version", pageVersionRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/update-menu", menuRoutes);
 app.use("/api/v1/update-tenant", updateTenant);

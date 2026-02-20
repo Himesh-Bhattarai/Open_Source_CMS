@@ -4,6 +4,14 @@ const UPDATE_PAGE_URL =
   process.env.NEXT_PUBLIC_UPDATA_PAGE_URL;
 const CREATE_PAGE_VERSION = process.env.NEXT_PUBLIC_CREATE_PAGE_VERSION;
 
+const parseJsonSafe = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
 
   //Create Page
 export const createPage = async (data) => {
@@ -18,7 +26,11 @@ export const createPage = async (data) => {
     body: JSON.stringify(data),
   });
 
-  return response.json();
+  const request = await parseJsonSafe(response);
+  if (!response.ok) {
+    throw new Error(request?.message || "Failed to create page");
+  }
+  return request;
 };
 
 
@@ -34,7 +46,7 @@ export const createPageVersion = async (data) => {
       body: JSON.stringify(data),
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
     if (!response.ok) throw new Error(request.message);
     return request;
   } catch (err) {
@@ -74,10 +86,10 @@ export const updatePage = async (pageId, { data, etag, options }) => {
     body: JSON.stringify({ data, etag, options }),
   });
 
-  const result = await response.json();
+  const result = await parseJsonSafe(response);
 
   if (!response.ok) {
-    const err = new Error(result.message || "Update failed");
+    const err = new Error(result?.message || "Update failed");
     err.status = response.status;
     throw err;
   }

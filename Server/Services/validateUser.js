@@ -22,7 +22,7 @@ router.post("/user-payload",
 
             // Verify email (par1) matches and password (par2) is correct
             const isEmailValid = user.email === par1;
-            const isPasswordValid = await bcrypt.compare(par2, user.password);
+            const isPasswordValid = await bcrypt.compare(par2, user.passwordHash);
 
             if (!isEmailValid || !isPasswordValid) {
                 return res.status(401).json({ ok: false, message: "Invalid credentials" });

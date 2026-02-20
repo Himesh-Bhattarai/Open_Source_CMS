@@ -1,6 +1,14 @@
 const DELETE_MENU_ITEM = process.env.NEXT_PUBLIC_DELETE_MENU_ITEM;
 const DELETE_MENU_BY_ID = process.env.NEXT_PUBLIC_DELETE_MENU_BY_ID;
 
+const parseJsonSafe = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
 
 
 //delete menu by id
@@ -11,7 +19,7 @@ export const deleteMenuById = async (menuId) => {
       credentials: "include",
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
     if (!response.ok)
       throw new Error(request.message || "Internal Server Error");
     return {
@@ -21,6 +29,7 @@ export const deleteMenuById = async (menuId) => {
     };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, message: err?.message || "Failed to delete menu" };
   }
 };
 
@@ -33,7 +42,7 @@ export const deleteMenu = async () => {
       credentials: "include",
     });
 
-    const request = await response.json();
+    const request = await parseJsonSafe(response);
     if (!response.ok)
       throw new Error(request.message || "Internal Server Error");
     return {
@@ -43,5 +52,6 @@ export const deleteMenu = async () => {
     };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, message: err?.message || "Failed to delete menus" };
   }
 };

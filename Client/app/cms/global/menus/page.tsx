@@ -5,22 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { loadMenus } from "@/Api/Menu/Load"
 import { deleteMenuById } from "@/Api/Menu/Delete"
-
-type Toast = {
-  id: number
-  message: string
-  type: "error" | "success"
-}
+import { toast } from "sonner"
 
 export default function MenusPage() {
   const [loading, setLoading] = useState(false)
   const [menusData, setMenusData] = useState<any[]>([])
-  const [toasts, setToasts] = useState<Toast[]>([])
-
-  const toastCounter = useRef(0)
 
   // Helper to truncate text to 50 chars
   const truncate = (text = "", length = 50) =>
@@ -33,9 +25,12 @@ export default function MenusPage() {
         setLoading(true)
         const response = await loadMenus()
         if (!response?.ok) throw new Error("Failed to load menus")
-        setMenusData(response.menus)
+        const safeMenus = Array.isArray(response.menus)
+          ? response.menus.filter((menu) => menu?._id)
+          : []
+        setMenusData(safeMenus)
       } catch (err: any) {
-        pushToast(err.message || "Failed to load menus", "error")
+        toast.error(err.message || "Failed to load menus")
       } finally {
         setLoading(false)
       }
@@ -54,22 +49,12 @@ export default function MenusPage() {
     try {
       const response = await deleteMenuById(menuId)
       if (!response?.ok) throw new Error("Delete failed")
-      pushToast("Menu deleted", "success")
+      toast.success("Menu deleted")
     } catch (err: any) {
       // rollback
       setMenusData(previous)
-      pushToast(err.message || "Failed to delete menu", "error")
+      toast.error(err.message || "Failed to delete menu")
     }
-  }
-
-  /* ---------------- TOAST SYSTEM ---------------- */
-  const pushToast = (message: string, type: "success" | "error") => {
-    const id = ++toastCounter.current
-    setToasts((t) => [...t, { id, message, type }])
-
-    setTimeout(() => {
-      setToasts((t) => t.filter((x) => x.id !== id))
-    }, 2500)
   }
 
   /* ---------------- UI ---------------- */
@@ -166,20 +151,6 @@ export default function MenusPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      {/* Minimal Toasts */}
-      <div className="fixed bottom-6 right-6 space-y-2 z-50">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium
-              ${t.type === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white"}
-              animate-in slide-in-from-right`}
-          >
-            {t.message}
-          </div>
         ))}
       </div>
     </div>

@@ -31,4 +31,72 @@ router.delete("/user-page/:id", verificationMiddleware, async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
+
+router.delete("/user-pages", verificationMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const result = await Page.deleteMany({ authorId: String(userId) });
+    return res.status(200).json({
+      message: "All pages deleted successfully",
+      deletedCount: result.deletedCount || 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/user-selected-page", verificationMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const pageIds = Array.isArray(req.body?.pageIds) ? req.body.pageIds : [];
+
+    if (!userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    if (!pageIds.length) {
+      return res.status(400).json({ message: "pageIds is required" });
+    }
+
+    const result = await Page.deleteMany({
+      _id: { $in: pageIds },
+      authorId: String(userId),
+    });
+
+    return res.status(200).json({
+      message: "Selected pages deleted successfully",
+      deletedCount: result.deletedCount || 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/pages/bulk-delete/byAdmin", verificationMiddleware, async (req, res, next) => {
+  try {
+    const role = req.user?.role;
+    const userIds = Array.isArray(req.body?.userIds) ? req.body.userIds : [];
+
+    if (role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    if (!userIds.length) {
+      return res.status(400).json({ message: "userIds is required" });
+    }
+
+    const result = await Page.deleteMany({
+      authorId: { $in: userIds.map(String) },
+    });
+
+    return res.status(200).json({
+      message: "Pages deleted successfully",
+      deletedCount: result.deletedCount || 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 export default router;

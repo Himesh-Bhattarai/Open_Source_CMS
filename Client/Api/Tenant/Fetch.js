@@ -25,14 +25,15 @@ export const getUserTenantsById = async (tenantId) => {
     });
 
     const request = await response.json();
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request,
-      };
+    if (!response.ok) throw new Error(request?.message || "Failed to load tenant");
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request,
+    };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, data: null };
   }
 };
 
@@ -42,18 +43,19 @@ export const getAllTenants = async () => {
   try {
     const response = await fetch(GET_ALL_TENANTS_URL, {
       method: "GET",
-      credential: "include",
+      credentials: "include",
     });
 
     const request = await response.json();
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request,
-      };
+    if (!response.ok) throw new Error(request?.message || "Failed to load tenants");
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request,
+    };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, data: null };
   }
 };
 

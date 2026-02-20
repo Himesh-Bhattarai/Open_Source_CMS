@@ -120,7 +120,6 @@ export const deleteUserSelectedPage = async (pageIds) => {
     };
   }
 };
-
 //delete all user pages for admin by id
 export const deleteUserPages = async () => {
   try {

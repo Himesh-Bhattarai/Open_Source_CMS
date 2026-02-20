@@ -11,7 +11,12 @@ const TenantUserSchema = z.object({
 
 export const validateTenantUser = (req, res, next) => {
   try {
-    TenantUserSchema.safeParse(req.body);
+    const result = TenantUserSchema.safeParse(req.body);
+    if (!result.success) {
+      const err = new Error("Invalid tenant-user payload");
+      err.statusCode = 400;
+      throw err;
+    }
     next();
   } catch (err) {
     err.statusCode = err.statusCode || 400;

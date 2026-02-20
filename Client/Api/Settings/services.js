@@ -4,14 +4,21 @@ const FEEDBACK_COLLECT = process.env.NEXT_PUBLIC_FEEDBACK_COLLECT;
 const CHANGE_PASSWORD = process.env.NEXT_PUBLIC_CHANGE_PASSWORD;
 const GET_API_KEYS = process.env.NEXT_PUBLIC_GET_API_KEYS;
 
+const resolveValidateUserUrl = () => {
+  if (!VALIDATE_USER) return "/api/v1/user/validate/user-payload";
+  return VALIDATE_USER.replace(
+    "/api/v1/validate/user-payload",
+    "/api/v1/user/validate/user-payload",
+  );
+};
+
 const resolveApiKeysUrl = () => {
   if (!GET_API_KEYS) return "/api/v1/api-keys/get-keys";
   return GET_API_KEYS.replace("/api-keys/user/get-keys", "/api-keys/get-keys");
 };
 export const validateUser = async (par1, par2) => {
   try {
-    if (!VALIDATE_USER) throw new Error("VALIDATE_USER URL is not configured");
-    const response = await fetch(VALIDATE_USER, {
+    const response = await fetch(resolveValidateUserUrl(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -35,7 +42,7 @@ export const validateUser = async (par1, par2) => {
     return {
       ok: false,
       message: err?.message || "Network error",
-      status: 500,
+      status: 400,
       shouting: false,
     };
   }

@@ -51,6 +51,7 @@ import {
 import { createMenuItem, updateMenu } from "@/Api/Menu/Combined";
 import { useRouter } from "next/navigation";
 import { loadMenuById } from "@/Api/Menu/Load";
+import { toast } from "sonner";
 
 // ==================== FIXED TYPE DEFINITIONS ====================
 type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb";
@@ -284,7 +285,6 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     location: "navbar",
     navbarType: "static",
   });
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
@@ -313,18 +313,23 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       try {
         setLoading(true);
         const data = await loadMenuById(menuId);
+        if (!data?.ok || !data?.menu) {
+          throw new Error("Invalid menu response");
+        }
+        const menu = data.menu;
 
         const resolvedConfig: MenuConfig = {
-          location: mapLocation(data.menuLocation),
-          navbarType: data.navbarType || "mega",
+          location: mapLocation(menu.menuLocation),
+          navbarType: menu.navbarType || "mega",
         };
 
         setConfig(resolvedConfig);
 
-        setMenuItems(denormalizeMenuItemsFromDB(data.items, 0, resolvedConfig));
+        const incomingItems = Array.isArray(menu.items) ? menu.items : [];
+        setMenuItems(denormalizeMenuItemsFromDB(incomingItems, 0, resolvedConfig));
       } catch (err) {
         console.error(err);
-        setMessage("Failed to load menu");
+        toast.error("Failed to load menu");
       } finally {
         setLoading(false);
       }
@@ -933,7 +938,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     validateMenu(menuItems);
 
     if (validationErrors.length > 0) {
-      setMessage(`Validation errors:\n${validationErrors.join("\n")}`);
+      toast.error(validationErrors[0] || "Validation error");
       return;
     }
 
@@ -945,21 +950,25 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     };
 
     try {
+      if (!menuId || menuId === "undefined" || menuId === "null") {
+        toast.error("Invalid menu id");
+        return;
+      }
       setLoading(true);
       const response = await updateMenu(menuId, menuDataForDB);
 
       if (response.ok) {
-        setMessage("Menu saved successfully!");
+        toast.success("Menu saved successfully");
         // Wait 2 seconds before redirecting to show success message
         setTimeout(() => {
           router.push("/cms/global/menus");
         }, 2000);
       } else {
-        setMessage("Failed to save menu");
+        toast.error("Failed to save menu");
       }
     } catch (error) {
       console.error("Failed to save menu:", error);
-      setMessage("Failed to save menu. Please try again.");
+      toast.error("Failed to save menu. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -1132,14 +1141,6 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
           <h1 className="text-balance text-3xl font-bold tracking-tight">
             Menu Builder
           </h1>
-          {message && (
-            <div
-              className={`mt-1 p-2 rounded text-sm ${message.includes("success") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-            >
-              {message}
-            </div>
-          )}
-
           <p className="text-pretty text-muted-foreground mt-1">
             Build{" "}
             {config.location === "navbar"

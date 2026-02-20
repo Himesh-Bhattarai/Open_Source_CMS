@@ -316,7 +316,7 @@ export default function PageEditor() {
 
       setPageVersions(data.versions || [])
       const lock = data.settings?.locked
-      setIsLocked(Boolean(lock || data.isLocked))
+      setIsLocked(Boolean(lock?.isLocked || data.isLocked))
       setLockedBy(lock?.byUserId ? String(lock.byUserId) : (data.lockedBy ? String(data.lockedBy) : null))
       setLockedByName(lock?.byUserName || data.lockedByName || null)
       setEtag(data.etag || "")
@@ -484,8 +484,16 @@ export default function PageEditor() {
 
       toast.success("Saved")
       router.push("/cms/content/pages?message=Page%20saved%20successfully")
-    } catch (err) {
-      toast.error("Save failed")
+    } catch (err: any) {
+      if (err?.status === 409) {
+        toast.error("Conflict detected. Please reload and try again.")
+        await loadPageData(pageId)
+      } else if (err?.status === 423) {
+        toast.error("Page is locked by another user")
+        await loadPageData(pageId)
+      } else {
+        toast.error(err?.message || "Save failed")
+      }
     }
   }
 
@@ -636,7 +644,7 @@ export default function PageEditor() {
       })
 
       setPageVersions(restoredData.versions || [])
-      setIsLocked(Boolean(restoredData.settings?.locked || restoredData.isLocked))
+      setIsLocked(Boolean(restoredData.settings?.locked?.isLocked || restoredData.isLocked))
       setLockedBy(
         restoredData.settings?.locked?.byUserId
           ? String(restoredData.settings.locked.byUserId)
@@ -809,11 +817,11 @@ export default function PageEditor() {
           </div>
           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
             <span>/{phase1Data.slug || "untitled"}</span>
-            <span>•</span>
+            <span>|</span>
             <span>Tenant: {phase1Data.tenantId}</span>
             {lastSaved && (
               <>
-                <span>•</span>
+                <span>|</span>
                 <span className="flex items-center gap-1">
                   {isSaving ? (
                     <>
@@ -1549,7 +1557,7 @@ export default function PageEditor() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-sm">
-                              v{version.versionNumber} • {new Date(version.createdAt).toLocaleDateString()}
+                              v{version.versionNumber} | {new Date(version.createdAt).toLocaleDateString()}
                             </p>
                             <Badge variant="secondary" className="text-xs">
                               {version.autoSave ? "Auto-save" : "Manual"}
@@ -1557,9 +1565,9 @@ export default function PageEditor() {
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">{version.createdBy}</p>
                           <div className="mt-1">
-                            {version.changes.map((change, idx) => (
+                            {(Array.isArray(version.changes) ? version.changes : []).map((change, idx) => (
                               <span key={idx} className="text-xs text-muted-foreground mr-2">
-                                • {change}
+                                | {change}
                               </span>
                             ))}
                           </div>
@@ -1603,3 +1611,4 @@ export default function PageEditor() {
     </div>
   )
 }
+

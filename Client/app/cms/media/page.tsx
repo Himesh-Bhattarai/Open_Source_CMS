@@ -35,7 +35,7 @@ import {
   Globe,
   File,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useTenant } from "@/context/TenantContext"
 import { createMedia } from "@/Api/Media/Create"
 import { loadMedia } from "@/Api/Media/Fetch"
@@ -100,7 +100,6 @@ const toDataUrlIfPreviewable = (file: File): Promise<string> =>
   })
 
 export default function MediaLibraryPage() {
-  const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { tenants, activeTenant, selectedTenantId, setActiveTenant } = useTenant()
 
@@ -187,11 +186,7 @@ export default function MediaLibraryPage() {
       })
 
       if (!response?.ok) {
-        toast({
-          title: "Failed to load media",
-          description: response?.message || "Please try again",
-          variant: "destructive",
-        })
+        toast.error(response?.message || "Failed to load media")
         setMediaList([])
         setIsLoadingMedia(false)
         return
@@ -205,7 +200,7 @@ export default function MediaLibraryPage() {
     }
 
     fetchMedia()
-  }, [selectedTenantId, scope, entityType, entityId, canLoadScopedMedia, toast])
+  }, [selectedTenantId, scope, entityType, entityId, canLoadScopedMedia])
 
   const filteredItems = useMemo(() => {
     return mediaList.filter((item) => {
@@ -224,11 +219,7 @@ export default function MediaLibraryPage() {
     if (!files || !selectedTenantId) return
 
     if (scope !== "global" && !entityId) {
-      toast({
-        title: "Select target first",
-        description: scope === "page" ? "Choose a page" : "Choose a blog",
-        variant: "destructive",
-      })
+      toast.error(scope === "page" ? "Choose a page first" : "Choose a blog first")
       return
     }
 
@@ -283,7 +274,7 @@ export default function MediaLibraryPage() {
       )
     }
 
-    toast({ title: "Upload complete", description: "Media library updated" })
+    toast.success("Upload complete")
     setIsUploading(false)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
@@ -297,11 +288,7 @@ export default function MediaLibraryPage() {
     const response = await deleteMediaById(deleteTarget.id)
     if (!response?.ok) {
       setMediaList(previous)
-      toast({
-        title: "Delete failed",
-        description: response?.message || "Please try again",
-        variant: "destructive",
-      })
+      toast.error(response?.message || "Delete failed")
     }
 
     setDeleteTarget(null)
@@ -309,11 +296,7 @@ export default function MediaLibraryPage() {
 
   const handleDownload = (item: MediaItem) => {
     if (!item.url) {
-      toast({
-        title: "No downloadable file",
-        description: "This media has no file URL",
-        variant: "destructive",
-      })
+      toast.error("This media has no file URL")
       return
     }
 
