@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { createTheme, fetchThemeSetting } from "@/Api/Theme/create";
 import { useTenant } from "@/context/TenantContext";
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
 
 const loadThemeSetting = async (websiteId: string) => {
   try {
@@ -26,9 +27,11 @@ const loadThemeSetting = async (websiteId: string) => {
     if (data.theme?.metadata?.scope !== "global") return null;
     return data;
   } catch (error) {
-    console.warn('Backend unavailable, using mock data:', error)
-    // Fall through to mock data
-    return null
+    if (USE_MOCK_DATA) {
+      console.warn("Backend unavailable, using mock data:", error);
+      return null;
+    }
+    throw error;
   }
 }
 
@@ -315,8 +318,6 @@ const MOCK_WEBSITES = [
 ]
 
 const DEFAULT_THEME_NAME = "Global Theme"
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
-
 const normalizeLayoutForBackend = (layout: any) => {
   const containerWidth =
     layout?.containerWidth === "full" ? "full" : "boxed";
@@ -362,6 +363,7 @@ export default function ThemePage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState<any>(null)
   const [environmentMode, setEnvironmentMode] = useState<"live" | "mock">("live")
+  const [backendUnavailable, setBackendUnavailable] = useState(false)
 
   // ==================== MULTI-TENANT STATE VARIABLES ====================
   const [selectedTenantId, setSelectedTenantId] = useState<string>("tenant-a")
@@ -575,6 +577,7 @@ export default function ThemePage() {
   // ==================== BACKEND INTEGRATION ====================
   const loadThemeForWebsite = useCallback(async (websiteId: string) => {
     setIsLoading(true)
+    setBackendUnavailable(false)
 
     try {
       // Use semantic backend function with selected website ID
@@ -592,7 +595,7 @@ export default function ThemePage() {
 
         // Apply CSS variables
         applyCSSVariables(data.theme)
-      } else {
+      } else if (USE_MOCK_DATA) {
         // FALLBACK: Use mock data
         setEnvironmentMode("mock")
 
@@ -607,17 +610,26 @@ export default function ThemePage() {
 
         // Apply CSS variables
         applyCSSVariables(mockData.theme)
+      } else {
+        setEnvironmentMode("live")
+        setBackendUnavailable(true)
+        setSaveStatus("error")
+        toast.error("Failed to load theme from backend")
       }
     } catch (error) {
       console.error('Error in theme loading process:', error)
-      // Non-blocking - UI continues to work
-      setEnvironmentMode("mock")
-
-      // Use default mock data
-      const mockData = getMockThemeByWebsiteId(websiteId)
-      hydrateStateFromTheme(mockData.theme)
-      setLastSavedSnapshot(mockData.theme)
-      applyCSSVariables(mockData.theme)
+      if (USE_MOCK_DATA) {
+        setEnvironmentMode("mock")
+        const mockData = getMockThemeByWebsiteId(websiteId)
+        hydrateStateFromTheme(mockData.theme)
+        setLastSavedSnapshot(mockData.theme)
+        applyCSSVariables(mockData.theme)
+      } else {
+        setEnvironmentMode("live")
+        setBackendUnavailable(true)
+        setSaveStatus("error")
+        toast.error("Theme backend unavailable")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -980,6 +992,13 @@ export default function ThemePage() {
             </span>
           )}
 
+          {backendUnavailable && (
+            <span className="text-sm text-red-600 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Backend unavailable
+            </span>
+          )}
+
           {lastUpdatedAt && (
             <span className="text-xs text-muted-foreground">
               Updated: {new Date(lastUpdatedAt).toLocaleDateString()}
@@ -1325,7 +1344,7 @@ export default function ThemePage() {
           </Button>
           <Button
             onClick={saveThemeSettings}
-            disabled={!hasUnsavedChanges || isSaving}
+            disabled={!hasUnsavedChanges || isSaving || backendUnavailable}
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? "Saving..." : "Save Theme Settings"}

@@ -2,7 +2,7 @@ import { logger as log } from "../../../Utils/Logger/logger.js";
 import { User } from "../../../Models/Client/User.js";
 import { Session } from "../../../Models/Client/Session.js";
 import bcrypt from "bcrypt";
-import { generateTokens } from "../../../Utils/Jwt/Jwt.js";
+import { generateTokens, getCookieOptions } from "../../../Utils/Jwt/Jwt.js";
 import {cmsEventService as notif} from "../../../Services/notificationServices.js"
 export const loginCheckpoint = async (req, res, next) => {
   try {
@@ -70,19 +70,8 @@ export const loginCheckpoint = async (req, res, next) => {
     }
 
     //send token in cookies both access and refresh
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
+    res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
     //send response with user details except password
 
     notif.loginUser({

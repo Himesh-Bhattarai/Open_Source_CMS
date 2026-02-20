@@ -3,7 +3,7 @@ import type React from "react"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Providers } from "./providers"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
 import { TenantProvider } from "@/context/TenantContext";
 import "./globals.css"
 
@@ -57,7 +57,7 @@ export default function RootLayout({
           <TenantProvider>
           {children}
           </TenantProvider>
-          <Toaster />
+          <Toaster position="bottom-right" richColors closeButton />
         </Providers>
         <Analytics />
       </body>

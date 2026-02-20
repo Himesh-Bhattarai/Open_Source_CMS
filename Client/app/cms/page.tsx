@@ -7,7 +7,6 @@ import {
   FileText,
   Globe,
   ImageIcon,
-  Settings,
   Users,
   Clock,
   AlertTriangle,
@@ -211,12 +210,6 @@ function AdminDashboard() {
               <Link href="/cms/admin/logs">
                 <Activity className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">System Logs</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
-              <Link href="/cms/admin/settings">
-                <Settings className="h-5 w-5" />
-                <span className="text-xs sm:text-sm">Settings</span>
               </Link>
             </Button>
           </div>

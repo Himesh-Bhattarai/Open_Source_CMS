@@ -16,6 +16,7 @@ import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { ArrowLeft, Save, Eye, ChevronDown, ChevronUp, Calendar, Tag, ImageIcon, X} from "lucide-react"
 import { updateBlogApi } from "@/Api/Blog/createBlog"
 import { loadBlogById } from "@/Api/Blog/Load.js"
+import { toast } from "sonner"
 
 type BlogSEO = {
   metaTitle: string
@@ -81,7 +82,6 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
   
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState<string | null>(null);
 
   const [seoOpen, setSeoOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -165,13 +165,13 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
     // 5MB max
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5MB");
+      toast.error("Image must be under 5MB")
       return;
     }
 
     // Only images
     if (!file.type.startsWith("image/")) {
-      alert("Only image files allowed");
+      toast.error("Only image files allowed")
       return;
     }
 
@@ -200,13 +200,11 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
 
   const handleSave = async () => {
-    setMessage(null);
-
     try {
       const data = await updateBlogApi(id, blogData);
 
       if (data?.ok) {
-        setMessage("Blog post updated successfully.");
+        toast.success("Blog post updated successfully.")
         setTimeout(() => {
           router.refresh();
           router.push('/cms/content/blog');
@@ -214,8 +212,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
       }
     } catch (err) {
       console.error("Error updating blog post:", err);
-      setMessage("Failed to update blog post.");
-      setTimeout(() => setMessage(null), 4000);
+      toast.error("Failed to update blog post.")
     }
   };
 
@@ -241,12 +238,10 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
     };
 
     setBlogData(publishPayload);
-    setMessage(null);
-
     try {
       const data = await updateBlogApi(id, publishPayload);
       if (data?.ok) {
-        setMessage("Blog published successfully.");
+        toast.success("Blog published successfully.")
         setTimeout(() => {
           router.refresh();
           router.push("/cms/content/blog");
@@ -254,15 +249,13 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
       }
     } catch (err) {
       console.error("Error publishing blog post:", err);
-      setMessage("Failed to publish blog post.");
-      setTimeout(() => setMessage(null), 4000);
+      toast.error("Failed to publish blog post.")
     }
   };
 
   const handlePreview = () => {
     if (!blogData.slug.trim()) {
-      setMessage("Add a slug to preview this blog post.");
-      setTimeout(() => setMessage(null), 3000);
+      toast.error("Add a slug to preview this blog post.")
       return;
     }
     window.open(`/blog/${blogData.slug}`, "_blank");
@@ -288,11 +281,6 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
             <h1 className="text-2xl font-bold">Edit Blog Post</h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge>{blogData?.status}</Badge>
-              {message && (
-                <div className="p-2 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
-                  {message}
-                </div>
-              )}
             </div>
           </div>
         </div>

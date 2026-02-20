@@ -370,8 +370,9 @@ export default function PageEditor() {
     // Normalize canonical URL
     let canonicalUrl = phase2Data.seo.canonicalUrl || ""
     if (canonicalUrl && !canonicalUrl.startsWith('http')) {
+      const origin = typeof window !== "undefined" ? window.location.origin : ""
       canonicalUrl = canonicalUrl.startsWith('/')
-        ? `https://example.com${canonicalUrl}`
+        ? `${origin || ""}${canonicalUrl}`
         : `https://${canonicalUrl}`
     }
 

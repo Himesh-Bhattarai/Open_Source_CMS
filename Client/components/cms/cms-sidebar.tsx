@@ -71,12 +71,6 @@ const adminNavigation: NavigationItem[] = [
     href: "/cms/admin/logs",
     icon: Activity,
   },
-  {
-    type: "link",
-    name: "Platform Settings",
-    href: "/cms/admin/settings",
-    icon: Settings,
-  },
 ];
 
 const ownerNavigation: NavigationItem[] = [

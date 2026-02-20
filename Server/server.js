@@ -58,11 +58,16 @@ import { startBackupScheduler } from "./Services/backupScheduler.js";
 
 const app = express();
 import passport from "./config/password.js";
+const isProd = process.env.NODE_ENV === "production";
+const corsOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+if (isProd && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be configured in production");
+}
 
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000" ||process.env.CORS_ORIGIN,
+    origin: corsOrigin,
     credentials: true,
   }),
 );
@@ -74,7 +79,7 @@ app.use(cookieParser());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "some_secret",
+    secret: process.env.SESSION_SECRET || "dev-session-secret-change-me",
     resave: false,
     saveUninitialized: false,
   }),

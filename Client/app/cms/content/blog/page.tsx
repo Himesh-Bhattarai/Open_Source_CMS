@@ -40,6 +40,7 @@ import { BulkActionsBar } from "@/components/cms/bulk-actions-bar";
 import { loadAllBlogs } from "@/Api/Blog/Load";
 import { deleteBlogById } from "@/Api/Blog/Delete";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
          
 
@@ -63,7 +64,6 @@ export default function BlogPostsPage() {
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<BlogPost[]>([]);
-  const [message, setMessage] = useState<string>("");
 
   // Load all blogs from API
   useEffect(() => {
@@ -84,30 +84,20 @@ export default function BlogPostsPage() {
   const deleteBlog = async (id: string) => {
     try {
       setLoading(true);
-      setMessage("");
       const response = await deleteBlogById(id);
       if (response?.ok) {
         setBlog((prevBlog) => prevBlog.filter((post) => post._id !== id));
-
-        setMessage("Blog post deleted successfully.");
+        toast.success("Blog post deleted successfully.");
+      } else {
+        toast.error("Failed to delete blog post.");
       }
       setLoading(false);
     } catch (err) {
       console.error("Error deleting blog:", err);
-      setMessage("Failed to delete blog post.");
+      toast.error("Failed to delete blog post.");
       setLoading(false);
     }
   };
-
-  //message timeout
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
 
   // Toggle select all posts
   const toggleSelectAll = () => {
@@ -355,10 +345,6 @@ export default function BlogPostsPage() {
           onDelete={() => console.log("Delete:", selectedPosts)}
           onCancel={() => setSelectedPosts([])}
         />
-      )}
-
-      {message && (
-        <div className="text-center text-sm text-green-600">{message}</div>
       )}
     </div>
   );

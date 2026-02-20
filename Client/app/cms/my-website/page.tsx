@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { createTenant } from "@/Api/Tenant/Create-tenant";
 import { getUserTenants } from "@/Api/Fetch/allFetch";
 import { deleteTenantById as deleteTenant, editTenantById as updateTenant } from "@/Api/Tenant/Services";
+import { toast } from "sonner";
 
 export default function MyWebsitePage() {
   const { user } = useAuth()
@@ -31,7 +32,6 @@ export default function MyWebsitePage() {
   const [websiteName, setWebsiteName] = useState("")
   const [domain, setDomain] = useState("")
   const [isCreating, setIsCreating] = useState(false)
-  const [message, setMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tenants, setTenants] = useState<any[]>([]);
@@ -71,12 +71,11 @@ export default function MyWebsitePage() {
   const handelEditTenant = async (tenantId: string) => {
     try {
       setLoading(true)
-      setMessage("")
 
       const response = await updateTenant(tenantId, form)
 
       if (!response?.ok) {
-        setMessage("Failed to update website")
+        toast.error("Failed to update website")
         setLoading(false)
         return
       }
@@ -87,14 +86,14 @@ export default function MyWebsitePage() {
         prev.map(t => (t._id.toString() === tenantId.toString() ? updated : t))
       )
 
-      setMessage("Website updated successfully")
+      toast.success("Website updated successfully")
       setForm({ name: "", domain: "", ownerEmail: "" })
       setEditingTenantId(null)
       setIsCreateDialogOpen(false)
       setLoading(false)
     } catch (err) {
       console.error(err)
-      setMessage("Update failed")
+      toast.error("Update failed")
       setLoading(false)
     }
   }
@@ -112,10 +111,11 @@ export default function MyWebsitePage() {
       setTenants(data.tenants)
 
       setIsCreateDialogOpen(false)
-      setMessage("Website created successfully")
+      toast.success("Website created successfully")
       setForm({ name: "", domain: "", ownerEmail: "" })
     } catch (err) {
       console.error("Create tenant failed", err)
+      toast.error("Create tenant failed")
     } finally {
       setIsCreateDialogOpen(false)
       setLoading(false)
@@ -126,30 +126,21 @@ export default function MyWebsitePage() {
   const handelDelete = async (tenantId: string) => {
     try {
       setLoading(true);
-      setMessage("");
       const response = await deleteTenant(tenantId);
       if (!response?.ok) {
         setLoading(false);
-        setMessage("Failed to Delete Tenant");
+        toast.error("Failed to delete tenant")
+        return
       }
-      setMessage("Website Deleted Successfully");
+      toast.success("Website deleted successfully")
       setTenants((prevTenants) => prevTenants.filter((tenant) => tenant._id !== tenantId));
       setLoading(false);
     } catch (err) {
       console.error("Error deleting blog:", err);
-      setMessage("Failed to delete blog post.");
+      toast.error("Failed to delete website.");
       setLoading(false);
     }
   }
-
-  //timeout for message
-  useEffect(()=>{
-    const timeout = setTimeout(() => {
-      setMessage("")
-    }, 1000);
-    return () => clearTimeout(timeout);
-
-  },[message])
 
   return (
     <>
@@ -163,12 +154,6 @@ export default function MyWebsitePage() {
               Manage your website settings
             </p>
           </div>
-          {message && (
-            <div className="rounded-md bg-green-100 text-green-700 px-4 py-2 text-sm">
-              {message}
-            </div>
-          )}
-
           {/* Right side: Button */}
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
