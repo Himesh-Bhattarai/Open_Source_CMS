@@ -17,7 +17,6 @@ export default function FooterPage() {
     const truncate = (text = "", length = 50) =>
         text.length > length ? text.slice(0, length) + "..." : text
 
-    /* ---------------- LOAD FOOTERS ---------------- */
     useEffect(() => {
         const load = async () => {
             try {
@@ -28,6 +27,7 @@ export default function FooterPage() {
                 if (!response?.ok) {
                     const serverMessage =
                         response?.data?.message || response?.data?.error || ""
+                    // Treat "not found" as an empty state instead of a hard failure.
                     if (
                         typeof serverMessage === "string" &&
                         serverMessage.toLowerCase().includes("footer not found")
@@ -56,8 +56,6 @@ export default function FooterPage() {
         load()
     }, [])
 
-
-    /* ---------------- DELETE FOOTER ---------------- */
     const deleteFooter = async (footerId: string) => {
         const previous = footers
         setFooters((prev) => prev.filter((f) => f._id !== footerId))
@@ -72,10 +70,8 @@ export default function FooterPage() {
         }
     }
 
-    /* ---------------- UI ---------------- */
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-balance text-3xl font-bold tracking-tight">Footers</h1>
@@ -91,21 +87,18 @@ export default function FooterPage() {
                 </Button>
             </div>
 
-            {/* Loading */}
             {loading && (
                 <div className="flex justify-center py-12 text-muted-foreground">
                     Loading footers...
                 </div>
             )}
 
-            {/* Empty */}
             {!loading && footers.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                     No footers found
                 </div>
             )}
 
-            {/* Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {footers.map((footer) => (
                     <Card key={footer._id} className="hover:shadow-md transition-shadow">

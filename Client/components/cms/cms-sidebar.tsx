@@ -20,7 +20,6 @@ import {
   Building2,
   X,
   Crown,
-  Briefcase,
   Plug,
   Database,
   BarChart3,
@@ -126,12 +125,6 @@ const ownerNavigation: NavigationItem[] = [
         href: "/cms/global/seo",
         icon: Search,
       },
-      // {
-      //   type: "link",
-      //   name: "Layout & Theme",
-      //   href: "/cms/global/layout",
-      //   icon: Palette,
-      // },
     ],
   },
 
@@ -139,8 +132,6 @@ const ownerNavigation: NavigationItem[] = [
   { type: "link", name: "Forms", href: "/cms/forms", icon: FormInput },
   { type: "link", name: "Media Library", href: "/cms/media", icon: ImageIcon },
   { type: "link", name: "Backups", href: "/cms/backups", icon: Database },
-  // { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
-  // { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
   {
     type: "link",
     name: "Notifications",
@@ -157,7 +148,7 @@ interface CMSSidebarProps {
 
 export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
   const pathname = usePathname();
-  const { user, isAdmin, isOwner } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const navigation = isAdmin ? adminNavigation : ownerNavigation;
 
@@ -208,20 +199,6 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        {/* 
-        {isOwner && (
-          <div className="px-4 py-3 border-b border-sidebar-border flex-shrink-0">
-            <div className="border rounded-lg p-3 bg-primary/10 border-primary/20">
-              <div className="flex items-center gap-2 mb-1">
-                <Briefcase className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-primary">Your Website</span>
-              </div>
-              <p className="text-sm font-medium truncate">{user?.tenantName || "My Website"}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.tenantId || "website-id"}</p>
-            </div>
-          </div>
-        )} */}
-
         <ScrollArea className="flex-1 overflow-y-auto ">
           <nav className="space-y-1 p-3">
             {navigation.map((item) => (

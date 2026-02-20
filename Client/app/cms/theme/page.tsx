@@ -455,7 +455,7 @@ export default function ThemePage() {
     // Reset state to last saved snapshot
     hydrateStateFromTheme(lastSavedSnapshot)
 
-    // CRITICAL: Also re-apply CSS variables from saved snapshot
+    // Keep runtime CSS vars in sync with restored theme state.
     applyCSSVariables(lastSavedSnapshot)
 
     setHasUnsavedChanges(false)

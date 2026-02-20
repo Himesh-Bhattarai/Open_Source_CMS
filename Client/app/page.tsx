@@ -279,18 +279,6 @@ const footerFallback = {
                 </Link>
               )
             ))}
-            {/* <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
-              Features
-            </Link>
-            <Link href="#use-cases" className="text-sm font-medium hover:text-primary transition-colors">
-              Use Cases
-            </Link>
-            <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-              Pricing
-            </Link>
-            <Link href="/docs" className="text-sm font-medium hover:text-primary transition-colors">
-              Docs
-            </Link> */}
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
@@ -331,20 +319,6 @@ const footerFallback = {
                 <Link href="#features">Explore Features</Link>
               </Button>
             </div>
-            {/* <div className="pt-8 flex items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-primary" />
-                <span>14-day free trial</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-primary" />
-                <span>No credit card required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-primary" />
-                <span>Cancel anytime</span>
-              </div>
-            </div> */}
           </div>
         </div>
       </section>
@@ -431,135 +405,9 @@ const footerFallback = {
         </div>
       </section>
 
-      {/* <footer className="py-12 border-t"> */}
-        {/* <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-
-            {/* BRAND COLUMN */}
-            {/* {brandBlock && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      {brandBlock.data.title.slice(0, 2).toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="font-bold text-lg">
-                    {brandBlock.data.title}
-                  </span>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  {brandBlock.data.content}
-                </p>
-              </div>
-            )} */}
-
-            {/* MENU COLUMNS */}
-            {/* {menuBlocks.map(menu => (
-              <div key={menu.id}>
-                <h4 className="font-semibold mb-4">
-                  {menu.data.title}
-                </h4>
-
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {menu.data.links?.map(link => (
-                    <li key={link.id}>
-                      <Link href={link.slug} className="hover:text-primary">
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-
-          </div> */}
-
-          {/* BOTTOM BAR */}
-          {/* <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            {footer.bottomBar.copyrightText}
-          </div>
-        </div> */}
-      {/* </footer> */} 
-
       {/* Footer */}
 
       <Footer footer={footerData || footerFallback} />
-
-      {/* <footer className="py-12 border-t">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CF</span>
-                </div>
-                <span className="font-bold text-lg">ContentFlow</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Build and manage beautiful websites without code</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="#features" className="hover:text-primary">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:text-primary">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="hover:text-primary">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/about" className="hover:text-primary">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-primary">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/careers" className="hover:text-primary">
-                    Careers
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/privacy" className="hover:text-primary">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-primary">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            © 2025 ContentFlow. All rights reserved.
-          </div>
-        </div>
-      </footer> */}
     </div>
   )
 }

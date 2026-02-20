@@ -133,14 +133,6 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
           <Menu className="h-5 w-5" />
         </Button>
 
-        {/* <div className="hidden lg:flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">
-              CF
-            </span>
-          </div>
-          <span className="font-semibold text-lg">ContentFlow</span>
-        </div> */}
       </div>
 
       <div

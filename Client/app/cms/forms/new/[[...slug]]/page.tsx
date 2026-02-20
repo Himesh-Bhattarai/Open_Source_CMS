@@ -38,12 +38,11 @@ import {
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { createForm, updateForm } from "@/Api/Form/Create";
-import { loadFormsDataById } from "@/Api/Form/Load"; // Assuming this exists
+import { loadFormsDataById } from "@/Api/Form/Load";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "sonner";
 
 
-// Extend FormField interface with advanced CMS features
 interface FormField {
   id: string;
   type: string;
@@ -61,14 +60,12 @@ interface FormField {
   options?: string[];
 }
 
-// Form behavior configuration
 interface FormBehavior {
   storeSubmissions: boolean;
   notifyEmail?: string;
   redirectUrl?: string;
 }
 
-// Main form state interface
 interface FormState {
   name: string;
   description: string;
@@ -83,10 +80,9 @@ interface FormState {
   };
 }
 
-// Save lifecycle states
 type SaveState = "idle" | "saving" | "success" | "error";
 
-// Mock websites/tenants for selection
+// Tenant option used by the website selector UI.
 interface Website {
   id: string;
   name: string;
@@ -99,20 +95,13 @@ export default function NewFormPage() {
 
   const slug = params?.slug as string[] | undefined;
 
-  // RULE:
-  // /new           -> create
-  // /new/:id       -> edit
+  // `/new` creates; `/new/:id` edits an existing form.
   const formId = slug?.[0] && slug[0] !== "new" ? slug[0] : undefined;
-
-  // const [mode] = useState<"create" | "edit">(() => {
-  //   const hasId = slug && slug.length > 0 && slug[0] !== "new";
-  //   return hasId ? "edit" : "create";
-  // });
 
   const isEditMode = Boolean(formId)
   const [isLoading, setIsLoading] = useState(!!formId);
   const { tenants, activeTenant, setActiveTenant } = useTenant();
-  // Map tenants to Website interface
+
   const tenantWebsites: Website[] = useMemo(
     () =>
       tenants.map((t) => ({
@@ -145,14 +134,13 @@ export default function NewFormPage() {
     });
   }, [activeTenant, isEditMode]);
 
-  // Save website selection to localStorage
+  // Persist last selected website to keep cross-page editing context.
   useEffect(() => {
     if (selectedWebsite) {
       localStorage.setItem("cms_selectedWebsiteId", selectedWebsite.id);
     }
   }, [selectedWebsite]);
 
-  // Centralized form state
   const [formState, setFormState] = useState<FormState>({
     name: "",
     description: "",
@@ -188,11 +176,9 @@ export default function NewFormPage() {
     },
   });
 
-  // Save lifecycle state
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Load existing form for edit mode
   useEffect(() => {
    
     if (!isEditMode || !formId) {
@@ -274,7 +260,6 @@ export default function NewFormPage() {
     };
   }, [isEditMode, formId, tenantWebsites]);
 
-  // Update form state helper
   const updateFormState = useCallback((updates: Partial<FormState>) => {
     setFormState((prev) => ({
       ...prev,
@@ -325,7 +310,6 @@ export default function NewFormPage() {
       const [movedField] = newFields.splice(fromIndex, 1);
       newFields.splice(toIndex, 0, movedField);
 
-      // Update order for all fields
       const reorderedFields = newFields.map((field, index) => ({
         ...field,
         order: index,
@@ -345,8 +329,6 @@ export default function NewFormPage() {
     }));
   };
 
-
-  // Field type badge colors
   const getFieldTypeBadge = (type: string) => {
     const types: Record<
       string,
@@ -386,7 +368,6 @@ export default function NewFormPage() {
       errors.push("Field min length cannot be greater than max length");
     }
 
-    // Validate email notification if provided
     if (
       formState.behavior.notifyEmail &&
       !/\S+@\S+\.\S+/.test(formState.behavior.notifyEmail)
@@ -419,7 +400,6 @@ export default function NewFormPage() {
 
     try {
       if (isEditMode && formId) {
-        // Update existing form - include only editable fields and id
         const updatePayload = {
 
           name: formState.name,
@@ -462,11 +442,9 @@ export default function NewFormPage() {
         }
       }
 
-      // Only show success and redirect after API success
       setSaveState("success");
       toast.success(isEditMode ? "Form updated successfully" : "Form created successfully");
 
-      // Show success message for 1.5 seconds before redirect
       setTimeout(() => {
         router.push("/cms/forms");
       }, 1000);
@@ -482,7 +460,6 @@ export default function NewFormPage() {
     }
   };
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -561,7 +538,7 @@ export default function NewFormPage() {
       )}
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left column - Form Builder */}
+        {/* Form builder */}
         <div className="space-y-8 lg:col-span-2">
           <Tabs defaultValue="settings" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
@@ -1144,8 +1121,7 @@ export default function NewFormPage() {
           </Tabs>
         </div>
 
-        {/* Right column - Preview */}
-        {/* Right column - Preview */}
+        {/* Form preview */}
         <div className="lg:sticky lg:top-6 lg:self-start lg:h-fit">
           <Card className="border-2 shadow-lg">
             <CardHeader className="pb-4">

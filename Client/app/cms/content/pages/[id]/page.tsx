@@ -39,12 +39,9 @@ import {  restorePageVersion } from "@/Api/Page/Services"
 import {  updatePage } from "@/Api/Page/CreatePage"
 import type { Page, PageVersion, Visibility, PageType } from "@/lib/types/page"
 
-// Declare missing APIs that are required for production
 import { useAuth } from "@/hooks/useAuth"   
 
-// ====================================
-// PHASE-1 IMMUTABLE FIELDS (READ-ONLY)
-// ====================================
+// Immutable data captured in phase-1.
 interface Phase1Data {
   title: string;
   slug: string;
@@ -56,9 +53,7 @@ interface Phase1Data {
   blocks: any[];
 }
 
-// ====================================
-// PHASE-2 EDITABLE FIELDS (ONLY THESE)
-// ====================================
+// Editable data allowed in phase-2.
 interface Phase2Payload {
   seo: {
     metaTitle: string;
@@ -106,7 +101,6 @@ export default function PageEditor() {
   const params = useParams()
   const router = useRouter()
 
-  // State declarations - ALL HOOKS AT TOP LEVEL
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isDirty, setIsDirty] = useState(false)
@@ -123,17 +117,10 @@ export default function PageEditor() {
   const [structuredDataError, setStructuredDataError] = useState<string | null>(null)
   const [autoSavePaused, setAutoSavePaused] = useState(false)
 
-  // Refs
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // ====================================
-  // PHASE-1 IMMUTABLE DATA STORAGE
-  // ====================================
   const [phase1Data, setPhase1Data] = useState<Phase1Data | null>(null)
 
-  // ====================================
-  // PHASE-2 EDITABLE DATA STORAGE
-  // ====================================
   const [phase2Data, setPhase2Data] = useState<Phase2Payload>({
     seo: {
       metaTitle: "",
@@ -175,7 +162,7 @@ export default function PageEditor() {
     publishedAt: ""
   })
 
-  // Get page ID from params safely - NEVER use slug in routing
+  // Accept malformed nested params and normalize to a single id.
   const getPageId = useCallback(() => {
     const id = params.id
     if (!id) return ""
@@ -209,7 +196,6 @@ export default function PageEditor() {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
   }
 
-  // Load page data - SEPARATE Phase-1 and Phase-2
   useEffect(() => {
     if (!pageId) return
 
@@ -222,7 +208,6 @@ export default function PageEditor() {
     }
   }, [pageId])
 
-  // Auto-save effect with validation
   useEffect(() => {
     if (isDirty && !isSaving && !isLockedByOtherUser && !structuredDataError && !autoSavePaused) {
       if (saveTimerRef.current) {
@@ -251,16 +236,10 @@ export default function PageEditor() {
         return
       }
 
-      // Validate server data structure
       if (!data._id || !data.tenantId) {
         throw new Error("Invalid page data from server")
       }
 
-      // ====================================
-      // SPLIT: Phase-1 (IMMUTABLE) vs Phase-2 (EDITABLE)
-      // ====================================
-
-      // Phase-1: Store as READ-ONLY
       setPhase1Data({
         title: data.title,
         slug: data.slug,
@@ -272,7 +251,6 @@ export default function PageEditor() {
         blocks: data.blocks || []
       })
 
-      // Phase-2: Store as EDITABLE
       setPhase2Data({
         seo: {
           metaTitle: data.seo?.metaTitle || "",
@@ -329,7 +307,6 @@ export default function PageEditor() {
     }
   }
 
-  // Validate structured data JSON
   const validateStructuredData = (jsonString: string): boolean => {
     try {
       if (!jsonString.trim()) {
@@ -344,8 +321,6 @@ export default function PageEditor() {
         return false
       }
 
-      // Phase-2 rule: allow empty object or partial object
-      // Only validate @context/@type if they exist
       if (
         ("@context" in parsed && !parsed["@context"]) ||
         ("@type" in parsed && !parsed["@type"])
@@ -362,12 +337,8 @@ export default function PageEditor() {
     }
   }
 
-
-  // ====================================
-  // BUILD PHASE-2 ONLY PAYLOAD
-  // ====================================
   const buildPhase2Payload = useCallback((): Phase2Payload => {
-    // Normalize canonical URL
+    // Keep canonical URL absolute before sending to backend.
     let canonicalUrl = phase2Data.seo.canonicalUrl || ""
     if (canonicalUrl && !canonicalUrl.startsWith('http')) {
       const origin = typeof window !== "undefined" ? window.location.origin : ""
@@ -418,7 +389,6 @@ export default function PageEditor() {
     }
   }, [phase2Data])
 
-  // Auto-save with PHASE-2 ONLY payload
   const autoSave = async () => {
     if (!pageId || !isDirty || isSaving || isLockedByOtherUser || structuredDataError || autoSavePaused) {
       return
@@ -428,7 +398,6 @@ export default function PageEditor() {
     try {
       const payload = buildPhase2Payload()
 
-      // CRITICAL: Send ONLY Phase-2 fields to backend
       const response = await updatePage(pageId, {
         data: payload,
         etag,
@@ -457,7 +426,6 @@ export default function PageEditor() {
     }
   }
 
-  // Manual save with PHASE-2 ONLY payload
   const handleManualSave = async () => {
     if (!pageId) {
       toast.error("Invalid page id")
@@ -497,8 +465,6 @@ export default function PageEditor() {
     }
   }
 
-
-  // Real locking with server enforcement
   const handleLock = async () => {
     if (!pageId) {
       toast.error("Invalid page id")
@@ -583,7 +549,6 @@ export default function PageEditor() {
     }
   }
 
-  // Version restore
   const handleRestoreVersion = async (versionId: string) => {
     if (!pageId) {
       toast.error("Invalid page id")
@@ -601,7 +566,6 @@ export default function PageEditor() {
         throw new Error("Invalid restored page data")
       }
 
-      // Re-split into Phase-1 and Phase-2
       setPhase1Data({
         title: restoredData.title,
         slug: restoredData.slug,
@@ -661,7 +625,6 @@ export default function PageEditor() {
     }
   }
 
-  // Publish with PHASE-2 payload
   const handlePublish = async (type: "now" | "schedule", date?: string, time?: string) => {
     if (!pageId) {
       toast.error("Invalid page id")
@@ -725,7 +688,6 @@ export default function PageEditor() {
     }
   }
 
-  // Structured data change handler with validation
   const handleStructuredDataChange = (value: string) => {
     if (!validateStructuredData(value)) {
       markDirty()
@@ -741,7 +703,6 @@ export default function PageEditor() {
     setStructuredDataError(null)
   }
 
-  // Generate SEO preview
   const generateSEOPreview = () => {
     if (!phase1Data) return "{}"
 
@@ -763,7 +724,6 @@ export default function PageEditor() {
     return JSON.stringify(seo, null, 2)
   }
 
-  // Guard: wait for Phase-1 data to load
   if (!phase1Data) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -777,7 +737,6 @@ export default function PageEditor() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/cms/content/pages">
@@ -894,7 +853,6 @@ export default function PageEditor() {
         </div>
       </div>
 
-      {/* Phase-1 Immutability Warning */}
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
@@ -921,10 +879,8 @@ export default function PageEditor() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* PHASE-1 READONLY DISPLAY */}
           <Card className="border border-muted bg-background shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -943,13 +899,11 @@ export default function PageEditor() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Title */}
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Title</p>
                 <p className="text-lg font-semibold">{phase1Data.title}</p>
               </div>
 
-              {/* Slug */}
               <div>
                 <p className="text-xs text-muted-foreground mb-1">URL Slug</p>
                 <code className="text-sm bg-muted px-2 py-1 rounded">
@@ -957,7 +911,6 @@ export default function PageEditor() {
                 </code>
               </div>
 
-              {/* Content Preview */}
               {phase1Data.content && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Text Content</p>
@@ -967,7 +920,6 @@ export default function PageEditor() {
                 </div>
               )}
 
-              {/* Page Tree Preview */}
               {phase1Data.pageTree && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Page Structure</p>
@@ -980,7 +932,6 @@ export default function PageEditor() {
           </Card>
 
 
-          {/* SEO Section - PHASE-2 EDITABLE */}
           <Card>
             <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
               <CardHeader className="cursor-pointer">
@@ -1319,7 +1270,6 @@ export default function PageEditor() {
             </Collapsible>
           </Card>
 
-          {/* Advanced Settings - PHASE-2 EDITABLE */}
           <Card>
             <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
               <CardHeader className="cursor-pointer">
@@ -1467,7 +1417,6 @@ export default function PageEditor() {
           </Card>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
