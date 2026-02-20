@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { createTheme, fetchThemeSetting } from "@/Api/Theme/create";
 import { useTenant } from "@/context/TenantContext";
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
 
 const loadThemeSetting = async (websiteId: string) => {
   const response = await fetchThemeSetting(websiteId);
@@ -1061,7 +1062,7 @@ export default function ThemePage() {
           </Button>
           <Button
             onClick={saveThemeSettings}
-            disabled={!hasUnsavedChanges || isSaving}
+            disabled={!hasUnsavedChanges || isSaving || backendUnavailable}
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? "Saving..." : "Save Theme Settings"}
