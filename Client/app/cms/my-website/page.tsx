@@ -40,12 +40,9 @@ export default function MyWebsitePage() {
 
   const hasWebsite = tenants.length > 0;
 
-
-
   const [form, setForm] = useState({
     name: "",
     domain: "",
-    apiKey: "",
     ownerEmail: "",
   });
 
@@ -91,7 +88,7 @@ export default function MyWebsitePage() {
       )
 
       setMessage("Website updated successfully")
-      setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+      setForm({ name: "", domain: "", ownerEmail: "" })
       setEditingTenantId(null)
       setIsCreateDialogOpen(false)
       setLoading(false)
@@ -115,10 +112,12 @@ export default function MyWebsitePage() {
       setTenants(data.tenants)
 
       setIsCreateDialogOpen(false)
-      setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+      setMessage("Website created successfully")
+      setForm({ name: "", domain: "", ownerEmail: "" })
     } catch (err) {
       console.error("Create tenant failed", err)
     } finally {
+      setIsCreateDialogOpen(false)
       setLoading(false)
     }
   }
@@ -170,8 +169,6 @@ export default function MyWebsitePage() {
             </div>
           )}
 
-
-
           {/* Right side: Button */}
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -208,10 +205,7 @@ export default function MyWebsitePage() {
                   <Input name="domain" value={form.domain} onChange={handleChange} />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>API Key</Label>
-                  <Input name="apiKey" value={form.apiKey} onChange={handleChange} />
-                </div>
+
 
                 <div className="space-y-2">
                   <Label>Owner Email</Label>
@@ -228,7 +222,7 @@ export default function MyWebsitePage() {
                 <Button variant="outline" onClick={() => {
                   setIsCreateDialogOpen(false)
                   setEditingTenantId(null)
-                  setForm({ name: "", domain: "", apiKey: "", ownerEmail: "" })
+                  setForm({ name: "", domain: "", ownerEmail: "" })
                 }}>
                   Cancel
                 </Button>
@@ -305,7 +299,6 @@ export default function MyWebsitePage() {
                     setForm({
                       name: tenant.name || "",
                       domain: tenant.domain || "",
-                      apiKey: tenant.apiKey || "",
                       ownerEmail: tenant.ownerEmail || "",
                     })
                     setIsCreateDialogOpen(true)
