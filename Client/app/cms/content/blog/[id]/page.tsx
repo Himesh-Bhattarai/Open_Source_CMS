@@ -87,6 +87,51 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [tagInput, setTagInput] = useState("");
 
+  const toDateInputValue = (value: unknown) => {
+    if (!value) return "";
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
+  };
+
+  const normalizeBlogData = (raw: any): BlogPost => {
+    const seo = raw?.seo ?? {};
+    const settings = raw?.settings ?? {};
+    const status =
+      raw?.status === "published" || raw?.status === "scheduled" || raw?.status === "draft"
+        ? raw.status
+        : "draft";
+
+    return {
+      ...emptyBlog,
+      _id: String(raw?._id ?? ""),
+      tenantId: String(raw?.tenantId ?? ""),
+      title: String(raw?.title ?? ""),
+      slug: String(raw?.slug ?? ""),
+      excerpt: String(raw?.excerpt ?? ""),
+      content: String(raw?.content ?? ""),
+      featuredImage: raw?.featuredImage ? String(raw.featuredImage) : null,
+      category: String(raw?.category ?? ""),
+      tags: Array.isArray(raw?.tags)
+        ? raw.tags.filter((tag: unknown) => typeof tag === "string").map((tag: string) => tag.trim()).filter(Boolean)
+        : [],
+      author: String(raw?.author ?? ""),
+      publishDate: toDateInputValue(raw?.publishDate) || toDateInputValue(new Date()),
+      status,
+      seo: {
+        metaTitle: String(seo?.metaTitle ?? ""),
+        metaDescription: String(seo?.metaDescription ?? ""),
+        focusKeyword: String(seo?.focusKeyword ?? ""),
+      },
+      settings: {
+        featured: typeof settings?.featured === "boolean" ? settings.featured : false,
+        allowComments: typeof settings?.allowComments === "boolean" ? settings.allowComments : true,
+        showAuthor: typeof settings?.showAuthor === "boolean" ? settings.showAuthor : true,
+      },
+    };
+  };
+
   function addTag(tag: string) {
     if (!tag.trim()) return;
     if (blogData.tags.includes(tag.trim())) return;
@@ -145,7 +190,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
   const removeFeaturedImage = () => {
     setBlogData((prev) => ({
       ...prev,
-      featuredImage: "",
+      featuredImage: null,
     }));
 
     if (fileInputRef.current) {
@@ -162,19 +207,14 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
       if (data?.ok) {
         setMessage("Blog post updated successfully.");
-
-        // Hide the message after 4 seconds
         setTimeout(() => {
-          setMessage(null);
           router.refresh();
-          router.push('/cms/content/blog'); // optional redirect
+          router.push('/cms/content/blog');
         }, 2000);
       }
     } catch (err) {
       console.error("Error updating blog post:", err);
       setMessage("Failed to update blog post.");
-
-      // Hide failure message after 4 seconds
       setTimeout(() => setMessage(null), 4000);
     }
   };
@@ -185,7 +225,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
     async function load() {
       try {
         const data = await loadBlogById(id)
-        setBlogData({ ...emptyBlog, ...data }) 
+        setBlogData(normalizeBlogData(data))
       } finally {
         setLoading(false)
       }
@@ -193,16 +233,40 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
     load()
   }, [id])
 
+  const handlePublishNow = async () => {
+    const publishPayload: BlogPost = {
+      ...blogData,
+      status: "published",
+      publishDate: toDateInputValue(blogData.publishDate) || toDateInputValue(new Date()),
+    };
 
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage(null); // hide message after 3 seconds
-      }, 1000); // 3000ms = 3 seconds
+    setBlogData(publishPayload);
+    setMessage(null);
 
-      return () => clearTimeout(timer); // cleanup if message changes before timeout
+    try {
+      const data = await updateBlogApi(id, publishPayload);
+      if (data?.ok) {
+        setMessage("Blog published successfully.");
+        setTimeout(() => {
+          router.refresh();
+          router.push("/cms/content/blog");
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Error publishing blog post:", err);
+      setMessage("Failed to publish blog post.");
+      setTimeout(() => setMessage(null), 4000);
     }
-  }, [message]);
+  };
+
+  const handlePreview = () => {
+    if (!blogData.slug.trim()) {
+      setMessage("Add a slug to preview this blog post.");
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
+    window.open(`/blog/${blogData.slug}`, "_blank");
+  };
 
   if (loading) return <div>Loading...</div>
 
@@ -233,7 +297,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handlePreview}>
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
@@ -258,7 +322,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
-                  value={blogData.title}
+                  value={blogData.title ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, title: e.target.value })}
                   placeholder="Enter post title"
                 />
@@ -269,7 +333,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="slug">URL Slug</Label>
                 <Input
                   id="slug"
-                  value={blogData?.slug}
+                  value={blogData.slug ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, slug: e.target.value })}
                   placeholder="post-url-slug"
                 />
@@ -279,7 +343,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="excerpt">Excerpt</Label>
                 <Textarea
                   id="excerpt"
-                  value={blogData?.excerpt}
+                  value={blogData.excerpt ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, excerpt: e.target.value })}
                   placeholder="Brief summary of your post"
                   rows={3}
@@ -291,7 +355,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="content">Content</Label>
                 <Textarea
                   id="content"
-                  value={blogData?.content}
+                  value={blogData.content ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, content: e.target.value })}
                   placeholder="Write your blog post content..."
                   rows={15}
@@ -320,7 +384,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                     <Label htmlFor="metaTitle">Meta Title</Label>
                     <Input
                       id="metaTitle"
-                      value={blogData.seo.metaTitle}
+                      value={blogData.seo.metaTitle ?? ""}
                       onChange={(e) =>
                         setBlogData({
                           ...blogData,
@@ -336,7 +400,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                     <Label htmlFor="metaDescription">Meta Description</Label>
                     <Textarea
                       id="metaDescription"
-                      value={blogData.seo.metaDescription}
+                      value={blogData.seo.metaDescription ?? ""}
                       onChange={(e) =>
                         setBlogData({
                           ...blogData,
@@ -355,7 +419,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                     <Label htmlFor="focusKeyword">Focus Keyword</Label>
                     <Input
                       id="focusKeyword"
-                      value={blogData.seo.focusKeyword}
+                      value={blogData.seo.focusKeyword ?? ""}
                       onChange={(e) =>
                         setBlogData({
                           ...blogData,
@@ -464,7 +528,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Input
                   id="publishDate"
                   type="date"
-                  value={blogData.publishDate}
+                  value={blogData.publishDate ?? ""}
                   onChange={(e) =>
                     setBlogData({ ...blogData, publishDate: e.target.value })
                   }
@@ -472,7 +536,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
               </div>
 
 
-              <Button className="w-full">
+              <Button className="w-full" onClick={handlePublishNow}>
                 <Calendar className="h-4 w-4 mr-2" />
                 Publish Now
               </Button>
@@ -549,11 +613,11 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Select
-                  value={blogData.category}
+                  value={blogData.category ?? ""}
                   onValueChange={(value) => setBlogData({ ...blogData, category: value })}
                 >
                   <SelectTrigger id="category">
-                    <SelectValue />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Development">Development</SelectItem>
