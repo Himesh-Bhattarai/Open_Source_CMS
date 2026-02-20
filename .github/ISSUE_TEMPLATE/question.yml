@@ -1,0 +1,26 @@
+name: Question / Help
+description: Ask a usage or integration question.
+title: "[Question]: "
+labels:
+  - question
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Ask clearly and include relevant context.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What are you building, and what have you tried?
+      placeholder: Include route names, API endpoints, and any errors.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      render: shell

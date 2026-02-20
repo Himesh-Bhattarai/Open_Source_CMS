@@ -1,0 +1,67 @@
+name: Bug Report
+description: Report a reproducible bug in client, server, or integration flow.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Client (Next.js)
+        - Server (Express API)
+        - External API / Integration
+        - Build / Dev environment
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken?
+      placeholder: Briefly describe the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include exact steps, payloads, and route paths where possible.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Send request ...
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Paste stack traces, request/response snippets, or screenshots.
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node version, OS, browser, and branch/commit if known.
+      placeholder: "Node 20.x, Windows 11, Chrome 122, main"

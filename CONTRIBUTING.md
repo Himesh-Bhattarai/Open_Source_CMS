@@ -1,146 +1,74 @@
-# Contributing to Content Management System (CMS)
+# Contributing
 
-Thank you for your interest in contributing 🙌  
-This repository is open-source and contributions are welcome.
+Thanks for contributing to ContentFlow CMS.
 
-Please read this document carefully before starting.
+## Project Layout
 
----
+- `Client/`: Next.js CMS/frontend
+- `Server/`: Express backend
+- Root scripts run both services using `concurrently`
 
-## 📌 Repository Overview
+## Development Setup
 
-This project is a **monorepo** that contains:
+1. Install dependencies:
 
-- **Client** → Frontend built with **Next.js**
-- **Server** → Backend built with **Node.js / Express**
-
-The project is designed so that **both Client and Server are run together from the root directory**.
-
-
-## 📁 Project Structure
 ```bash
-CONTENT_MANAGEMENT_SYSTEM/
-│
-├── Client/ # Frontend (Next.js)
-│ ├── app/
-│ ├── components/
-│ ├── context/
-│ ├── hooks/
-│ ├── lib/
-│ ├── public/
-│ ├── styles/
-│ ├── docs/
-│ ├── middleware.ts
-│ ├── next.config.mjs
-│ ├── tsconfig.json
-│ └── package.json
-│
-├── Server/ # Backend (Node.js / Express)
-│ ├── Api/
-│ ├── CheckPoint/
-│ ├── config/
-│ ├── core/
-│ ├── Database/
-│ ├── Models/
-│ ├── Routes/
-│ ├── Services/
-│ ├── Utils/
-│ ├── Validation/
-│ ├── server.js # -----> entry point
-│ └── package.json
-│
-├── CONTRIBUTING.md
-├── README.md
-├── STATUS.md
-├── package.json # ---->Root scripts (runs Client + Server)
-└── package-lock.json
-
+npm install
+npm --prefix Client install
+npm --prefix Server install
 ```
 
+2. Configure:
 
+- `Client/.env.local`
+- `Server/.env`
 
-## ▶️ Running the Project (IMPORTANT)
-### 1️⃣ Clone the repository
+3. Start locally:
+
 ```bash
-git clone https://github.com/Himesh-Bhattarai/Open_Source_CMS
-cd Client
-2️⃣ Install dependencies
-From the root directory:
-npm install
-This installs dependencies for:
-root
-Client
-Server
-
-3️⃣ Start development mode
-From the root directory:
-✅ This command: npm run dev
-
-Starts the Next.js Client
-Starts the Node.js Server
-
-Handles both processes together
-
-⚙️ Server Details
-Server entry file:
-Server/server.js
-
-🔐 Environment Variables
-Do NOT commit .env files
-
-
-Each service (Client / Server) manages its own environment
-
-🌱 Contribution Workflow
-Fork this repository
-Create a new branch:
-git checkout -b feature/your-feature-name   || bug/your-bug || improvement-inprovement 
-Make your changes
-
-Ensure everything runs correctly:
 npm run dev
-Commit your changes:
+```
 
-### Commit Message Convention (Required)
+## Branch Naming
 
-All commits **must include an HTTP status code**.
-status(<HTTP_CODE>): short, clear description
-Examples :
-git commit -m "status(201): API working for blog post creation"
-git commit -m "status(500): handle server crash on menu API"
+Use focused branches:
 
-Refer to [STATUS.md](./STATUS.md) for the list of supported status codes.
+- `feature/<name>`
+- `fix/<name>`
+- `refactor/<name>`
+- `docs/<name>`
 
-**Format:**
+## Pull Request Checklist
 
-Push your branch and open a Pull Request against main
+- Changes are scoped and focused
+- No secrets committed
+- API contracts remain backward compatible, or breaking changes are documented
+- Frontend builds successfully: `npm --prefix Client run build`
+- Backend tests pass: `npm --prefix Server run test`
+- Docs updated when behavior changes
+- Use issue/PR templates in `.github/` for consistency
 
-🧩 What Can You Contribute?
-Bug fixes
-API improvements
-CMS features
-Performance optimizations
-Documentation improvements
-Code cleanup & refactoring
-If unsure, open an Issue first.
+## Commit Format
 
-📏 Contribution Guidelines
-Keep PRs small and focused
-Follow existing code patterns
-Do not introduce breaking changes without discussion
-Respect the multi-tenant CMS architecture
-No secrets, no credentials, no .env
+This repo uses STATUS-style commit messages.
 
-🛠 Troubleshooting
-Server does not start?
-Ensure you ran npm run dev from the root
+Format:
 
-Ensure Server/server.js exists
+```text
+STATUS(<code>): short description
+```
 
-Ensure Node.js version is compatible
+Examples:
 
-💬 Need Help?
-If you have questions:
-Comment on an existing Issue
-Open a new Issue with details
-Discussion and collaboration are encouraged
+- `STATUS(301): add theme load fallback handling`
+- `STATUS(601): fix update-page endpoint path`
+- `STATUS(203): update environment docs`
+
+See `STATUS.md` for full code mapping.
+
+## Coding Notes
+
+- Prefer consistent toast/message UX patterns already used in CMS.
+- Keep route changes aligned with `Server/server.js` mount points.
+- For frontend API calls, keep env key names explicit in `Client/Api/*`.
+- Follow `CODE_OF_CONDUCT.md` in all project interactions.

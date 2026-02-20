@@ -1,0 +1,48 @@
+name: Feature Request
+description: Propose a new feature or enhancement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Target area
+      options:
+        - CMS UI / UX
+        - API / Backend
+        - Multi-tenant / Auth
+        - Integration / Docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are you trying to solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the exact behavior you want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative approaches or tradeoffs?
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How should we verify this is complete?
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
