@@ -5,7 +5,6 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import "./Services/notification.js";
-
 import { connectDB } from "./Database/db.js";
 import { errorHandler } from "./Utils/Logger/errorHandler.js";
 
@@ -54,6 +53,8 @@ import validateUser from "./Services/validateUser.js";
 import changePassword from "./Services/changePassword.js";
 import apiKeys from "./Routes/Load/getApi.js";
 import { rateLimiter } from "./Validation/middleware/rateLimiter.js";
+import backupRoutes from "./Routes/Backup/Backup.js";
+import { startBackupScheduler } from "./Services/backupScheduler.js";
 
 const app = express();
 import passport from "./config/password.js";
@@ -67,7 +68,6 @@ app.use(
 );
 
 console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
-
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
@@ -84,7 +84,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 //Create Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/activity", activityLogRoutes);
@@ -100,6 +99,7 @@ app.use("/api/v1/create-page", pageRoutes);
 app.use("/api/v1/create-theme", themeRoutes);
 app.use("/api/v1/create-version", versionRoutes);
 app.use("/api/v1/create-seo", seoRoutes);
+app.use("/api/v1/backup", backupRoutes);
 
 //create -- oAuth
 app.use("/api/v1/oAuth", oAuth);
@@ -139,8 +139,6 @@ app.use("/api/v1/delete-footer", deleteFooter);
 app.use("/api/v1/user/delete", deleteUser);
 app.use("/api/v1/user/validate/user-payload", validateUser);
 
-
-
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);
 app.use("/api/v1/blog", blogRoutes);
@@ -165,6 +163,7 @@ app.use(errorHandler);
 
 // Connect to DB
 connectDB();
+startBackupScheduler();
 
 // Start server
 const PORT = process.env.PORT || 5000;
