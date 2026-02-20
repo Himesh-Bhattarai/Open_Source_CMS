@@ -1,4 +1,5 @@
-const CREATE_MEDIA_URL = process.env.NEXT_PUBLIC_CREATE_MEDIA_URL;
+const DELETE_MEDIA_URL_BASE =
+  process.env.NEXT_PUBLIC_DELETE_MEDIA_URL || "http://localhost:5000/api/v1/media/media";
 
 const safeParseJson = async (response) => {
   try {
@@ -8,21 +9,15 @@ const safeParseJson = async (response) => {
   }
 };
 
-//create media
-export const createMedia = async (data) => {
+export const deleteMediaById = async (mediaId) => {
   try {
-    if (!CREATE_MEDIA_URL) {
-      throw new Error("NEXT_PUBLIC_CREATE_MEDIA_URL is not configured");
+    if (!mediaId) {
+      throw new Error("Media ID is required");
     }
 
-    const response = await fetch(CREATE_MEDIA_URL, {
-      method: "POST",
+    const response = await fetch(`${DELETE_MEDIA_URL_BASE}/${mediaId}`, {
+      method: "DELETE",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-   
     });
 
     const request = await safeParseJson(response);

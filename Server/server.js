@@ -94,6 +94,7 @@ app.use("/api/v1/create-form", formRoutes);
 app.use("/api/v1/create-tenant", tenantRoutes);
 app.use("/api/v1/create-footer", footerRoutes);
 app.use("/api/v1/create-media", mediaRoutes);
+app.use("/api/v1/media", mediaRoutes);
 app.use("/api/v1/create-menu", menuRoutes);
 app.use("/api/v1/create-page", pageRoutes);
 app.use("/api/v1/create-theme", themeRoutes);
