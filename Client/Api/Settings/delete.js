@@ -18,6 +18,10 @@ export const deleteAccount = async () => {
       message: data.message,
     };
   } catch (err) {
-    console.log(err);
+    return {
+      ok: false,
+      status: 500,
+      message: err?.message || "Network error",
+    };
   }
 };

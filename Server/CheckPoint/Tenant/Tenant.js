@@ -6,6 +6,7 @@ import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 export const tenantCheckpoint = async (req, res, next) => {
   try {
+    const authUserId = req.user?.userId;
     const {
       name,
       domain,
@@ -16,10 +17,16 @@ export const tenantCheckpoint = async (req, res, next) => {
       subdomain,
       createdBy,
     } = req.body;
+    const resolvedUserId = authUserId || createdBy;
 
     if (!name || !domain || !ownerEmail) {
       const err = new Error("Missing required fields");
       err.statusCode = 400;
+      throw err;
+    }
+    if (!resolvedUserId) {
+      const err = new Error("Unauthorized");
+      err.statusCode = 401;
       throw err;
     }
 
@@ -34,7 +41,7 @@ export const tenantCheckpoint = async (req, res, next) => {
 
     // 1️⃣ Create tenant
     const tenant = await Tenant.create({
-      userId: createdBy,
+      userId: resolvedUserId,
       name,
       domain,
       subdomain,
@@ -53,7 +60,7 @@ export const tenantCheckpoint = async (req, res, next) => {
 
     // 4️⃣ Store hash only
     await ApiKey.create({
-      userId: createdBy,
+      userId: resolvedUserId,
       tenantId: tenant._id.toString(),
       keyHash,
       rawKey: rawApiKey,
@@ -63,7 +70,7 @@ export const tenantCheckpoint = async (req, res, next) => {
 
     log.info(`Tenant created successfully: ${name}`);
 
-    notif.createWebsite({ userId: createdBy, domain, name, websiteId: tenant._id });
+    notif.createWebsite({ userId: resolvedUserId, domain, name, websiteId: tenant._id });
 
     // 5️⃣ Return RAW key once
     res.status(201).json({

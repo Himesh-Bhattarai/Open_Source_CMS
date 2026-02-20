@@ -7,62 +7,69 @@ const router = express.Router();
 
 /**
  * @route   GET /api/v1/api-keys/get-keys
- * @desc    Get all API keys grouped by tenant for logged-in user
+ * @desc    Get all API keys for logged-in user with tenant mapping
  * @access  Private
  */
 router.get(
-    "/get-keys",
-    verificationMiddleware,
-    async (req, res, next) => {
-        try {
-            const userId = req.user?.userId;
-            if (!userId) {
-                return res.status(401).json({ ok: false, message: "Unauthorized" });
-            }
+  "/get-keys",
+  verificationMiddleware,
+  async (req, res, next) => {
+    try {
+      const userId = String(req.user?.userId || "");
+      if (!userId) {
+        return res.status(401).json({ ok: false, message: "Unauthorized" });
+      }
 
-            // 1️⃣ Fetch all API keys of user
-            const apiKeys = await ApiKey.find({ userId })
-                .select("-rawKey")
-                .lean();
+      const userTenants = await Tenant.find({ userId }).select("_id name domain").lean();
+      const tenantIds = userTenants.map((t) => String(t._id));
 
-            if (!apiKeys.length) {
-                return res.status(200).json({ ok: true, data: [] });
-            }
+      const apiKeys = await ApiKey.find({
+        $or: [
+          { userId },
+          ...(tenantIds.length ? [{ tenantId: { $in: tenantIds } }] : []),
+        ],
+      }).lean();
 
-            // 2️⃣ Group keys by tenantId
-            const keysByTenant = {};
-            for (const key of apiKeys) {
-                const tenantId = key.tenantId.toString();
-                if (!keysByTenant[tenantId]) keysByTenant[tenantId] = [];
-                keysByTenant[tenantId].push(key);
-            }
+      if (!apiKeys.length) {
+        return res.status(200).json({ ok: true, data: [] });
+      }
 
-            // 3️⃣ Fetch tenant info
-            const tenantIds = Object.keys(keysByTenant);
+      const apiKeyTenantIds = [
+        ...new Set(apiKeys.map((k) => String(k.tenantId)).filter(Boolean)),
+      ];
 
-            const tenants = await Tenant.find({
-                _id: { $in: tenantIds }
-            })
-                .select("name")
-                .lean();
+      const tenants = await Tenant.find({ _id: { $in: apiKeyTenantIds } })
+        .select("name domain")
+        .lean();
 
-         
-            const response = tenants.map(t => ({
-                tenantId: t._id,
-                tenantName: t.name,
-                apiKeys: keysByTenant[t._id.toString()] || []
-            }));
+      const tenantMap = new Map(
+        tenants.map((t) => [String(t._id), { name: t.name, domain: t.domain }]),
+      );
 
-            return res.status(200).json({
-                ok: true,
-                data: response
-            });
+      const deduped = new Map();
+      for (const key of apiKeys) {
+        deduped.set(String(key._id), key);
+      }
 
-        } catch (err) {
-            err.statusCode = 500;
-            next(err);
-        }
+      const response = Array.from(deduped.values()).map((key) => {
+        const tenant = tenantMap.get(String(key.tenantId)) || {
+          name: "Unknown Tenant",
+          domain: "",
+        };
+
+        return {
+          ...key,
+          tenantName: tenant.name,
+          tenantDomain: tenant.domain,
+        };
+      });
+
+      return res.status(200).json({ ok: true, data: response });
+    } catch (err) {
+      err.statusCode = 500;
+      next(err);
     }
+  },
 );
 
 export default router;

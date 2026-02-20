@@ -106,7 +106,7 @@ export default function MyWebsitePage() {
 
     setLoading(true)
     try {
-      await createTenant({ ...form, createdBy: user.id })
+      await createTenant(form)
 
       const data = await getUserTenants()
       setTenants(data.tenants)

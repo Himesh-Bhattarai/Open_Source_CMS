@@ -42,13 +42,13 @@ export default function IntegrationsPage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [apiList, setApiList] = useState<Integration[]>([])
   const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
 
   // Fetch integrations data from API
   useEffect(() => {
     const loadApisList = async () => {
       setLoading(true)
-      setMessage("")
+      setErrorMessage("")
 
       try {
         const loadApi = await integrationsApi()
@@ -62,21 +62,14 @@ export default function IntegrationsPage() {
             }))
           )
           setApiList(allIntegrations)
-
-
-          setMessage(
-            allIntegrations.length
-              ? "Successfully loaded integrations"
-              : "No integrations found"
-          )
         } else {
           setApiList([])
-          setMessage("Failed to load integrations from API")
+          setErrorMessage("Failed to load integrations from API")
         }
       } catch (error) {
         console.error("Error loading integrations:", error)
         setApiList([])
-        setMessage("Error loading integrations. Please try again.")
+        setErrorMessage("Error loading integrations. Please try again.")
       } finally {
         setLoading(false)
       }
@@ -142,10 +135,10 @@ export default function IntegrationsPage() {
         </Alert>
       )}
 
-      {/* Message Display */}
-      {message && !loading && (
-        <Alert variant={message.includes("Failed") || message.includes("Error") ? "destructive" : "default"}>
-          <AlertDescription>{message}</AlertDescription>
+      {/* Error Display */}
+      {errorMessage && !loading && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       )}
 

@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Bell, Mail, CheckCircle, Trash2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
-import { getNotification } from "@/Api/Notification/notification"
+import { deleteNotificationById, getNotification, markAllNotificationsRead, markNotificationRead } from "@/Api/Notification/notification"
 
 interface Notification {
-  id: number
+  id: string
   type: string
   title: string
   message: string
@@ -22,7 +22,6 @@ interface Notification {
 export default function NotificationsPage() {
  const [notifications, setNotifications] = useState<Notification[]>([]);
  const [loading, setLoading] = useState(false);
- const [message, setMessage] = useState("");
 
   const [emailSettings, setEmailSettings] = useState({
     contentPublished: true,
@@ -43,7 +42,7 @@ export default function NotificationsPage() {
       const notif = await getNotification();
       const notificationsArray = notif.data?.notifications || [];
       if (!notif.ok) {
-        setMessage(notif?.message ?? "Failed to load notifications");
+        console.error(notif?.message ?? "Failed to load notifications");
         setLoading(false);
         return;
       }
@@ -64,16 +63,31 @@ export default function NotificationsPage() {
     loadNotif();
   }, []);
 
-  const markAsRead = (id: number) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  const markAsRead = async (id: string) => {
+    const prev = notifications
+    setNotifications(prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+    const res = await markNotificationRead(id)
+    if (!res.ok) {
+      setNotifications(prev)
+    }
   }
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })))
+  const markAllAsRead = async () => {
+    const prev = notifications
+    setNotifications(prev.map((n) => ({ ...n, read: true })))
+    const res = await markAllNotificationsRead()
+    if (!res.ok) {
+      setNotifications(prev)
+    }
   }
 
-  const deleteNotification = (id: number) => {
-    setNotifications(notifications.filter((n) => n.id !== id))
+  const deleteNotification = async (id: string) => {
+    const prev = notifications
+    setNotifications(prev.filter((n) => n.id !== id))
+    const res = await deleteNotificationById(id)
+    if (!res.ok) {
+      setNotifications(prev)
+    }
   }
 
   
