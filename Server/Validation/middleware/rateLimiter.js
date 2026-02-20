@@ -5,11 +5,8 @@ import { ApiKey } from "../../Models/ApiKey/apiKey.js";
 const DEFAULT_LIMIT = 500; // Max requests
 const DEFAULT_WINDOW = 60; // Window in seconds
 
-// NOTE:
-// This middleware performs BOTH apiKey verification
-// and rate limiting for external APIs.
-// Do NOT reuse for internal routes.
-// I don't have any alternative solution. if someone has one, please let me know
+// This middleware combines API key verification and per-key rate limiting
+// for external API traffic. Keep internal CMS routes on session auth middleware.
 
 
 export const rateLimiter = async (req, res, next) => {

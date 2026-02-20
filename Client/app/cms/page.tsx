@@ -236,7 +236,6 @@ function OwnerDashboard({ user }: { user: any }) {
           { label: "Total Pages", value: data.totalPages ?? 0, icon: FileText, change: "+3 this week", color: "text-blue-600" },
           { label: "Published Pages", value: data.publishedPages ?? 0, icon: BarChart3, change: "+12 this week", color: "text-green-600" },
           { label: "Draft Pages", value: data.draftPages ?? 0, icon: ImageIcon, change: "+5 this week", color: "text-purple-600" },
-          // { label: "Team Members", value: data.teamMembers ?? 0, icon: Users, change: "1 online now", color: "text-orange-600" },
         ]
 
         setStats(statsArray)

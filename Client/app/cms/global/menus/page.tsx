@@ -14,11 +14,10 @@ export default function MenusPage() {
   const [loading, setLoading] = useState(false)
   const [menusData, setMenusData] = useState<any[]>([])
 
-  // Helper to truncate text to 50 chars
+  // Keep card text compact in the grid layout.
   const truncate = (text = "", length = 50) =>
-    text.length > length ? text.slice(0, length) + "…" : text
+    text.length > length ? `${text.slice(0, length)}...` : text
 
-  /* ---------------- LOAD MENUS ---------------- */
   useEffect(() => {
     const loadMenu = async () => {
       try {
@@ -39,11 +38,10 @@ export default function MenusPage() {
     loadMenu()
   }, [])
 
-  /* ---------------- DELETE MENU ---------------- */
   const deleteMenu = async (menuId: string) => {
     const previous = menusData
 
-    // Optimistic update
+    // Optimistic UI update with rollback on failure.
     setMenusData((prev) => prev.filter((m) => m._id !== menuId))
 
     try {
@@ -51,16 +49,13 @@ export default function MenusPage() {
       if (!response?.ok) throw new Error("Delete failed")
       toast.success("Menu deleted")
     } catch (err: any) {
-      // rollback
       setMenusData(previous)
       toast.error(err.message || "Failed to delete menu")
     }
   }
 
-  /* ---------------- UI ---------------- */
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-balance text-3xl font-bold tracking-tight">Menus</h1>
@@ -76,21 +71,18 @@ export default function MenusPage() {
         </Button>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="flex justify-center py-12 text-muted-foreground">
-          Loading menus…
+          Loading menus...
         </div>
       )}
 
-      {/* Empty */}
       {!loading && menusData.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           No menus found
         </div>
       )}
 
-      {/* Menus Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {menusData.map((menu) => (
           <Card key={menu._id} className="hover:shadow-md transition-shadow">
@@ -123,7 +115,7 @@ export default function MenusPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
                 <Clock className="h-3.5 w-3.5" />
-                <span>Last edited {menu.updatedAt || "—"}</span>
+                <span>Last edited {menu.updatedAt || "-"}</span>
               </div>
 
               <div className="flex gap-2">

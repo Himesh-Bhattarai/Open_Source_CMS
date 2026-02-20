@@ -9,7 +9,6 @@ export function SiteFooter({ tenant }: SiteFooterProps) {
   const footerLinks = {
     product: [
       { label: "Features", href: "/features" },
-      // { label: "Pricing", href: "/pricing" },
       { label: "FAQ", href: "/faq" },
     ],
     company: [
@@ -94,7 +93,7 @@ export function SiteFooter({ tenant }: SiteFooterProps) {
 
         <div className="mt-12 pt-8 border-t">
           <p className="text-sm text-muted-foreground text-center">
-            © 2025 Your Company. All rights reserved.
+            (c) 2025 Your Company. All rights reserved.
           </p>
         </div>
       </div>
