@@ -46,6 +46,7 @@ Use focused branches:
 - Frontend builds successfully: `npm --prefix Client run build`
 - Backend tests pass: `npm --prefix Server run test`
 - Docs updated when behavior changes
+- Use issue/PR templates in `.github/` for consistency
 
 ## Commit Format
 

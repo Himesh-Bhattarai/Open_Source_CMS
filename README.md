@@ -87,11 +87,10 @@ Detailed map:
 
 ## Documentation Index
 
+- `docs/README.md`
 - `docs/ENVIRONMENT_REFERENCE.md`
 - `docs/API_ROUTE_MAP.md`
 - `docs/CODEBASE_MAP.md`
-- `Client/docs/AUTHENTICATION_FLOW.md`
-- `Client/docs/CLIENT_INTEGRATION_GUIDE.md`
 - `CODE_OF_CONDUCT.md`
 - `SECURITY.md`
 - `SUPPORT.md`
