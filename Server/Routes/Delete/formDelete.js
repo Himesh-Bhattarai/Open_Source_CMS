@@ -12,10 +12,11 @@ router.delete("/form/:formId", verificationMiddleware, async (req, res) => {
 
   const form = await Form.findById({ _id: formId });
   if (!form) throw new Error("Form not found");
+  if (String(form.userId) !== String(userId)) throw new Error("Forbidden");
 
   const deleteForm = await Form.findByIdAndDelete({ _id: formId });
 
-  notif.deleteForm({ userId, formName: form.formName, formId: form._id, websiteId: form.websiteId });
+  notif.deleteForm({ userId, formName: form.name, formId: form._id, websiteId: form.tenantId });
 
   res
     .status(200)

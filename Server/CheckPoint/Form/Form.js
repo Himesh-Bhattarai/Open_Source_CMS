@@ -21,9 +21,9 @@ export const formCheckpoint = async (req, res, next) => {
 
     notif.createForm({
       userId,
-      formName: createdForm.formName,
+      formName: createdForm.name,
       formId: createdForm._id,
-      websiteId: createdForm.websiteId
+      websiteId: createdForm.tenantId
     })
     return res.status(201).json({
       message: "Form created successfully",
