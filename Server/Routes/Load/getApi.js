@@ -57,8 +57,18 @@ router.get(
           domain: "",
         };
 
+        const preview = key.keyPreview || "hidden";
         return {
-          ...key,
+          _id: key._id,
+          tenantId: key.tenantId,
+          userId: key.userId,
+          permissions: key.permissions || [],
+          isActive: key.isActive !== false,
+          name: key.name || "API Key",
+          createdAt: key.createdAt,
+          updatedAt: key.updatedAt,
+          keyPreview: preview,
+          maskedKey: preview,
           tenantName: tenant.name,
           tenantDomain: tenant.domain,
         };

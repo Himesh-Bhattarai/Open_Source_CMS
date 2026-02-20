@@ -13,7 +13,7 @@ describe("Auth advanced", () => {
     const app = buildApp("/auth", router);
     const expired = jwt.sign({ userId: "user-adv" }, process.env.ACCESS_TOKEN || "test-access-secret", { expiresIn: "-1s" });
     const res = await request(app).get("/auth/profile").set("Cookie", `accessToken=${expired}`);
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(401);
     expect(res.body.message).toMatch(/jwt expired/i);
   });
 

@@ -12,6 +12,7 @@ const router = express.Router();
 
 //Routes Blog Related
 router.use("/blog", getBlog);
+router.use("/blogs", getBlog);
 // router.use("/:domain/blog");
 //Router Page Related
 router.use("/pages", getPages);

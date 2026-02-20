@@ -6,6 +6,13 @@ import { Strategy as FacebookStrategy } from "passport-facebook";
 import { User } from "../../../Models/Client/User.js";
 import bcrypt from "bcrypt";
 
+const serverBaseUrl = process.env.SERVER_BASE_URL || "http://localhost:5000";
+const googleCallbackUrl =
+  process.env.GOOGLE_CALLBACK_URL ||
+  `${serverBaseUrl}/api/v1/oAuth/auth/google/callback`;
+const facebookCallbackUrl =
+  process.env.FACEBOOK_CALLBACK_URL ||
+  `${serverBaseUrl}/api/v1/oAuth/auth/facebook/callback`;
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
@@ -19,7 +26,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/api/v1/oAuth/auth/google/callback",
+      callbackURL: googleCallbackUrl,
     },
     async (_, __, profile, done) => {
       let user = await User.findOne({ googleId: profile.id });
@@ -56,7 +63,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-          callbackURL: "http://localhost:5000/api/v1/oAuth/auth/facebook/callback",
+      callbackURL: facebookCallbackUrl,
       profileFields: ["id", "emails", "name", "displayName"],
     },
     async (_, __, profile, done) => {

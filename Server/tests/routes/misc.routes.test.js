@@ -30,8 +30,44 @@ describe("Misc mounted routes", () => {
 
   test("GET api keys valid invalid edge", async () => {
     const router = await loadMiscRouter("../../Routes/Load/getApi.js", [
-      ["../../Models/ApiKey/apiKey.js", () => ({ ApiKey: { find: jest.fn().mockReturnValue({ select: () => ({ lean: () => Promise.resolve([{ tenantId: "t1" }]) }) }) } })],
-      ["../../Models/Tenant/Tenant.js", () => ({ Tenant: { find: jest.fn().mockReturnValue({ select: () => ({ lean: () => Promise.resolve([{ _id: "t1", name: "Site" }]) }) }) } })],
+      [
+        "../../Models/ApiKey/apiKey.js",
+        () => ({
+          ApiKey: {
+            find: jest.fn().mockReturnValue({
+              lean: () =>
+                Promise.resolve([
+                  {
+                    _id: "k1",
+                    tenantId: "t1",
+                    userId: "user-1",
+                    permissions: ["read:pages"],
+                    isActive: true,
+                    name: "Default Public Key",
+                    keyPreview: "abcd...1234",
+                  },
+                ]),
+            }),
+          },
+        }),
+      ],
+      [
+        "../../Models/Tenant/Tenant.js",
+        () => ({
+          Tenant: {
+            find: jest
+              .fn()
+              .mockReturnValueOnce({
+                select: () =>
+                  ({ lean: () => Promise.resolve([{ _id: "t1", name: "Site", domain: "site" }]) }),
+              })
+              .mockReturnValueOnce({
+                select: () =>
+                  ({ lean: () => Promise.resolve([{ _id: "t1", name: "Site", domain: "site" }]) }),
+              }),
+          },
+        }),
+      ],
     ]);
     const app = createRouteTestApp("/keys", router);
 
@@ -44,7 +80,7 @@ describe("Misc mounted routes", () => {
         () => ({
           ApiKey: {
             find: jest.fn().mockReturnValue({
-              select: () => ({ lean: () => Promise.resolve([{ tenantId: "t1" }]) }),
+              lean: () => Promise.resolve([{ _id: "k1", tenantId: "t1", userId: "user-1" }]),
             }),
           },
         }),
@@ -53,9 +89,15 @@ describe("Misc mounted routes", () => {
         "../../Models/Tenant/Tenant.js",
         () => ({
           Tenant: {
-            find: jest.fn().mockReturnValue({
-              select: () => ({ lean: () => Promise.reject(new Error("db fail")) }),
-            }),
+            find: jest
+              .fn()
+              .mockReturnValueOnce({
+                select: () =>
+                  ({ lean: () => Promise.resolve([{ _id: "t1", name: "Site", domain: "site" }]) }),
+              })
+              .mockReturnValueOnce({
+                select: () => ({ lean: () => Promise.reject(new Error("db fail")) }),
+              }),
           },
         }),
       ],
@@ -97,8 +139,8 @@ describe("Misc mounted routes", () => {
     expect((await request(app).get("/noti/get-notification").set("Cookie", makeAuthCookie())).status).toBe(200);
     expect((await request(app).get("/noti/get-notification")).status).toBe(401);
 
-    const edge = await request(app).post("/noti/read/bad-id");
-    expect([200, 500]).toContain(edge.status);
+    const edge = await request(app).post("/noti/read/bad-id").set("Cookie", makeAuthCookie());
+    expect(edge.status).toBe(400);
   });
 
   test("Admin load current behavior typo path", async () => {

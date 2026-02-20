@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "next dev -H 0.0.0.0 -p 3000 --hostname 0.0.0.0",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "start": "next start"
   },
   "dependencies": {
@@ -50,6 +51,7 @@
     "mongoose": "9.0.2",
     "next": "^16.1.6",
     "next-themes": "^0.4.6",
+    "project-root": "file:..",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
@@ -68,7 +70,9 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/parser": "^8.46.2",
     "autoprefixer": "^10.4.24",
+    "eslint": "^9.39.2",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "tw-animate-css": "1.3.3",

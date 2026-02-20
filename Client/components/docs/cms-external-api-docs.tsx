@@ -42,25 +42,22 @@ Welcome to your CMS API guide. Follow these steps to fetch data for your website
 
 Step 1: Get your API Key
 - Go to Account Settings -> API Keys
-- Copy your API key (mocked here for demo: DEMO_API_KEY)
+- Create/copy your API key (mocked here for demo: DEMO_API_KEY)
 
 Step 2: Get your Integration Endpoint
-- Go to Integrations -> API Endpoint
-- Copy the endpoint (mocked here: https://demo-your-website.com/api/v1)
+- Go to Integrations -> API Endpoint for your tenant domain
+- Copy the endpoint base (mocked here: https://demo-your-website.com/api/v1/external-request/my-tenant)
 
 Step 3: Fetch Pages (Simulated)
 > Terminal Command (curl):
-curl -H "x-api-key: DEMO_API_KEY" https://demo-your-website.com/api/v1/page/user-pages
+curl -H "Authorization: Bearer DEMO_API_KEY" https://demo-your-website.com/api/v1/external-request/my-tenant/pages
 
 > Mocked JSON Response:
-[
-  {"id": "page_001", "title": "Home", "slug": "home"},
-  {"id": "page_002", "title": "About Us", "slug": "about-us"}
-]
+{"pages":[{"id":"page_001","title":"Home","slug":"home"},{"id":"page_002","title":"About Us","slug":"about-us"}]}
 
 Step 4: Fetch Single Blog (Simulated)
 > Terminal Command (curl):
-curl -H "x-api-key: DEMO_API_KEY" https://demo-your-website.com/api/v1/blog/load/BLOG_ID
+curl -H "Authorization: Bearer DEMO_API_KEY" https://demo-your-website.com/api/v1/external-request/my-tenant/blog/my-first-post
 
 > Mocked JSON Response:
 {
@@ -70,8 +67,8 @@ curl -H "x-api-key: DEMO_API_KEY" https://demo-your-website.com/api/v1/blog/load
 }
 
 Step 5: Frontend Example (JavaScript)
-fetch("https://demo-your-website.com/api/v1/page/user-pages", {
-  headers: {"x-api-key": "DEMO_API_KEY"}
+fetch("https://demo-your-website.com/api/v1/external-request/my-tenant/pages", {
+  headers: {"Authorization": "Bearer DEMO_API_KEY"}
 })
 .then(res => res.json())
 .then(data => console.log(data));

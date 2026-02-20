@@ -1,28 +1,26 @@
-const CMS_MENU_API = process.env.NEXT_PUBLIC_CMS_MENU_API;
+const DEFAULT_TENANT = process.env.NEXT_PUBLIC_DEFAULT_TENANT_DOMAIN || "";
 
+// Fetch menu via internal server route to avoid exposing API keys in browser code.
+export const fetchMenu = async (tenant = DEFAULT_TENANT) => {
+  try {
+    const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : "";
+    const response = await fetch(`/api/public/navigation${query}`, {
+      method: "GET",
+      credentials: "include",
+    });
 
-//fetch menu from cms
-export const fetchMenu = async ()=>{
-    try{
-        const response = await fetch(CMS_MENU_API, {
-            method: "GET",
-            headers: {
-                Authorization: "Bearer 1b6758ca1b4e451d34ea9f215b9c3ff924b2627ca984188d6a5165fe2e7e1d17"
-            }
-        });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.message || "Failed to load navigation");
 
-        const data = await response.json();
-       
-        if(!response.ok) throw new Error("Internal Server Error");
-        return{
-            ok: response.ok,
-            data: data?.getMenu
-        }
-    }catch(err){
-        console.error(err);
-        return{
-            ok: false,
-            data: []
-        }
-    }
-}
+    return {
+      ok: true,
+      data: Array.isArray(data?.data) ? data.data : [],
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      ok: false,
+      data: [],
+    };
+  }
+};

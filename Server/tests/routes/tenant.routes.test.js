@@ -4,6 +4,8 @@ import { jest } from "@jest/globals";
 import { createRouteTestApp } from "../helpers/createRouteTestApp.js";
 import { makeAuthCookie } from "../helpers/auth.js";
 
+const TENANT_ID = "507f191e810c19729de860ea";
+
 const loadTenantCreateRouter = async (checkpointImpl) => {
   jest.resetModules();
   jest.unstable_mockModule("../../CheckPoint/Tenant/Tenant.js", () => ({ tenantCheckpoint: checkpointImpl }));
@@ -27,7 +29,26 @@ const loadTenantDeleteRouter = async (tenantModel, session) => {
   jest.unstable_mockModule("mongoose", () => ({
     default: { startSession: jest.fn().mockResolvedValue(session) },
   }));
+  jest.unstable_mockModule("../../Utils/Jwt/Jwt.js", () => ({
+    verificationMiddleware: (req, res, next) => {
+      const hasCookie = String(req.headers.cookie || "").includes("accessToken=");
+      if (!hasCookie) {
+        const err = new Error("No access token found");
+        err.statusCode = 401;
+        return next(err);
+      }
+      req.user = { userId: "user-1", role: "web-owner" };
+      return next();
+    },
+  }));
   jest.unstable_mockModule("../../Models/Tenant/Tenant.js", () => ({ Tenant: tenantModel }));
+  jest.unstable_mockModule("../../Models/ApiKey/apiKey.js", () => ({
+    ApiKey: {
+      deleteOne: jest.fn().mockReturnValue({
+        session: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      }),
+    },
+  }));
   jest.unstable_mockModule("../../Services/notificationServices.js", () => ({ cmsEventService: { deleteWebsite: jest.fn() } }));
   return (await import("../../Routes/Delete/tenantDelete.js")).default;
 };
@@ -39,6 +60,7 @@ describe("Tenant routes", () => {
 
     const valid = await request(app)
       .post("/tenant/tenant")
+      .set("Cookie", makeAuthCookie())
       .send({
         name: "Site",
         domain: "site",
@@ -47,12 +69,15 @@ describe("Tenant routes", () => {
       });
     expect(valid.status).toBe(201);
 
-    const invalid = await request(app).post("/tenant/tenant").send({});
+    const unauthenticated = await request(app).post("/tenant/tenant").send({ name: "Site" });
+    expect(unauthenticated.status).toBe(401);
+
+    const invalid = await request(app).post("/tenant/tenant").set("Cookie", makeAuthCookie()).send({});
     expect(invalid.status).toBe(201);
 
     const edgeRouter = await loadTenantCreateRouter((req, res, next) => next(new Error("tenant fail")));
     const edgeApp = createRouteTestApp("/tenant", edgeRouter);
-    const edge = await request(edgeApp).post("/tenant/tenant").send({ name: "Site" });
+    const edge = await request(edgeApp).post("/tenant/tenant").set("Cookie", makeAuthCookie()).send({ name: "Site" });
     expect(edge.status).toBe(500);
   });
 
@@ -82,14 +107,14 @@ describe("Tenant routes", () => {
   test("PUT tenant update valid invalid edge", async () => {
     const router = await loadTenantCombinedRouter({
       find: jest.fn(),
-      findOneAndUpdate: jest.fn().mockResolvedValue({ _id: "t1", domain: "site", name: "Site" }),
+      findOneAndUpdate: jest.fn().mockResolvedValue({ _id: TENANT_ID, domain: "site", name: "Site" }),
     });
     const app = createRouteTestApp("/tenant", router);
 
-    const valid = await request(app).put("/tenant/tenant/t1").set("Cookie", makeAuthCookie()).send({ name: "Site 2" });
+    const valid = await request(app).put(`/tenant/tenant/${TENANT_ID}`).set("Cookie", makeAuthCookie()).send({ name: "Site 2" });
     expect(valid.status).toBe(200);
 
-    const invalid = await request(app).put("/tenant/tenant/t1").send({ name: "Site 2" });
+    const invalid = await request(app).put(`/tenant/tenant/${TENANT_ID}`).send({ name: "Site 2" });
     expect(invalid.status).toBe(401);
 
     const edgeRouter = await loadTenantCombinedRouter({
@@ -97,7 +122,7 @@ describe("Tenant routes", () => {
       findOneAndUpdate: jest.fn().mockResolvedValue(null),
     });
     const edgeApp = createRouteTestApp("/tenant", edgeRouter);
-    const edge = await request(edgeApp).put("/tenant/tenant/t1").set("Cookie", makeAuthCookie()).send({ name: "Site 2" });
+    const edge = await request(edgeApp).put(`/tenant/tenant/${TENANT_ID}`).set("Cookie", makeAuthCookie()).send({ name: "Site 2" });
     expect(edge.status).toBe(404);
   });
 
@@ -117,10 +142,10 @@ describe("Tenant routes", () => {
     );
     const app = createRouteTestApp("/delete", router);
 
-    const valid = await request(app).delete("/delete/t1").set("Cookie", makeAuthCookie());
+    const valid = await request(app).delete(`/delete/${TENANT_ID}`).set("Cookie", makeAuthCookie());
     expect(valid.status).toBe(200);
 
-    const invalid = await request(app).delete("/delete/t1");
+    const invalid = await request(app).delete(`/delete/${TENANT_ID}`);
     expect(invalid.status).toBe(401);
 
     const edgeRouter = await loadTenantDeleteRouter(
@@ -131,7 +156,7 @@ describe("Tenant routes", () => {
       session,
     );
     const edgeApp = createRouteTestApp("/delete", edgeRouter);
-    const edge = await request(edgeApp).delete("/delete/t1").set("Cookie", makeAuthCookie());
+    const edge = await request(edgeApp).delete(`/delete/${TENANT_ID}`).set("Cookie", makeAuthCookie());
     expect(edge.status).toBe(404);
   });
 });

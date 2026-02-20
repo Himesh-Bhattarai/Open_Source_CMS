@@ -8,6 +8,18 @@ const loadDeleteUserRouter = async ({ session, userModel }) => {
   jest.unstable_mockModule("mongoose", () => ({
     default: { startSession: jest.fn().mockResolvedValue(session) },
   }));
+  jest.unstable_mockModule("../../Utils/Jwt/Jwt.js", () => ({
+    verificationMiddleware: (req, res, next) => {
+      const hasCookie = String(req.headers.cookie || "").includes("accessToken=");
+      if (!hasCookie) {
+        const err = new Error("No access token found");
+        err.statusCode = 401;
+        return next(err);
+      }
+      req.user = { userId: "user-1", role: "web-owner" };
+      return next();
+    },
+  }));
 
   jest.unstable_mockModule("../../Models/Client/User.js", () => ({ User: userModel }));
   jest.unstable_mockModule("../../Models/Tenant/Tenant.js", () => ({ Tenant: { deleteMany: jest.fn().mockReturnValue({ session: jest.fn().mockResolvedValue({}) }) } }));

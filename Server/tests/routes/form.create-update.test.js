@@ -3,6 +3,8 @@ import { jest } from "@jest/globals";
 import { createRouteTestApp } from "../helpers/createRouteTestApp.js";
 import { makeAuthCookie } from "../helpers/auth.js";
 
+jest.setTimeout(15000);
+
 const loadFormRouter = async (checkpointImpl, formModel) => {
   jest.resetModules();
   jest.unstable_mockModule("../../CheckPoint/Form/Form.js", () => ({ formCheckpoint: checkpointImpl }));
@@ -38,7 +40,7 @@ describe("Form create/update routes", () => {
     const router = await loadFormRouter(
       (req, res) => res.status(201).json({ ok: true }),
       {
-        findById: jest.fn().mockResolvedValue({ _id: "f1" }),
+        findById: jest.fn().mockResolvedValue({ _id: "f1", userId: "user-1" }),
         findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "f1" }),
       },
     );

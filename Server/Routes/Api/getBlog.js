@@ -9,7 +9,7 @@ router.get(
   "/",
   tenantVerification,
   apiKeyVerification,
-  trackIntegrationUsage({ featureKey: "blog" }),
+  trackIntegrationUsage({ featureKey: "blog", endpointKey: "collection" }),
   getBlog,
 );
 
@@ -17,7 +17,7 @@ router.get(
   "/:slug",
   tenantVerification,
   apiKeyVerification,
-  trackIntegrationUsage({ featureKey: "blog" }),
+  trackIntegrationUsage({ featureKey: "blog", endpointKey: "detail" }),
   getBlog,
 );
 

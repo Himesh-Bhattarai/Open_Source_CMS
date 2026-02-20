@@ -24,6 +24,25 @@ const loadOAuthRouter = async ({ tokenFactory } = {}) => {
     generateTokens:
       tokenFactory ||
       (() => ({ accessToken: "access", refreshToken: "refresh" })),
+    getCookieOptions: (maxAge) => ({
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge,
+    }),
+  }));
+
+  jest.unstable_mockModule("bcrypt", () => ({
+    default: {
+      hash: jest.fn(async () => "hashed-refresh"),
+    },
+  }));
+
+  jest.unstable_mockModule("../../Models/Client/Session.js", () => ({
+    Session: {
+      findOneAndUpdate: jest.fn().mockResolvedValue({ _id: "s1" }),
+    },
   }));
 
   return (await import("../../Routes/Auth/oAuth/oAuth.js")).default;

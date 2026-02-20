@@ -86,13 +86,14 @@ export const tenantCheckpoint = async (req, res, next) => {
 
     const rawApiKey = crypto.randomBytes(32).toString("hex");
     const keyHash = crypto.createHash("sha256").update(rawApiKey).digest("hex");
+    const keyPreview = `${rawApiKey.slice(0, 4)}...${rawApiKey.slice(-4)}`;
 
     try {
       await ApiKey.create({
         userId: String(resolvedUserId),
         tenantId: tenant._id.toString(),
         keyHash,
-        rawKey: rawApiKey,
+        keyPreview,
         permissions: ["read:pages"],
         isActive: true,
         name: "Default Public Key",

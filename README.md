@@ -43,8 +43,8 @@ npm --prefix Server install
 
 2. Configure environment files:
 
-- `Client/.env.local`
-- `Server/.env`
+- Local development: `Client/.env.local`, `Server/.env`
+- Production profile templates: `Client/.env.local.frontend`, `Server/.env.server`
 - See `docs/ENVIRONMENT_REFERENCE.md`
 
 3. Start development:
@@ -57,6 +57,23 @@ Default dev ports:
 
 - Client: `http://localhost:3000`
 - Server: `http://localhost:5000`
+
+## Fork And Branch Policy
+
+- Fork from `main` only.
+- Do not fork from `deploy` and do not develop directly on `deploy`.
+- Use short-lived feature branches from your fork's `main`, then open PRs back to `main`.
+- Promote to production by merging `main` -> `deploy` via PR (no direct pushes).
+
+## Post-Fork Production Checklist
+
+1. Create local env files: `Client/.env.local` and `Server/.env`, then follow `docs/ENVIRONMENT_REFERENCE.md`.
+2. Replace local endpoints: change `http://localhost:5000/...` entries in `Client/.env.local` to your API domain.
+3. Rotate secrets: generate new JWT/session secrets and OAuth credentials for your own project.
+4. Configure deploy secrets/variables in your fork: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_PORT`, `SSH_FINGERPRINT`, `SERVER_APP_PATH`, `HEALTHCHECK_URL`, `SERVER_ENV_FILE`, `CLIENT_ENV_FILE`.
+5. Configure optional deploy integrations only if used: `SLACK_WEBHOOK_URL`, `DISCORD_WEBHOOK_URL`, and Docker settings (`DEPLOY_METHOD=docker`, `DOCKER_IMAGE`, `GHCR_USERNAME`, `GHCR_TOKEN`).
+6. Configure URLs and callbacks: set server `CORS_ORIGIN`, `SERVER_BASE_URL`, OAuth callback URLs, and frontend auth redirect for your domain.
+7. Run pre-deploy checks locally before merging to `deploy`: `npm --prefix Client run lint`, `npm --prefix Client run typecheck`, `npm --prefix Client run build`, `npm --prefix Server run test`.
 
 ## Common Commands
 

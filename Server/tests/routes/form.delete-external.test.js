@@ -24,7 +24,7 @@ const loadExternalFormRouter = async ({ getFormImpl, tenantImpl, apiKeyImpl, tra
 describe("Form delete/external routes", () => {
   test("DELETE form valid invalid edge", async () => {
     const router = await loadFormDeleteRouter({
-      findById: jest.fn().mockResolvedValue({ _id: "f1", formName: "Contact", websiteId: "w1" }),
+      findById: jest.fn().mockResolvedValue({ _id: "f1", formName: "Contact", websiteId: "w1", userId: "user-1" }),
       findByIdAndDelete: jest.fn().mockResolvedValue({ _id: "f1" }),
     });
     const app = createRouteTestApp("/delete", router);

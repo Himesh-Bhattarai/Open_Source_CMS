@@ -60,14 +60,18 @@ import { startBackupScheduler } from "./Services/backupScheduler.js";
 const app = express();
 import passport from "./config/password.js";
 const isProd = process.env.NODE_ENV === "production";
-const corsOrigins = ("http://localhost:3000" || process.env.CORS_ORIGIN || "http://localhost:3000")
+const corsOriginConfig = process.env.CORS_ORIGIN || (isProd ? "" : "http://localhost:3000");
+const corsOrigins = corsOriginConfig
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be configured");
 }
-if (isProd && corsOrigins.length === 0) {
+if (isProd && !process.env.CORS_ORIGIN) {
+  throw new Error("CORS_ORIGIN must be configured in production");
+}
+if (corsOrigins.length === 0) {
   throw new Error("CORS_ORIGIN must be configured in production");
 }
 if (isProd) {

@@ -129,7 +129,7 @@ const footerFallback = {
     const loadAll = async () => {
       try {
         const navRes = await loadNavigation()
-        if (navRes.ok) {
+        if (navRes.ok && Array.isArray(navRes.data) && navRes.data[0]?.items) {
           setMenuItems(navRes.data[0].items)
         } else {
           setMenuItems(defaultMenu as MenuItem[])
@@ -155,12 +155,11 @@ const footerFallback = {
     const directMe = async () => {
       try {
         const res = await verifyMe();
-        if (!res.ok) {
-       
-          setLoading(false);
-        } 
-       
+        if (res.ok) {
           router.push("/cms");
+          return;
+        }
+        setLoading(false);
       } catch (err) {
         console.error(err);
         setLoading(false);

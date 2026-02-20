@@ -1,9 +1,33 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { getUserMenus } from "@/Api/Fetch/allFetch";
-
+import { loadMenus } from "@/Api/Menu/Load";
 import { useAuth } from "@/hooks/useAuth";
+
+type MenuItem = {
+  _id: string;
+  label: string;
+  type?: string;
+  link?: string;
+  enabled?: boolean;
+  order?: number;
+  children?: MenuItem[];
+};
+
+type Menu = {
+  _id: string;
+  title?: string;
+  menuLocation?: string;
+  status?: string;
+  items: MenuItem[];
+};
+
+type MenusContextType = {
+  menus: Menu[];
+  activeMenu: Menu | null;
+  setActiveMenu: (menu: Menu | null) => void;
+  refreshMenus: () => Promise<void>;
+};
 
 const MenusContext = createContext<MenusContextType | null>(null);
 
@@ -14,9 +38,10 @@ export function MenusProvider({ children }: { children: React.ReactNode }) {
 
   const refreshMenus = async () => {
     if (!user) return;
-    const data = await getUserMenus();
-    setMenus(data.menus);
-    setActiveMenu(data.menus[0] ?? null);
+    const data = await loadMenus();
+    const resolvedMenus = Array.isArray(data?.menus) ? data.menus : [];
+    setMenus(resolvedMenus);
+    setActiveMenu(resolvedMenus[0] ?? null);
   };
 
   useEffect(() => {
@@ -26,7 +51,7 @@ export function MenusProvider({ children }: { children: React.ReactNode }) {
     <MenusContext.Provider
       value={{ menus, activeMenu, setActiveMenu, refreshMenus }}
     >
-      {Children}
+      {children}
     </MenusContext.Provider>
   );
 }

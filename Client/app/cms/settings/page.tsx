@@ -18,8 +18,6 @@ import {
   AlertTriangle,
   Mail,
   Save,
-  Eye,
-  EyeOff,
   Building2,
   RefreshCw,
 } from "lucide-react";
@@ -38,8 +36,8 @@ interface UserApiKey {
   tenantId: string;
   tenantName?: string;
   tenantDomain?: string;
-  rawKey?: string;
-  keyHash?: string;
+  keyPreview?: string;
+  maskedKey?: string;
   permissions?: string[];
   isActive?: boolean;
   name?: string;
@@ -54,7 +52,6 @@ export default function SettingsPage() {
 
   const [apiKeys, setApiKeys] = useState<UserApiKey[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
-  const [showRawKeyById, setShowRawKeyById] = useState<Record<string, boolean>>({});
 
   const [rateLimit, setRateLimit] = useState(100);
 
@@ -114,15 +111,9 @@ export default function SettingsPage() {
     return true;
   };
 
-  const maskApiKey = (key: string) => {
-    if (!key) return "";
-    if (key.length <= 8) return "*".repeat(key.length);
-    return `${key.slice(0, 4)}${"*".repeat(key.length - 8)}${key.slice(-4)}`;
-  };
-
   const handleCopyApiKey = async (value: string) => {
     if (!value) {
-      toast.error("Raw key not available");
+      toast.error("Copy is only available when key material is present");
       return;
     }
 
@@ -259,9 +250,8 @@ export default function SettingsPage() {
           {!apiLoading && apiKeys.length > 0 ? (
             <div className="space-y-3">
               {apiKeys.map((key) => {
-                const raw = key.rawKey || "";
-                const show = !!showRawKeyById[key._id];
-                const displayValue = show ? raw : maskApiKey(raw);
+                const displayValue = key.maskedKey || key.keyPreview || "Hidden after creation";
+                const copyValue = "";
 
                 return (
                   <div key={key._id} className="rounded-lg border p-4 space-y-3">
@@ -298,21 +288,9 @@ export default function SettingsPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          setShowRawKeyById((prev) => ({
-                            ...prev,
-                            [key._id]: !prev[key._id],
-                          }))
-                        }
-                      >
-                        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopyApiKey(raw)}
-                        disabled={!raw}
+                        onClick={() => handleCopyApiKey(copyValue)}
+                        disabled
+                        title="Raw keys are only returned at creation time"
                       >
                         <Copy className="h-4 w-4" />
                       </Button>

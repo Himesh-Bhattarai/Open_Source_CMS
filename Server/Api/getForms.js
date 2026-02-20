@@ -2,12 +2,19 @@ import { Form } from "../Models/Form/Form.js";
 
 export const getForm = async (req, res, next) => {
   try {
-    const form = await Form.findOne({
-      tenantId: req.tenant._id,
-    });
+    const tenantId = req.tenant?._id?.toString();
+    if (!tenantId) {
+      return res.status(400).json({ error: "Tenant context is required" });
+    }
 
-    if (!form) throw new Error("Form not found");
-    res.json({
+    const form = await Form.findOne({
+      tenantId,
+    }).lean();
+
+    if (!form) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+    return res.status(200).json({
       form,
     });
   } catch (err) {

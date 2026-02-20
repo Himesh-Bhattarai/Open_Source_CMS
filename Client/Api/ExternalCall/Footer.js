@@ -1,27 +1,26 @@
-const CMS_FOOTER_API = process.env.NEXT_PUBLIC_CMS_FOOTER_API;
+const DEFAULT_TENANT = process.env.NEXT_PUBLIC_DEFAULT_TENANT_DOMAIN || "";
 
+// Fetch footer via internal server route to avoid exposing API keys in browser code.
+export const fetchFooter = async (tenant = DEFAULT_TENANT) => {
+  try {
+    const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : "";
+    const response = await fetch(`/api/public/footer${query}`, {
+      method: "GET",
+      credentials: "include",
+    });
 
-//Api call to fetch footer data form this cms
-export const fetchFooter = async () => {
-    try {
-        const response = await fetch(CMS_FOOTER_API, {
-            method: "GET",
-            headers: {
-                Authorization: "Bearer 1b6758ca1b4e451d34ea9f215b9c3ff924b2627ca984188d6a5165fe2e7e1d17"
-            }
-        });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data?.message || "Failed to load footer");
 
-        const data = await response.json();
-        if (!response.ok) throw new Error("Internal Server Error");
-        return {
-            ok: response.ok,
-            data: data?.footer
-        }
-    } catch (err) {
-        console.error(err);
-        return {
-            ok: false,
-            data: []
-        }
-    }
-}
+    return {
+      ok: true,
+      data: data?.data || null,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      ok: false,
+      data: null,
+    };
+  }
+};

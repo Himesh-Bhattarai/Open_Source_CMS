@@ -23,6 +23,9 @@ Do not commit real secrets.
 - `FACEBOOK_CLIENT_ID`
 - `FACEBOOK_CLIENT_SECRET`
 - `RANDOM_PASSWORD`
+- `SERVER_BASE_URL` (example: `https://api.example.com`)
+- `GOOGLE_CALLBACK_URL` (optional override)
+- `FACEBOOK_CALLBACK_URL` (optional override)
 
 ### Required for external API rate limiting
 
@@ -38,8 +41,17 @@ Do not commit real secrets.
 - `ACCESS_TOKEN_EXPIRES_IN`
 - `REFRESH_TOKEN_EXPIRES_IN`
 - `FRONTEND_AUTH_REDIRECT`
+
+### Legacy keys currently not used by runtime code
+
 - `LOG_LEVEL`
 - `PRODUCTION_JUST_SAVE`
+
+### Optional server-side CMS public integration keys (for Next server routes)
+
+- `CMS_API_BASE_URL` (backend origin used by `Client/app/api/public/*`)
+- `CMS_DEFAULT_TENANT_DOMAIN` (default tenant slug/domain for homepage hydration)
+- `CMS_PUBLIC_API_KEY` (server-side API key for external-request fetches)
 
 ## Client env keys
 
@@ -129,5 +141,9 @@ Notes:
 
 - `NEXT_PUBLIC_UPDATA_PAGE_URL` is still referenced as a compatibility fallback
   in `Client/Api/Page/CreatePage.js`.
+- `NEXT_PUBLIC_CMS_FOOTER_API` and `NEXT_PUBLIC_CMS_MENU_API` are currently
+  not read by the codebase and can be removed from local env files.
+- `NEXT_PUBLIC_DEFAULT_TENANT_DOMAIN` is used by external CMS client calls in
+  `Client/Api/ExternalCall/*` and should be added when those calls are enabled.
 - `NEXT_PUBLIC_USE_MOCK_THEME_DATA` is read in `Client/app/cms/theme/page.tsx`
   and may be added when you want mock theme mode.

@@ -16,9 +16,14 @@ const loadPageUpdateRouter = async (handler) => {
   return (await import("../../Routes/Page/updatePage.js")).default;
 };
 
-const loadPageServicesRouter = async (pageModel) => {
+const loadPageServicesRouter = async (pageModel, versionModel) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Models/Page/Page.js", () => ({ Page: pageModel }));
+  if (versionModel) {
+    jest.unstable_mockModule("../../Models/Version/Version.js", () => ({
+      Version: versionModel,
+    }));
+  }
   return (await import("../../Routes/Page/Services.js")).default;
 };
 
@@ -112,7 +117,7 @@ describe("Page routes", () => {
     expect(valid.body.available).toBe(true);
 
     const invalid = await request(app).get("/svc/slug").set("Cookie", makeAuthCookie());
-    expect(invalid.status).toBe(500);
+    expect(invalid.status).toBe(400);
 
     const edgeRouter = await loadPageServicesRouter({
       findOne: jest.fn().mockResolvedValue({ _id: "p1" }),
@@ -152,27 +157,54 @@ describe("Page routes", () => {
   });
 
   test("GET selected page valid invalid edge", async () => {
-    const router = await loadPageServicesRouter({
-      findOne: jest.fn(),
-      find: jest.fn(),
-      findById: jest.fn().mockResolvedValue({ _id: "p1" }),
-    });
+    const pageId = "507f191e810c19729de860ea";
+    const router = await loadPageServicesRouter(
+      {
+        findOne: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue({
+            _id: pageId,
+            authorId: "user-1",
+            slugHistory: [],
+          }),
+        }),
+        find: jest.fn(),
+        findById: jest.fn(),
+      },
+      {
+        find: jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      },
+    );
     const app = createRouteTestApp("/svc", router);
 
-    const valid = await request(app).get("/svc/selected-page?pageId=p1").set("Cookie", makeAuthCookie());
+    const valid = await request(app).get(`/svc/selected-page?pageId=${pageId}`).set("Cookie", makeAuthCookie());
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).get("/svc/selected-page").set("Cookie", makeAuthCookie());
-    expect(invalid.status).toBe(500);
+    expect(invalid.status).toBe(400);
 
-    const edgeRouter = await loadPageServicesRouter({
-      findOne: jest.fn(),
-      find: jest.fn(),
-      findById: jest.fn().mockResolvedValue(null),
-    });
+    const edgeRouter = await loadPageServicesRouter(
+      {
+        findOne: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(null),
+        }),
+        find: jest.fn(),
+        findById: jest.fn(),
+      },
+      {
+        find: jest.fn().mockReturnValue({
+          sort: jest.fn().mockReturnValue({
+            lean: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      },
+    );
     const edgeApp = createRouteTestApp("/svc", edgeRouter);
-    const edge = await request(edgeApp).get("/svc/selected-page?pageId=p1").set("Cookie", makeAuthCookie());
-    expect(edge.status).toBe(500);
+    const edge = await request(edgeApp).get(`/svc/selected-page?pageId=${pageId}`).set("Cookie", makeAuthCookie());
+    expect(edge.status).toBe(404);
   });
 
   test("GET page belong valid invalid edge", async () => {

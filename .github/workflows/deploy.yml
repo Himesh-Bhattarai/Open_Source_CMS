@@ -123,7 +123,7 @@ jobs:
       - name: Run TypeScript type check
         run: |
           set -euo pipefail
-          npm --prefix Client exec tsc -- --noEmit -p tsconfig.json
+          npm --prefix Client run typecheck
 
       - name: Run tests
         run: |
@@ -133,7 +133,7 @@ jobs:
           else
             echo "No client test script found; skipping client tests."
           fi
-          npm --prefix Server run test
+          npm --prefix Server run test -- --silent
 
       - name: Build frontend (Next.js production build)
         run: |
@@ -147,7 +147,7 @@ jobs:
             npm --prefix Server run build
           else
             echo "No backend build script found; running syntax checks."
-            find Server -name "*.js" -print0 | xargs -0 -n1 node --check
+            find Server -path 'Server/node_modules' -prune -o -name "*.js" -print0 | xargs -0 -n1 node --check
           fi
 
       # Build once, deploy artifact: deterministic and lighter server deploy.
@@ -289,7 +289,11 @@ jobs:
                 elif [ -f "${CURRENT_LINK}/Server/ecosystem.config.js" ]; then
                   pm2 startOrReload "${CURRENT_LINK}/Server/ecosystem.config.js" --update-env || pm2 restart all
                 else
-                  pm2 reload all --update-env || pm2 restart all
+                  if pm2 describe contentflow >/dev/null 2>&1; then
+                    pm2 reload contentflow --update-env || pm2 restart contentflow
+                  else
+                    pm2 start "npm run start" --name contentflow --cwd "${CURRENT_LINK}/Server"
+                  fi
                 fi
                 pm2 save || true
               fi
@@ -332,7 +336,7 @@ jobs:
               if pm2 describe contentflow >/dev/null 2>&1; then
                 pm2 reload contentflow --update-env
               else
-                pm2 start "npm run start" --name contentflow --cwd "${CURRENT_LINK}"
+                pm2 start "npm run start" --name contentflow --cwd "${CURRENT_LINK}/Server"
               fi
             fi
             pm2 save

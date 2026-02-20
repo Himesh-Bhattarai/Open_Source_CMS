@@ -13,6 +13,22 @@ import { Eye, EyeOff, Loader2, Chrome, Facebook } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { loginApi } from "@/Api/Auth/Login"
 
+const getAuthBaseUrl = () => {
+  const configuredBase = String(process.env.NEXT_PUBLIC_SERVER_BASE_URL || "").trim()
+  if (configuredBase) return configuredBase.replace(/\/+$/, "")
+
+  const loginUrl = String(process.env.NEXT_PUBLIC_LOGIN_URL || "").trim()
+  if (loginUrl) {
+    try {
+      return new URL(loginUrl).origin
+    } catch {
+      // Keep localhost fallback for local dev when env is malformed.
+    }
+  }
+
+  return "http://localhost:5000"
+}
+
 export default function LoginPage() {
 
   const router = useRouter()
@@ -23,6 +39,7 @@ export default function LoginPage() {
     password: "",
   })
   const [error, setError] = useState("")
+  const authBaseUrl = getAuthBaseUrl()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,12 +68,12 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
     setIsLoading(true)
-    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/google"
+    window.location.href = `${authBaseUrl}/api/v1/oAuth/auth/google`
   }
 
   const handleFacebookLogin = () => {
     setIsLoading(true)
-    window.location.href = "http://localhost:5000/api/v1/oAuth/auth/facebook"
+    window.location.href = `${authBaseUrl}/api/v1/oAuth/auth/facebook`
   }
 
   return (

@@ -16,7 +16,7 @@ router.get(
   tenantVerification,
   apiKeyVerification,
   // featureCheck("pages"),
-  trackIntegrationUsage({ featureKey: "page" }),
+  trackIntegrationUsage({ featureKey: "page", endpointKey: "collection" }),
   getPagesVerification,
 );
 
@@ -24,7 +24,7 @@ router.get(
   "/:slug",
   tenantVerification,
   apiKeyVerification,
-  trackIntegrationUsage({ featureKey: "page" }),
+  trackIntegrationUsage({ featureKey: "page", endpointKey: "detail" }),
   getPagesByIdVerification,
 );
 

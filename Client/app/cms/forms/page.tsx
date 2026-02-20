@@ -14,16 +14,16 @@ interface Form {
   _id: string
   name: string
   status: string
-  type: string
-  description: string
-  createdAt: string
-  updatedAt: string
-  fields: string[]
-  fieldsRequired: string[]
-  fieldsOptional: string[]
-  fieldsHidden: string[]
-  fieldsDisabled: string[]
-  fieldsReadonly: string[]
+  type?: string
+  description?: string
+  createdAt?: string
+  updatedAt?: string
+  fields?: string[]
+  fieldsRequired?: string[]
+  fieldsOptional?: string[]
+  fieldsHidden?: string[]
+  fieldsDisabled?: string[]
+  fieldsReadonly?: string[]
   fieldsCount: number
   submissions: number
   lastSubmission: string
@@ -44,7 +44,7 @@ export default function FormsPage() {
         }
 
         const rawForms = Array.isArray(response.data) ? response.data : []
-        const normalizedForms = rawForms.map((form: Form) => ({
+        const normalizedForms: Form[] = rawForms.map((form: any) => ({
           _id: form._id,
           name: form.name,
           status: form.status,

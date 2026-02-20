@@ -195,33 +195,7 @@ describe("Simple checkpoint/validator route modules", () => {
     expect(edge.status).toBe(500);
   });
 
-  test("Webhook /webhook valid invalid edge", async () => {
-    const router = await loadRouterWithMocks("../../Routes/Webhook/Webhook.js", [
-      ["../../CheckPoint/Webhook/Webhook.js", () => ({ webhookCheckpoint: (req, res) => res.status(201).json({ ok: true }) })],
-    ]);
-    const app = createRouteTestApp("/webhook", router);
-
-    const valid = await request(app).post("/webhook/webhook").send({
-      tenantId: "t1",
-      url: "https://example.com/hook",
-      events: ["page.created"],
-      status: "active",
-    });
-    expect(valid.status).toBe(201);
-
-    const invalid = await request(app).post("/webhook/webhook").send({ tenantId: "t1", events: ["invalid"] });
-    expect(invalid.status).toBe(400);
-
-    const edgeRouter = await loadRouterWithMocks("../../Routes/Webhook/Webhook.js", [
-      ["../../CheckPoint/Webhook/Webhook.js", () => ({ webhookCheckpoint: (req, res, next) => next(new Error("webhook fail")) })],
-    ]);
-    const edgeApp = createRouteTestApp("/webhook", edgeRouter);
-    const edge = await request(edgeApp).post("/webhook/webhook").send({
-      tenantId: "t1",
-      url: "https://example.com/hook",
-      events: ["page.created"],
-      status: "active",
-    });
-    expect(edge.status).toBe(500);
+  test("Webhook route module is not present in current routing tree", async () => {
+    await expect(import("../../Routes/Webhook/Webhook.js")).rejects.toThrow();
   });
 });

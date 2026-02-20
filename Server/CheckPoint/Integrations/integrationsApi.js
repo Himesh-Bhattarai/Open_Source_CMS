@@ -112,31 +112,28 @@ export const integrationsApi = async (req, res, next) => {
           id: "pages",
           name: "Pages",
           description: "Dynamic CMS pages",
-          status: getEndpointStatus("pages", "collection"),
+          status: getEndpointStatus("page", "collection"),
           endpoints: [
             {
               key: "collection",
               url: `/api/v1/external-request/${domain}/pages`,
-              status: getEndpointStatus("pages", "collection"),
+              status: getEndpointStatus("page", "collection"),
               lastCalledAt:
                 usage.find(
                   (u) =>
-                    u.featureKey === "pages" && u.endpointKey === "collection",
+                    u.featureKey === "page" && u.endpointKey === "collection",
                 )?.lastCalledAt || null,
             },
-            ...pages
-              .filter((p) => p.slug)
-              .map((p) => ({
-                key: `page:${p.slug}`,
-                url: `/api/v1/external-request/${domain}/pages/${p.slug}`,
-                status: getEndpointStatus("pages", `page:${p.slug}`),
-                lastCalledAt:
-                  usage.find(
-                    (u) =>
-                      u.featureKey === "pages" &&
-                      u.endpointKey === `page:${p.slug}`,
-                  )?.lastCalledAt || null,
-              })),
+            {
+              key: "detail",
+              url: `/api/v1/external-request/${domain}/pages/{slug}`,
+              status: getEndpointStatus("page", "detail"),
+              lastCalledAt:
+                usage.find(
+                  (u) =>
+                    u.featureKey === "page" && u.endpointKey === "detail",
+                )?.lastCalledAt || null,
+            },
           ],
         });
       }
@@ -154,7 +151,7 @@ export const integrationsApi = async (req, res, next) => {
           endpoints: [
             {
               key: "collection",
-              url: `/api/v1/external-request/${domain}/blogs`,
+              url: `/api/v1/external-request/${domain}/blog`,
               status: getEndpointStatus("blog", "collection"),
               lastCalledAt:
                 usage.find(
@@ -162,19 +159,16 @@ export const integrationsApi = async (req, res, next) => {
                     u.featureKey === "blog" && u.endpointKey === "collection",
                 )?.lastCalledAt || null,
             },
-            ...blogs
-              .filter((b) => b.slug)
-              .map((b) => ({
-                key: `post:${b.slug}`,
-                url: `/api/v1/external-request/${domain}/blogs/${b.slug}`,
-                status: getEndpointStatus("blog", `post:${b.slug}`),
-                lastCalledAt:
-                  usage.find(
-                    (u) =>
-                      u.featureKey === "blog" &&
-                      u.endpointKey === `post:${b.slug}`,
-                  )?.lastCalledAt || null,
-              })),
+            {
+              key: "detail",
+              url: `/api/v1/external-request/${domain}/blog/{slug}`,
+              status: getEndpointStatus("blog", "detail"),
+              lastCalledAt:
+                usage.find(
+                  (u) =>
+                    u.featureKey === "blog" && u.endpointKey === "detail",
+                )?.lastCalledAt || null,
+            },
           ],
         });
       }

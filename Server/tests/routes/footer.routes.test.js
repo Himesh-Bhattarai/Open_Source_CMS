@@ -3,11 +3,10 @@ import { jest } from "@jest/globals";
 import { createRouteTestApp } from "../helpers/createRouteTestApp.js";
 import { makeAuthCookie } from "../helpers/auth.js";
 
-const loadFooterCombinedRouter = async (footerModel, footerCheckpoint, footerBlockCheckpoint) => {
+const loadFooterCombinedRouter = async (footerModel, footerCheckpoint) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Models/Footer/Footer.js", () => ({ Footer: footerModel }));
   jest.unstable_mockModule("../../CheckPoint/Footer/Footer.js", () => ({ footerCheckpoint }));
-  jest.unstable_mockModule("../../CheckPoint/Footer/FooterBlock.js", () => ({ footerBlockCheckpoint }));
   jest.unstable_mockModule("../../Services/notificationServices.js", () => ({ cmsEventService: { updateFooter: jest.fn() } }));
   return (await import("../../Routes/Footer/Combined.js")).default;
 };
@@ -44,7 +43,6 @@ describe("Footer routes", () => {
         findByIdAndUpdate: jest.fn(),
       },
       (req, res) => res.status(201).json({ ok: true }),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const app = createRouteTestApp("/footer", router);
 
@@ -60,41 +58,24 @@ describe("Footer routes", () => {
         findByIdAndUpdate: jest.fn(),
       },
       (req, res, next) => next(new Error("footer fail")),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const edgeApp = createRouteTestApp("/footer", edgeRouter);
     const edge = await request(edgeApp).post("/footer/footer/").set("Cookie", makeAuthCookie()).send({ footerName: "Main" });
     expect(edge.status).toBe(500);
   });
 
-  test("POST /footer-block valid invalid edge", async () => {
+  test("POST /footer-block route is no longer available", async () => {
     const router = await loadFooterCombinedRouter(
       {
         findOne: jest.fn(),
         findByIdAndUpdate: jest.fn(),
       },
       (req, res) => res.status(201).json({ ok: true }),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const app = createRouteTestApp("/footer", router);
 
-    const valid = await request(app).post("/footer/footer-block/").send({ label: "About" });
-    expect(valid.status).toBe(201);
-
-    const invalid = await request(app).get("/footer/footer-block/");
+    const invalid = await request(app).post("/footer/footer-block/").send({ label: "About" });
     expect(invalid.status).toBe(404);
-
-    const edgeRouter = await loadFooterCombinedRouter(
-      {
-        findOne: jest.fn(),
-        findByIdAndUpdate: jest.fn(),
-      },
-      (req, res) => res.status(201).json({ ok: true }),
-      (req, res, next) => next(new Error("footer block fail")),
-    );
-    const edgeApp = createRouteTestApp("/footer", edgeRouter);
-    const edge = await request(edgeApp).post("/footer/footer-block/").send({ label: "About" });
-    expect(edge.status).toBe(500);
   });
 
   test("PUT /footer/:id valid invalid edge", async () => {
@@ -103,7 +84,6 @@ describe("Footer routes", () => {
         findOne: jest.fn().mockResolvedValue({ _id: "f1", userId: "user-1" }),
         findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "f1", footerName: "Updated" }),
       },
-      (req, res) => res.status(201).json({ ok: true }),
       (req, res) => res.status(201).json({ ok: true }),
     );
     const app = createRouteTestApp("/footer", router);
@@ -119,7 +99,6 @@ describe("Footer routes", () => {
         findOne: jest.fn().mockResolvedValue(null),
         findByIdAndUpdate: jest.fn(),
       },
-      (req, res) => res.status(201).json({ ok: true }),
       (req, res) => res.status(201).json({ ok: true }),
     );
     const edgeApp = createRouteTestApp("/footer", edgeRouter);
