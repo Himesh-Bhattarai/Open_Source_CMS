@@ -132,6 +132,18 @@ export default function NewFormPage() {
       : null,
   );
 
+  useEffect(() => {
+    if (!activeTenant || isEditMode) return;
+    setSelectedWebsite((prev) => {
+      if (prev?.id === activeTenant._id) return prev;
+      return {
+        id: activeTenant._id,
+        name: activeTenant.name,
+        domain: activeTenant.domain,
+      };
+    });
+  }, [activeTenant, isEditMode]);
+
   // Save website selection to localStorage
   useEffect(() => {
     if (selectedWebsite) {
@@ -194,7 +206,10 @@ export default function NewFormPage() {
         setIsLoading(true);
         const response = await loadFormsDataById(formId);
         if (!cancelled && response?.ok && response.data) {
-          const existingForm = response.data.data;
+          const existingForm = response.data?.data || response.data;
+          if (!existingForm) {
+            throw new Error("Form not found");
+          }
 
           setFormState({
             name: existingForm.name || "",
@@ -214,12 +229,12 @@ export default function NewFormPage() {
               existingForm.fields?.map((field: any, index: number) => ({
                 id: field.id || `field-${index}`,
                 type: field.type || "text",
-                label: field.label || "",
-                placeholder: field.placeholder || "",
-                required: field.required || false,
+                label: field.label ?? "",
+                placeholder: field.placeholder ?? "",
+                required: Boolean(field.required),
                 order: field.order ?? index,
-                helperText: field.helperText,
-                defaultValue: field.defaultValue,
+                helperText: field.helperText ?? "",
+                defaultValue: field.defaultValue ?? "",
                 validation: field.validation || {},
                 options: field.options || [],
               })) || [],
@@ -233,7 +248,15 @@ export default function NewFormPage() {
             const website = tenantWebsites.find(
               (w) => w.id === existingForm.tenantId
             );
-            if (website) setSelectedWebsite(website);
+            if (website) {
+              setSelectedWebsite(website);
+            } else {
+              setSelectedWebsite({
+                id: existingForm.tenantId,
+                name: `Website ${existingForm.tenantId}`,
+                domain: "Unknown domain",
+              });
+            }
           }
         }
       } catch (err) {
@@ -353,6 +376,15 @@ export default function NewFormPage() {
       errors.push("At least one form field is required");
     }
 
+    const invalidLength = formState.fields.find((field) => {
+      const min = field.validation?.minLength;
+      const max = field.validation?.maxLength;
+      return typeof min === "number" && typeof max === "number" && min > max;
+    });
+    if (invalidLength) {
+      errors.push("Field min length cannot be greater than max length");
+    }
+
     // Validate email notification if provided
     if (
       formState.behavior.notifyEmail &&
@@ -400,7 +432,10 @@ export default function NewFormPage() {
           },
         };
 
-        await updateForm(updatePayload, formId);
+        const response = await updateForm(updatePayload, formId);
+        if (!response?.ok) {
+          throw new Error(response?.message || "Failed to update form");
+        }
       } else {
         // Create new form
         const createPayload = {
@@ -418,7 +453,10 @@ export default function NewFormPage() {
           },
         };
 
-        await createForm(createPayload);
+        const response = await createForm(createPayload);
+        if (!response?.ok) {
+          throw new Error(response?.message || "Failed to create form");
+        }
       }
 
       // Only show success and redirect after API success
@@ -593,7 +631,11 @@ export default function NewFormPage() {
                         );
                         if (website) {
                           setSelectedWebsite(website);
-
+                          setActiveTenant({
+                            _id: website.id,
+                            name: website.name,
+                            domain: website.domain,
+                          });
                         }
                       }}
                       disabled={isEditMode} // Disable website selection in edit mode
@@ -837,7 +879,7 @@ export default function NewFormPage() {
                       <CardTitle className="text-xl">Form Fields</CardTitle>
                       <CardDescription>
                         {formState.fields.length} field
-                        {formState.fields.length !== 1 ? "s" : ""} • Drag to
+                        {formState.fields.length !== 1 ? "s" : ""} - Drag to
                         reorder
                       </CardDescription>
                     </div>
@@ -849,6 +891,7 @@ export default function NewFormPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {formState.fields
+                    .slice()
                     .sort((a, b) => a.order - b.order)
                     .map((field, index) => (
                       <div
@@ -1067,7 +1110,7 @@ export default function NewFormPage() {
                                 </Label>
                                 <Input
                                   type="number"
-                                  value={field.validation?.minLength || ""}
+                                  value={field.validation?.minLength ?? ""}
                                   onChange={(e) =>
                                     updateField(field.id, {
                                       validation: {
@@ -1089,7 +1132,7 @@ export default function NewFormPage() {
                                 </Label>
                                 <Input
                                   type="number"
-                                  value={field.validation?.maxLength || ""}
+                                  value={field.validation?.maxLength ?? ""}
                                   onChange={(e) =>
                                     updateField(field.id, {
                                       validation: {
@@ -1171,6 +1214,7 @@ export default function NewFormPage() {
                 )}
 
                 {formState.fields
+                  .slice()
                   .sort((a, b) => a.order - b.order)
                   .map((field) => (
                     <div key={field.id} className="space-y-2.5">

@@ -268,6 +268,29 @@ export const deleteForm = ({ userId, formName, formId, websiteId }) => {
 }
 
 // ========================
+// MEDIA MANAGEMENT
+// ========================
+export const createMedia = ({ userId, mediaName, mediaId, websiteId }) => {
+    emitEvent("MEDIA_CREATED", {
+        userId,
+        mediaName,
+        mediaId,
+        websiteId,
+        timestamp: new Date()
+    })
+}
+
+export const deleteMedia = ({ userId, mediaName, mediaId, websiteId }) => {
+    emitEvent("MEDIA_DELETED", {
+        userId,
+        mediaName,
+        mediaId,
+        websiteId,
+        timestamp: new Date()
+    })
+}
+
+// ========================
 // BACKUP MANAGEMENT
 // ========================
 export const createBackup = ({ userId, backupName, backupId, websiteId }) => {
@@ -343,6 +366,8 @@ export const cmsEventService = {
     createForm,
     updateForm,
     deleteForm,
+    createMedia,
+    deleteMedia,
 
     // Backup
     createBackup,

@@ -23,7 +23,7 @@ export default function FooterPage() {
     const toastCounter = useRef(0)
 
     const truncate = (text = "", length = 50) =>
-        text.length > length ? text.slice(0, length) + "…" : text
+        text.length > length ? text.slice(0, length) + "..." : text
 
     /* ---------------- LOAD FOOTERS ---------------- */
     useEffect(() => {
@@ -112,7 +112,7 @@ export default function FooterPage() {
             {/* Loading */}
             {loading && (
                 <div className="flex justify-center py-12 text-muted-foreground">
-                    Loading footers…
+                    Loading footers...
                 </div>
             )}
 
@@ -149,7 +149,7 @@ export default function FooterPage() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center gap-2 text-muted-foreground text-sm">
                                 <Clock className="h-3.5 w-3.5" />
-                                <span>Last edited {footer.updatedAt || "—"}</span>
+                                <span>Last edited {footer.updatedAt || "-"}</span>
                             </div>
 
                             <div className="flex gap-2">

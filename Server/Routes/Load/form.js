@@ -29,6 +29,9 @@ router.get(
 
       const getForm = await Form.findById({ _id: formId });
       if (!getForm) throw new Error("Form not found");
+      if (String(getForm.userId) !== String(userId)) {
+        throw new Error("Forbidden");
+      }
       return res.status(200).json({ data: getForm });
     } catch (err) {
       next(err);
