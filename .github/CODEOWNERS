@@ -1,0 +1,8 @@
+# Default code owners
+* @Himesh-Bhattarai
+
+# Backend ownership
+/Server/ @Himesh-Bhattarai
+
+# Frontend ownership
+/Client/ @Himesh-Bhattarai
