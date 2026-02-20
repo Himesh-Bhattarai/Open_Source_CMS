@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { createMenu } from "@/Api/Menu/Combined"
 import { useTenant } from "@/context/TenantContext"; 
+import { toast } from "sonner";
 
 export default function NewMenuPage() {
   const router = useRouter()
@@ -31,11 +32,16 @@ export default function NewMenuPage() {
     }
     try{
       const response = await createMenu(data);
-      if(response.ok){
-        router.push(`/cms/global/menus/${response?.menuId}`)
+      if(response?.ok && response?.menuId){
+        router.push(`/cms/global/menus/${response.menuId}`)
+      } else if (response?.ok && !response?.menuId) {
+        toast.error("Menu created but ID missing in response.");
+      } else {
+        toast.error(response?.message || "Failed to create menu.");
       }
     } catch (err) {
       console.error(err);
+      toast.error("Failed to create menu.");
     }finally{
       {
         setMenuName("")

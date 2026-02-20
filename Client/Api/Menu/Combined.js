@@ -1,4 +1,6 @@
-const MENU_URL = process.env.NEXT_PUBLIC_CREATE_MENU_URL;
+const MENU_URL =
+  process.env.NEXT_PUBLIC_CREATE_MENU_URL ||
+  process.env.NEXT_PUBLIC_MENU_URL;
 const MENU_ITEM_URL = process.env.NEXT_PUBLIC_CREATE_MENU_ITEM_URL;
 const UPDATE_MENU_URL = process.env.NEXT_PUBLIC_UPDATE_MENU_URL;
 
@@ -6,6 +8,15 @@ const UPDATE_MENU_URL = process.env.NEXT_PUBLIC_UPDATE_MENU_URL;
 //create menu
 export const createMenu = async (data) => {
   try {
+    if (!MENU_URL) {
+      return {
+        ok: false,
+        status: 500,
+        message:
+          "Create menu API URL is missing (NEXT_PUBLIC_CREATE_MENU_URL or NEXT_PUBLIC_MENU_URL)",
+      };
+    }
+
     const response = await fetch(MENU_URL, {
       method: "POST",
       credentials: "include",
@@ -16,14 +27,22 @@ export const createMenu = async (data) => {
     });
 
     const request = await response.json();
+    const resolvedMenuId =
+      request?.menuId || request?._id || request?.data?.menuId || request?.data?._id;
 
     return {
       ok: response.ok,
-      menuId: request.menuId,
+      status: response.status,
+      menuId: resolvedMenuId,
       ...request,
     };
   } catch (err) {
     console.error(err);
+    return {
+      ok: false,
+      status: 500,
+      message: "Network error while creating menu",
+    };
   }
 };
 
