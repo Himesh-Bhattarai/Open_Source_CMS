@@ -46,6 +46,13 @@ export default function PagesPage() {
     }
   }, [searchParams])
 
+  useEffect(() => {
+    const redirectedMessage = searchParams.get("message")
+    if (redirectedMessage) {
+      setMessage(redirectedMessage)
+    }
+  }, [searchParams])
+
   // =========================
   // FETCH & NORMALIZE
   // =========================

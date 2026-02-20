@@ -334,6 +334,22 @@ const normalizeLayoutForBackend = (layout: any) => {
   };
 };
 
+const normalizeLayoutForBackend = (layout: any) => {
+  const containerWidth =
+    layout?.containerWidth === "full" ? "full" : "boxed";
+  const sectionSpacing =
+    layout?.sectionSpacing === "relaxed" ? "spacious" : layout?.sectionSpacing || "normal";
+  const headerStyle =
+    layout?.headerStyle === "static" ? "standard" : layout?.headerStyle || "fixed";
+
+  return {
+    ...layout,
+    containerWidth,
+    sectionSpacing,
+    headerStyle,
+  };
+};
+
 //remove later
 export default function ThemePage() {
   const { tenants, activeTenant, setActiveTenant } = useTenant()
