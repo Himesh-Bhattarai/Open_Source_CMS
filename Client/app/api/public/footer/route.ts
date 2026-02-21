@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.CMS_API_BASE_URL || "";
-const API_KEY = process.env.CMS_PUBLIC_API_KEY || "";
-const DEFAULT_TENANT = process.env.CMS_DEFAULT_TENANT_DOMAIN || "";
+const API_BASE_URL = process.env?.CMS_API_BASE_URL || "";
+const API_KEY = process.env?.CMS_PUBLIC_API_KEY || "";
+const DEFAULT_TENANT = process.env?.CMS_DEFAULT_TENANT_DOMAIN || "";
 
 export async function GET(req: Request) {
   try {

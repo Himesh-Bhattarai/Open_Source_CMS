@@ -39,6 +39,25 @@ interface MenuItem {
   children: MenuItem[];
 }
 
+const SITE_URL = String(process.env.NEXT_PUBLIC_SITE_URL || "https://contentflow.com").replace(/\/$/, "")
+const HOME_STRUCTURED_DATA = JSON.stringify(
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "ContentFlow",
+      url: SITE_URL,
+      logo: `${SITE_URL}/fav/favicon-32x32.png`,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "ContentFlow",
+      url: SITE_URL,
+    },
+  ],
+).replace(/</g, "\\u003c")
+
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
@@ -257,6 +276,10 @@ const footerFallback = {
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: HOME_STRUCTURED_DATA }}
+      />
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">

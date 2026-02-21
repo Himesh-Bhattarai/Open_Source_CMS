@@ -12,7 +12,7 @@ This file helps locate where to make changes quickly.
 - `components/`: reusable UI and CMS components
 - `context/`: global context providers (tenant, auth-related helpers)
 - `hooks/`: reusable hooks (e.g. auth/session helpers)
-- `middleware.ts`: route guard for `/cms/admin/*`
+- `proxy.ts`: route guard for `/cms/admin/*`
 
 ## Backend (`Server/`)
 
