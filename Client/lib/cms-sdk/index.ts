@@ -186,9 +186,7 @@ export class ContentFlowCMS {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `CMS API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`CMS API Error: ${response.status} ${response.statusText}`);
     }
 
     return response.json();

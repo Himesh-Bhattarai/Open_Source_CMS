@@ -30,16 +30,8 @@ const buildAutoDomain = (name = "") => {
 export const tenantCheckpoint = async (req, res, next) => {
   try {
     const authUserId = req.user?.userId;
-    const {
-      name,
-      domain,
-      ownerEmail,
-      status,
-      plan,
-      settings,
-      subdomain,
-      createdBy,
-    } = req.body || {};
+    const { name, domain, ownerEmail, status, plan, settings, subdomain, createdBy } =
+      req.body || {};
     const resolvedUserId = authUserId || createdBy;
 
     if (!resolvedUserId) {

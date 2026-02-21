@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { useParams } from "next/navigation"
-import { ArrowLeft, Inbox } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { loadFormsDataById } from "@/Api/Form/Load"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { ArrowLeft, Inbox } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { loadFormsDataById } from "@/Api/Form/Load";
 
 type FormRecord = {
-  _id: string
-  name?: string
-  fields?: Array<{ label?: string; name?: string; type?: string }>
-}
+  _id: string;
+  name?: string;
+  fields?: Array<{ label?: string; name?: string; type?: string }>;
+};
 
 export default function FormSubmissionsPage() {
-  const params = useParams<{ id: string }>()
-  const formId = params?.id || ""
-  const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState<FormRecord | null>(null)
+  const params = useParams<{ id: string }>();
+  const formId = params?.id || "";
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState<FormRecord | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      setLoading(true)
-      const response = await loadFormsDataById(formId)
-      setForm(response?.ok ? (response?.data?.data || response?.data || null) : null)
-      setLoading(false)
-    }
-    if (formId) load()
-  }, [formId])
+      setLoading(true);
+      const response = await loadFormsDataById(formId);
+      setForm(response?.ok ? response?.data?.data || response?.data || null : null);
+      setLoading(false);
+    };
+    if (formId) load();
+  }, [formId]);
 
   return (
     <div className="space-y-6">
@@ -73,5 +73,5 @@ export default function FormSubmissionsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

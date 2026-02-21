@@ -1,4 +1,4 @@
-const LOAD_MENU_URL = process.env.NEXT_PUBLIC_LOAD_MENU_URL;  
+const LOAD_MENU_URL = process.env.NEXT_PUBLIC_LOAD_MENU_URL;
 const LOAD_MENU_BY_ID = process.env.NEXT_PUBLIC_LOAD_MENU_BY_ID;
 
 const parseJsonSafe = async (response) => {
@@ -31,7 +31,6 @@ export const loadMenus = async () => {
     return { ok: false, menus: [] };
   }
 };
-
 
 //get particular menu
 export const loadMenuById = async (menuId) => {

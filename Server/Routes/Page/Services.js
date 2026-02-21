@@ -11,7 +11,6 @@ router.get("/slug", verificationMiddleware, async (req, res, next) => {
   try {
     const { tenantId, slug } = req.query;
     const userId = req.user?.userId;
- 
 
     if (!tenantId || !slug || !userId) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -41,7 +40,7 @@ router.get("/slug", verificationMiddleware, async (req, res, next) => {
 router.get("/user-pages", verificationMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.userId;
-   
+
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized access" });
     }
@@ -101,9 +100,7 @@ router.get("/selected-page", verificationMiddleware, async (req, res, next) => {
       createdAt: version.createdAt,
       createdBy: version.createdBy,
       autoSave: Boolean(version.data?.meta?.autoSave),
-      changes: Array.isArray(version.data?.meta?.changes)
-        ? version.data.meta.changes
-        : [],
+      changes: Array.isArray(version.data?.meta?.changes) ? version.data.meta.changes : [],
     }));
 
     res.status(200).json({

@@ -1,4 +1,5 @@
 # STATUS Commit System - Inspired by HTTP
+
 **Created by HIMESHCHANCHAL BHATTARAI**
 
 This project uses a **STATUS-based commit convention**
@@ -6,20 +7,21 @@ to describe the **state and reliability of the codebase** at each commit.
 
 Each commit answers:
 "What condition is this change in right now?"
+
 ---
 
 ## 💡 Quick Reference (Most Frequently Used)
 
 If you are unsure which code to use, these are the most common:
 
-| Code | Usage |
-| :--- | :--- |
-| **STATUS(301)** | **New Feature:** You added something new that works. |
-| **STATUS(601)** | **Bug Fix:** You fixed a broken part of the code. |
-| **STATUS(302)** | **Improvement:** You made an existing feature better. |
+| Code            | Usage                                                         |
+| :-------------- | :------------------------------------------------------------ |
+| **STATUS(301)** | **New Feature:** You added something new that works.          |
+| **STATUS(601)** | **Bug Fix:** You fixed a broken part of the code.             |
+| **STATUS(302)** | **Improvement:** You made an existing feature better.         |
 | **STATUS(201)** | **Stable:** General logic update that is working as expected. |
-| **STATUS(300)** | **Refactor:** Cleaned up code without changing how it works. |
-| **STATUS(102)** | **WIP:** Partial work that isn't finished yet. |
+| **STATUS(300)** | **Refactor:** Cleaned up code without changing how it works.  |
+| **STATUS(102)** | **WIP:** Partial work that isn't finished yet.                |
 
 ---
 

@@ -8,7 +8,6 @@ import { TenantProvider } from "@/context/TenantContext";
 import { siteMetadataConfig } from "@/lib/seo/site-metadata";
 import "./globals.css";
 
-
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
@@ -76,9 +75,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
         <Providers>
-          <TenantProvider>
-            {children}
-          </TenantProvider>
+          <TenantProvider>{children}</TenantProvider>
           <Toaster position="bottom-right" richColors closeButton />
         </Providers>
         <Analytics />

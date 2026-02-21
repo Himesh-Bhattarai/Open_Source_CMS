@@ -92,15 +92,12 @@ export function SiteFooter({ tenant, footerData = null }: SiteFooterProps) {
           <div className="lg:col-span-2">
             <Link href={`/site/${tenant}`} className="flex items-center gap-2 mb-4">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  L
-                </span>
+                <span className="text-primary-foreground font-bold text-sm">L</span>
               </div>
               <span className="font-semibold text-lg">Logo</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Building amazing websites with our powerful content management
-              platform.
+              Building amazing websites with our powerful content management platform.
             </p>
           </div>
 
@@ -125,8 +122,7 @@ export function SiteFooter({ tenant, footerData = null }: SiteFooterProps) {
 
         <div className="mt-12 pt-8 border-t">
           <p className="text-sm text-muted-foreground text-center">
-            {footerData?.bottomBar?.copyrightText ||
-              "(c) 2025 Your Company. All rights reserved."}
+            {footerData?.bottomBar?.copyrightText || "(c) 2025 Your Company. All rights reserved."}
           </p>
         </div>
       </div>

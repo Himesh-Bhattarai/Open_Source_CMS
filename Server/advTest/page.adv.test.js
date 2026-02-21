@@ -40,7 +40,7 @@ describe("Page advanced integration", () => {
       pageTree: [],
       authorId: "user-adv",
       title: "Home",
-      slug: "home"
+      slug: "home",
     });
   });
 
@@ -54,7 +54,7 @@ describe("Page advanced integration", () => {
       pageTree: [],
       authorId: "user-adv",
       title: "Home",
-      slug: "home"
+      slug: "home",
     });
   });
 
@@ -82,13 +82,12 @@ describe("Page advanced integration", () => {
     }
   });
 
-
   test("performance under concurrency", async () => {
     // Create array of 15 concurrent request promises
     const requests = Array.from({ length: 15 }, () =>
       request(app)
         .get("/page/website/t1")
-        .set("Cookie", makeAuthCookie({ userId: "user-adv" }))
+        .set("Cookie", makeAuthCookie({ userId: "user-adv" })),
     );
 
     // Measure total elapsed time

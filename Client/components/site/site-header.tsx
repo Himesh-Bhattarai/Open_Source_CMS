@@ -15,10 +15,10 @@ interface SiteHeaderProps {
 }
 
 const defaultMenuItems: SiteMenuItem[] = [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Services", href: "/services" },
-    { label: "Contact", href: "/contact" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const resolveHref = (tenant: string, rawHref: string | undefined) => {
@@ -49,9 +49,7 @@ export function SiteHeader({ tenant, menuItems = [] }: SiteHeaderProps) {
         <div className="flex h-16 items-center justify-between">
           <Link href={`/site/${tenant}`} className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                L
-              </span>
+              <span className="text-primary-foreground font-bold text-sm">L</span>
             </div>
             <span className="font-semibold text-lg">Logo</span>
           </Link>

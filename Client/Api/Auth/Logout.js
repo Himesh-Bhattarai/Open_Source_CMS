@@ -1,6 +1,5 @@
 const LOGOUT_URL = process.env.NEXT_PUBLIC_LOGOUT_URL;
 
-
 //Logout Api call
 export const logoutApi = async () => {
   if (!LOGOUT_URL) throw new Error("LOGOUT_URL is undefined");

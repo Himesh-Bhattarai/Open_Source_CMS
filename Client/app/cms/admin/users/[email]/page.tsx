@@ -1,47 +1,47 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
-import { useParams } from "next/navigation"
-import { ArrowLeft, Mail, Shield, User as UserIcon } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { fetchAllUsers } from "@/Api/Admin/Fetch"
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { ArrowLeft, Mail, Shield, User as UserIcon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { fetchAllUsers } from "@/Api/Admin/Fetch";
 
 type AdminUser = {
-  _id: string
-  email: string
-  name: string
-  role: string
-  status: string
-  createdAt?: string
-  lastLogin?: string
-}
+  _id: string;
+  email: string;
+  name: string;
+  role: string;
+  status: string;
+  createdAt?: string;
+  lastLogin?: string;
+};
 
 export default function AdminUserDetailPage() {
-  const params = useParams<{ email: string }>()
-  const userEmail = decodeURIComponent(params?.email || "")
-  const [loading, setLoading] = useState(true)
-  const [users, setUsers] = useState<AdminUser[]>([])
+  const params = useParams<{ email: string }>();
+  const userEmail = decodeURIComponent(params?.email || "");
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<AdminUser[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      setLoading(true)
-      const response = await fetchAllUsers()
-      setUsers(Array.isArray(response?.data) ? response.data : [])
-      setLoading(false)
-    }
-    load()
-  }, [])
+      setLoading(true);
+      const response = await fetchAllUsers();
+      setUsers(Array.isArray(response?.data) ? response.data : []);
+      setLoading(false);
+    };
+    load();
+  }, []);
 
   const user = useMemo(
     () => users.find((item) => item.email?.toLowerCase() === userEmail.toLowerCase()),
     [users, userEmail],
-  )
+  );
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading user...</p>
+    return <p className="text-sm text-muted-foreground">Loading user...</p>;
   }
 
   if (!user) {
@@ -55,7 +55,7 @@ export default function AdminUserDetailPage() {
           </Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -96,5 +96,5 @@ export default function AdminUserDetailPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

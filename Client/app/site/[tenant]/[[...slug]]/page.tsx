@@ -118,8 +118,7 @@ const API_KEY = process.env.CMS_PUBLIC_API_KEY || "";
 const PREVIEW_SITE_ORIGIN = process.env.CMS_PUBLIC_SITE_ORIGIN || "";
 
 const DEFAULT_TITLE = "Website";
-const DEFAULT_DESCRIPTION =
-  "Create beautiful, professional websites without coding";
+const DEFAULT_DESCRIPTION = "Create beautiful, professional websites without coding";
 
 const fallbackBlocks = [
   {
@@ -201,10 +200,7 @@ const resolvePageBySlug = async (tenant: string, slugPath: string) => {
     return payload?.page || null;
   }
 
-  const pagesPayload = await fetchExternal<{ pages?: PublicPage[] }>(
-    tenant,
-    "/pages",
-  );
+  const pagesPayload = await fetchExternal<{ pages?: PublicPage[] }>(tenant, "/pages");
   const pages = Array.isArray(pagesPayload?.pages) ? pagesPayload.pages : [];
   const homepage = pages.find((p) => Boolean(p?.settings?.isHomepage)) || pages[0];
   if (!homepage?.slug) return null;
@@ -242,10 +238,7 @@ const toAbsoluteUrl = (value?: string, base?: string) => {
   }
 };
 
-const resolveTwitterCard = (
-  pageCard?: string,
-  globalCard?: string,
-): TwitterCardType => {
+const resolveTwitterCard = (pageCard?: string, globalCard?: string): TwitterCardType => {
   const candidate = asNonEmptyString(pageCard) || asNonEmptyString(globalCard);
   if (candidate === "summary") return candidate;
   if (candidate === "summary_large_image") return candidate;
@@ -268,10 +261,7 @@ const resolveCanonical = ({
   const normalizedGlobal = normalizeBaseUrl(globalSiteUrl);
   const normalizedPreview = normalizeBaseUrl(PREVIEW_SITE_ORIGIN);
 
-  const explicitCanonical = toAbsoluteUrl(
-    pageCanonical,
-    normalizedGlobal || normalizedPreview,
-  );
+  const explicitCanonical = toAbsoluteUrl(pageCanonical, normalizedGlobal || normalizedPreview);
   if (explicitCanonical) return explicitCanonical;
 
   const relativePath = slugPath ? `${slugPath}` : "";
@@ -281,9 +271,7 @@ const resolveCanonical = ({
   }
 
   if (normalizedPreview) {
-    const previewPath = slugPath
-      ? `site/${tenant}/${slugPath}`
-      : `site/${tenant}`;
+    const previewPath = slugPath ? `site/${tenant}/${slugPath}` : `site/${tenant}`;
     return new URL(previewPath, `${normalizedPreview}/`).toString();
   }
 
@@ -294,8 +282,7 @@ const resolveRobots = (
   pageSeo: PublicPageSEO | undefined,
   globalRobots: GlobalSeoSettings["robots"],
 ): Metadata["robots"] => {
-  const stagingNoIndex =
-    globalRobots?.stagingNoIndex && process.env.NODE_ENV !== "production";
+  const stagingNoIndex = globalRobots?.stagingNoIndex && process.env.NODE_ENV !== "production";
 
   const index = stagingNoIndex
     ? false
@@ -375,14 +362,10 @@ const buildPageMetadata = ({
     slugPath,
   });
 
-  const openGraphTitle =
-    asNonEmptyString(pageSeo?.openGraph?.title) || title;
-  const openGraphDescription =
-    asNonEmptyString(pageSeo?.openGraph?.description) || description;
+  const openGraphTitle = asNonEmptyString(pageSeo?.openGraph?.title) || title;
+  const openGraphDescription = asNonEmptyString(pageSeo?.openGraph?.description) || description;
   const openGraphImage = toAbsoluteUrl(
-    pageSeo?.openGraph?.image ||
-      pageSeo?.ogImage ||
-      globalSeo?.general?.defaultOgImage,
+    pageSeo?.openGraph?.image || pageSeo?.ogImage || globalSeo?.general?.defaultOgImage,
     normalizeBaseUrl(globalSiteUrl) || normalizeBaseUrl(PREVIEW_SITE_ORIGIN),
   );
 
@@ -406,13 +389,9 @@ const buildPageMetadata = ({
         : {}),
     },
     twitter: {
-      card: resolveTwitterCard(
-        pageSeo?.twitter?.card,
-        globalSeo?.social?.twitterCard,
-      ),
+      card: resolveTwitterCard(pageSeo?.twitter?.card, globalSeo?.social?.twitterCard),
       title: asNonEmptyString(pageSeo?.twitter?.title) || openGraphTitle,
-      description:
-        asNonEmptyString(pageSeo?.twitter?.description) || openGraphDescription,
+      description: asNonEmptyString(pageSeo?.twitter?.description) || openGraphDescription,
       ...(twitterImage ? { images: [twitterImage] } : {}),
       ...(asNonEmptyString(pageSeo?.twitter?.site) ||
       asNonEmptyString(globalSeo?.social?.twitterSite)
@@ -447,10 +426,7 @@ export default async function SitePage({ params }: { params: SiteParams }) {
 
   const [page, menuPayload, footerPayload] = await Promise.all([
     resolvePageBySlug(tenant, slugPath),
-    fetchExternal<{ getMenu?: Array<{ items?: SiteMenuItemPayload[] }> }>(
-      tenant,
-      "/menu",
-    ),
+    fetchExternal<{ getMenu?: Array<{ items?: SiteMenuItemPayload[] }> }>(tenant, "/menu"),
     fetchExternal<{ footer?: FooterDataPayload }>(tenant, "/footer"),
   ]);
 
@@ -478,11 +454,7 @@ export default async function SitePage({ params }: { params: SiteParams }) {
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: SiteParams;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: SiteParams }): Promise<Metadata> {
   const tenant = params.tenant;
   const slugPath = params.slug ? params.slug.join("/") : "";
 

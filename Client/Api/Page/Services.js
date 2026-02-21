@@ -3,7 +3,7 @@ const RESTORE_PAGE_VERSION_URL = process.env.NEXT_PUBLIC_RESTORE_PAGE_VERSION_UR
 // Delete User Pages for Admin by Id
 const DELETE_USER_PAGES_URL = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_URL;
 //delete User All page selected by user
-const DELETE_USER_SELECTED_PAGE_URL =process.env.NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL;
+const DELETE_USER_SELECTED_PAGE_URL = process.env.NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL;
 
 const DELETE_USER_PAGES_BY_ID = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_BY_ID;
 
@@ -72,8 +72,7 @@ export const deleteUserPageById = async (pageId) => {
     });
 
     const request = await parseJsonSafe(response);
-    if (!response.ok)
-      throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
     return {
       ok: response.ok,
       status: response.status,
@@ -102,8 +101,7 @@ export const deleteUserSelectedPage = async (pageIds) => {
     });
 
     const request = await parseJsonSafe(response);
-    if (!response.ok)
-      throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
     return {
       ok: true,
       status: response.status,
@@ -128,8 +126,7 @@ export const deleteUserPages = async () => {
       credentials: "include",
     });
     const request = await parseJsonSafe(response);
-    if (!response.ok)
-      throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
     return {
       ok: true,
       status: response.status,
@@ -159,8 +156,7 @@ export const bulkDeleteUserPagesByAdmin = async (userIds) => {
       body: JSON.stringify({ userIds: userIds }),
     });
     const request = await parseJsonSafe(response);
-    if (!response.ok)
-      throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
     return {
       ok: true,
       status: response.status,

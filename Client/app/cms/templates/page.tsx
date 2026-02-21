@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Layout, Search, Eye, Download } from "lucide-react"
-import Image from "next/image"
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Layout, Search, Eye, Download } from "lucide-react";
+import Image from "next/image";
 
 export default function TemplatesPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const templates = [
     {
@@ -67,7 +67,7 @@ export default function TemplatesPage() {
       preview: "/placeholder.svg?height=400&width=600",
       featured: false,
     },
-  ]
+  ];
 
   const categories = [
     { id: "all", label: "All Templates" },
@@ -77,15 +77,15 @@ export default function TemplatesPage() {
     { id: "marketing", label: "Marketing" },
     { id: "ecommerce", label: "E-commerce" },
     { id: "restaurant", label: "Restaurant" },
-  ]
+  ];
 
   const filteredTemplates = templates.filter((template) => {
     const matchesSearch =
       template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || template.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+      template.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || template.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="space-y-6">
@@ -134,7 +134,9 @@ export default function TemplatesPage() {
                     fill
                     className="object-cover"
                   />
-                  {template.featured && <Badge className="absolute top-3 right-3 bg-primary">Featured</Badge>}
+                  {template.featured && (
+                    <Badge className="absolute top-3 right-3 bg-primary">Featured</Badge>
+                  )}
                 </div>
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -178,5 +180,5 @@ export default function TemplatesPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -91,12 +91,7 @@ const BackupPolicySchema = new Schema(
   },
 );
 
-BackupPolicySchema.index(
-  { userId: 1, tenantId: 1, frequency: 1 },
-  { unique: true },
-);
+BackupPolicySchema.index({ userId: 1, tenantId: 1, frequency: 1 }, { unique: true });
 
-export const BackupRecord =
-  models.BackupRecord || model("BackupRecord", BackupRecordSchema);
-export const BackupPolicy =
-  models.BackupPolicy || model("BackupPolicy", BackupPolicySchema);
+export const BackupRecord = models.BackupRecord || model("BackupRecord", BackupRecordSchema);
+export const BackupPolicy = models.BackupPolicy || model("BackupPolicy", BackupPolicySchema);

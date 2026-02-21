@@ -13,8 +13,7 @@ const normalizeOrigin = (value: string) => {
   }
 };
 
-const buildAbsoluteUrl = (origin: string, path: string) =>
-  new URL(path, `${origin}/`).toString();
+const buildAbsoluteUrl = (origin: string, path: string) => new URL(path, `${origin}/`).toString();
 
 const getPublicStaticRoutes = (origin: string): MetadataRoute.Sitemap => {
   const now = new Date();
@@ -27,9 +26,7 @@ const getPublicStaticRoutes = (origin: string): MetadataRoute.Sitemap => {
   }));
 };
 
-const getTenantPageRoutes = async (
-  origin: string,
-): Promise<MetadataRoute.Sitemap> => {
+const getTenantPageRoutes = async (origin: string): Promise<MetadataRoute.Sitemap> => {
   if (!API_BASE_URL || !API_KEY || !DEFAULT_TENANT) return [];
 
   try {
@@ -45,24 +42,21 @@ const getTenantPageRoutes = async (
 
     if (!response.ok) return [];
 
-    const payload = (await response.json().catch(() => null)) as
-      | {
-          pages?: Array<{
-            slug?: string;
-            settings?: { isHomepage?: boolean };
-            updatedAt?: string;
-          }>;
-        }
-      | null;
+    const payload = (await response.json().catch(() => null)) as {
+      pages?: Array<{
+        slug?: string;
+        settings?: { isHomepage?: boolean };
+        updatedAt?: string;
+      }>;
+    } | null;
 
     const pages = Array.isArray(payload?.pages) ? payload.pages : [];
     return pages
       .map((page) => {
         const slug = typeof page.slug === "string" ? page.slug.trim() : "";
         const isHomepage = page.settings?.isHomepage === true;
-        const path = isHomepage || !slug
-          ? `/site/${DEFAULT_TENANT}`
-          : `/site/${DEFAULT_TENANT}/${slug}`;
+        const path =
+          isHomepage || !slug ? `/site/${DEFAULT_TENANT}` : `/site/${DEFAULT_TENANT}/${slug}`;
 
         return {
           url: buildAbsoluteUrl(origin, path),

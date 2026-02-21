@@ -24,5 +24,4 @@ export const PageBlockSchema = new Schema(
   { _id: false },
 );
 
-export const PageBlock =
-  models.PageBlock || model("PageBlock", PageBlockSchema);
+export const PageBlock = models.PageBlock || model("PageBlock", PageBlockSchema);

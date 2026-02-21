@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Globe,
   Layout,
@@ -20,14 +20,14 @@ import {
   Layers,
   Eye,
   Download,
-} from "lucide-react"
-import { useEffect, useState } from "react"
-import { verifyMe } from "@/Api/Auth/VerifyAuth"
-import { useRouter } from "next/navigation"
-import LoadingScreen from "@/lib/loading"
-import {fetchMenu as loadNavigation } from "@/Api/ExternalCall/Navigation"
-import { fetchFooter } from "@/Api/ExternalCall/Footer"
-import Footer from "@/components/Footer"
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { verifyMe } from "@/Api/Auth/VerifyAuth";
+import { useRouter } from "next/navigation";
+import LoadingScreen from "@/lib/loading";
+import { fetchMenu as loadNavigation } from "@/Api/ExternalCall/Navigation";
+import { fetchFooter } from "@/Api/ExternalCall/Footer";
+import Footer from "@/components/Footer";
 
 interface MenuItem {
   _id: string;
@@ -39,33 +39,33 @@ interface MenuItem {
   children: MenuItem[];
 }
 
-const SITE_URL = String(process.env.NEXT_PUBLIC_SITE_URL || "https://contentflow.com").replace(/\/$/, "")
-const HOME_STRUCTURED_DATA = JSON.stringify(
-  [
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: "ContentFlow",
-      url: SITE_URL,
-      logo: `${SITE_URL}/fav/favicon-32x32.png`,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: "ContentFlow",
-      url: SITE_URL,
-    },
-  ],
-).replace(/</g, "\\u003c")
+const SITE_URL = String(process.env.NEXT_PUBLIC_SITE_URL || "https://contentflow.com").replace(
+  /\/$/,
+  "",
+);
+const HOME_STRUCTURED_DATA = JSON.stringify([
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "ContentFlow",
+    url: SITE_URL,
+    logo: `${SITE_URL}/fav/favicon-32x32.png`,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "ContentFlow",
+    url: SITE_URL,
+  },
+]).replace(/</g, "\\u003c");
 
 export default function LandingPage() {
   const [loading, setLoading] = useState(true);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [footerData, setFooterData] = useState<any >(null)
-
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [footerData, setFooterData] = useState<any>(null);
 
   // Fall back to default menu if API fails
-  const defaultMenu=[
+  const defaultMenu = [
     {
       _id: "1",
       label: "Features",
@@ -87,11 +87,11 @@ export default function LandingPage() {
       enabled: true,
       order: 3,
     },
-  ]
+  ];
 
   const router = useRouter();
   //falback for footer data if API fails
-const footerFallback = {
+  const footerFallback = {
     layout: "custom",
     blocks: [
       {
@@ -140,35 +140,31 @@ const footerFallback = {
       copyrightText: "© 2025 ContentFlow. All rights reserved.",
       socialLinks: [],
     },
-  }
-
-  
+  };
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const navRes = await loadNavigation()
+        const navRes = await loadNavigation();
         if (navRes.ok && Array.isArray(navRes.data) && navRes.data[0]?.items) {
-          setMenuItems(navRes.data[0].items)
+          setMenuItems(navRes.data[0].items);
         } else {
-          setMenuItems(defaultMenu as MenuItem[])
+          setMenuItems(defaultMenu as MenuItem[]);
         }
 
-        const footerRes = await fetchFooter()
+        const footerRes = await fetchFooter();
 
-        setFooterData(footerRes?.data)
-        
+        setFooterData(footerRes?.data);
       } catch (err) {
-        console.error(err)
-        setMenuItems(defaultMenu as MenuItem[])
+        console.error(err);
+        setMenuItems(defaultMenu as MenuItem[]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    loadAll()
-  }, [])
-  
+    };
+
+    loadAll();
+  }, []);
 
   useEffect(() => {
     const directMe = async () => {
@@ -249,7 +245,7 @@ const footerFallback = {
       title: "Automated Backups",
       description: "Scheduled backups with one-click restore",
     },
-  ]
+  ];
 
   const useCases = [
     {
@@ -267,12 +263,11 @@ const footerFallback = {
       description: "Integrate CMS with existing projects via API",
       benefits: ["RESTful APIs", "Webhook support", "Custom integrations"],
     },
-  ]
+  ];
 
   if (loading) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -290,17 +285,18 @@ const footerFallback = {
             <span className="font-bold text-xl">ContentFlow</span>
           </div>
           <div className="hidden md:flex items-center gap-6">
-            {menuItems.map(item => (
-              item?.enabled  && (
-                <Link
-                  key={item?._id}
-                  href={item?.link}
-                  className="text-sm font-medium hover:text-primary transition-colors"
-                >
-                  {item?.label}
-                </Link>
-              )
-            ))}
+            {menuItems.map(
+              (item) =>
+                item?.enabled && (
+                  <Link
+                    key={item?._id}
+                    href={item?.link}
+                    className="text-sm font-medium hover:text-primary transition-colors"
+                  >
+                    {item?.label}
+                  </Link>
+                ),
+            )}
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
@@ -328,8 +324,8 @@ const footerFallback = {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              ContentFlow is a powerful multi-tenant CMS that lets you create, manage, and publish professional websites
-              using our visual block-based editor. No coding required.
+              ContentFlow is a powerful multi-tenant CMS that lets you create, manage, and publish
+              professional websites using our visual block-based editor. No coding required.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild className="text-base">
@@ -349,7 +345,9 @@ const footerFallback = {
       <section id="features" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Everything You Need to Build Websites</h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Everything You Need to Build Websites
+            </h2>
             <p className="text-xl text-muted-foreground">
               Powerful features designed for both beginners and professionals
             </p>
@@ -375,7 +373,9 @@ const footerFallback = {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">Built for Everyone</h2>
-            <p className="text-xl text-muted-foreground">Whether you're a business owner, agency, or developer</p>
+            <p className="text-xl text-muted-foreground">
+              Whether you're a business owner, agency, or developer
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {useCases.map((useCase, idx) => (
@@ -409,9 +409,24 @@ const footerFallback = {
           </div>
           <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-8">
             {[
-              { step: "1", title: "Sign Up", description: "Create your account in seconds", icon: Users },
-              { step: "2", title: "Choose Template", description: "Pick from professional designs", icon: Layers },
-              { step: "3", title: "Customize Content", description: "Edit with drag-and-drop blocks", icon: Layout },
+              {
+                step: "1",
+                title: "Sign Up",
+                description: "Create your account in seconds",
+                icon: Users,
+              },
+              {
+                step: "2",
+                title: "Choose Template",
+                description: "Pick from professional designs",
+                icon: Layers,
+              },
+              {
+                step: "3",
+                title: "Customize Content",
+                description: "Edit with drag-and-drop blocks",
+                icon: Layout,
+              },
               { step: "4", title: "Publish", description: "Go live with one click", icon: Zap },
             ].map((item, idx) => (
               <div key={idx} className="text-center space-y-4">
@@ -431,5 +446,5 @@ const footerFallback = {
 
       <Footer footer={footerData || footerFallback} />
     </div>
-  )
+  );
 }

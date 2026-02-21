@@ -334,5 +334,4 @@ export const startBackupScheduler = () => {
   console.log("[BackupScheduler] Started");
 };
 
-export const getNextRunAt = (frequency, from = new Date()) =>
-  addFrequency(from, frequency);
+export const getNextRunAt = (frequency, from = new Date()) => addFrequency(from, frequency);

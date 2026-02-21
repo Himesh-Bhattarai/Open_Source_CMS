@@ -22,7 +22,6 @@ export const createMedia = async (data) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-   
     });
 
     const request = await safeParseJson(response);

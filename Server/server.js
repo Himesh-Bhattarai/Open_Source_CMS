@@ -54,6 +54,7 @@ import validateUser from "./Services/validateUser.js";
 import changePassword from "./Services/changePassword.js";
 import apiKeys from "./Routes/Load/getApi.js";
 import { rateLimiter } from "./Validation/middleware/rateLimiter.js";
+import { csrfProtection } from "./Validation/middleware/csrfProtection.js";
 import backupRoutes from "./Routes/Backup/Backup.js";
 import { startBackupScheduler } from "./Services/backupScheduler.js";
 
@@ -77,6 +78,17 @@ if (corsOrigins.length === 0) {
 if (isProd) {
   app.set("trust proxy", 1);
 }
+
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (isProd) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  }
+  next();
+});
 
 // Middleware
 app.use(
@@ -108,6 +120,8 @@ app.use(
     },
   }),
 );
+
+app.use(csrfProtection);
 
 // Passport middlewares
 app.use(passport.initialize());
@@ -165,7 +179,7 @@ app.use("/api/v1/delete-tenant", deleteTenant);
 app.use("/api/v1/delete-seo", deleteSeo);
 app.use("/api/v1/delete-form", deleteForm);
 app.use("/api/v1/delete-footer", deleteFooter);
-// Delete-Whole Account 
+// Delete-Whole Account
 app.use("/api/v1/user/delete", deleteUser);
 app.use("/api/v1/user/validate", validateUser);
 
@@ -181,13 +195,37 @@ app.use("/api/v1/update-form", updateForm);
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);
 
-
 //external request routes
 app.use("/api/v1/external-request", rateLimiter, extractDomain, externalRequest);
 
-
 app.use("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
+});
+
+app.get("/metrics", (req, res) => {
+  const metricsToken = process.env.METRICS_TOKEN;
+  const providedToken = req.headers["x-metrics-token"];
+  if (metricsToken && providedToken !== metricsToken) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const memoryUsage = process.memoryUsage();
+  const uptimeSeconds = Math.floor(process.uptime());
+
+  const body = [
+    "# HELP cms_process_uptime_seconds Process uptime in seconds",
+    "# TYPE cms_process_uptime_seconds gauge",
+    `cms_process_uptime_seconds ${uptimeSeconds}`,
+    "# HELP cms_process_memory_rss_bytes Resident set size in bytes",
+    "# TYPE cms_process_memory_rss_bytes gauge",
+    `cms_process_memory_rss_bytes ${memoryUsage.rss}`,
+    "# HELP cms_process_memory_heap_used_bytes Heap used in bytes",
+    "# TYPE cms_process_memory_heap_used_bytes gauge",
+    `cms_process_memory_heap_used_bytes ${memoryUsage.heapUsed}`,
+  ].join("\n");
+
+  res.setHeader("Content-Type", "text/plain; version=0.0.4");
+  return res.status(200).send(`${body}\n`);
 });
 // Error handler
 app.use(errorHandler);
@@ -199,6 +237,6 @@ startBackupScheduler();
 // Start server
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST;
-app.listen(PORT,'0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT} and host ${HOST}`);
 });

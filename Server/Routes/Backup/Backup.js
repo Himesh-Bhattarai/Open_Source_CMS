@@ -1,10 +1,7 @@
 import express from "express";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import { BackupPolicy, BackupRecord } from "../../Models/Backup/Backup.js";
-import {
-  getNextRunAt,
-  materializeBackupRecord,
-} from "../../Services/backupScheduler.js";
+import { getNextRunAt, materializeBackupRecord } from "../../Services/backupScheduler.js";
 import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 const router = express.Router();
@@ -24,14 +21,7 @@ const buildIncludesLabel = (includes) =>
 router.get("/list", verificationMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.userId;
-    const {
-      tenantId,
-      frequency,
-      status,
-      include,
-      scope = "all",
-      limit = "100",
-    } = req.query;
+    const { tenantId, frequency, status, include, scope = "all", limit = "100" } = req.query;
 
     if (!userId) return res.status(401).json({ ok: false, message: "Unauthorized" });
 
@@ -130,7 +120,9 @@ router.post("/create", verificationMiddleware, async (req, res, next) => {
     } = req.body || {};
 
     const normalizedIncludes = parseIncludes(includes);
-    const title = name || `${type === "scheduled" ? "Scheduled" : "Manual"} Backup - ${new Date().toLocaleString()}`;
+    const title =
+      name ||
+      `${type === "scheduled" ? "Scheduled" : "Manual"} Backup - ${new Date().toLocaleString()}`;
 
     if (type === "scheduled" && scheduledAt) {
       const runAt = new Date(scheduledAt);

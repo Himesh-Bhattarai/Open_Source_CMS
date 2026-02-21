@@ -13,6 +13,7 @@ export const getBlog = async (req, res, next) => {
       const post = await Blog.findOne({
         tenantId,
         slug: String(slug),
+        status: "published",
       }).lean();
 
       if (!post) {
@@ -25,7 +26,10 @@ export const getBlog = async (req, res, next) => {
     const limit = Math.min(Number(req.query?.limit) || 20, 100);
     const offset = Math.max(Number(req.query?.offset) || 0, 0);
 
-    const posts = await Blog.find({ tenantId })
+    const posts = await Blog.find({
+      tenantId,
+      status: "published",
+    })
       .sort({ createdAt: -1 })
       .skip(offset)
       .limit(limit)

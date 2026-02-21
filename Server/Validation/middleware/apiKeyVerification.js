@@ -28,9 +28,7 @@ export const apiKeyVerification = async (req, res, next) => {
     });
 
     if (!apiKeyRecord) {
-      return res
-        .status(403)
-        .json({ error: "Invalid API key. Please contact support" });
+      return res.status(403).json({ error: "Invalid API key. Please contact support" });
     }
 
     req.apiKey = apiKeyRecord;

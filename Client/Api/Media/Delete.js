@@ -1,5 +1,4 @@
-const DELETE_MEDIA_URL_BASE =
-  process.env.NEXT_PUBLIC_DELETE_MEDIA_URL || "http://localhost:5000/api/v1/media/media";
+const DELETE_MEDIA_URL_BASE = process.env.NEXT_PUBLIC_DELETE_MEDIA_URL;
 
 const safeParseJson = async (response) => {
   try {
@@ -11,6 +10,10 @@ const safeParseJson = async (response) => {
 
 export const deleteMediaById = async (mediaId) => {
   try {
+    if (!DELETE_MEDIA_URL_BASE) {
+      throw new Error("NEXT_PUBLIC_DELETE_MEDIA_URL is not configured");
+    }
+
     if (!mediaId) {
       throw new Error("Media ID is required");
     }

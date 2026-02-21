@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   BarChart3,
   FileText,
@@ -14,42 +14,38 @@ import {
   HardDrive,
   Zap,
   Activity,
-} from "lucide-react"
-import Link from "next/link"
-import { useAuth } from "@/hooks/useAuth"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { fetchStats } from "@/Api/Stats/Stats"
-import { verifyMe } from "@/Api/Auth/VerifyAuth"
-import router from "next/router"
-import LoadingScreen from "@/lib/loading"
-
+} from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchStats } from "@/Api/Stats/Stats";
+import { verifyMe } from "@/Api/Auth/VerifyAuth";
+import router from "next/router";
+import LoadingScreen from "@/lib/loading";
 
 export default function CMSDashboard() {
-  const router = useRouter()
-  const { user, isAdmin, isOwner } = useAuth()
-  
-  const [mounted, setMounted] = useState(false)
+  const router = useRouter();
+  const { user, isAdmin, isOwner } = useAuth();
+
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return null
+    return null;
   }
-
-
 
   if (isAdmin) {
-    return <AdminDashboard  />
+    return <AdminDashboard />;
   }
 
-  return <OwnerDashboard user={user} />
+  return <OwnerDashboard user={user} />;
 }
 
 function AdminDashboard() {
-
   const stats = [
     {
       label: "Total Users",
@@ -83,7 +79,7 @@ function AdminDashboard() {
       trend: "up",
       color: "text-orange-600",
     },
-  ]
+  ];
 
   const recentUsers = [
     {
@@ -107,20 +103,26 @@ function AdminDashboard() {
       status: "trial",
       joinedAt: "3 days ago",
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">Platform Overview</h1>
-        <p className="text-pretty text-muted-foreground mt-2">Monitor all users and system health</p>
+        <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">
+          Platform Overview
+        </h1>
+        <p className="text-pretty text-muted-foreground mt-2">
+          Monitor all users and system health
+        </p>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </CardTitle>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </CardHeader>
             <CardContent>
@@ -194,19 +196,31 @@ function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/admin/users">
                 <Users className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">View All Users</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/admin/analytics">
                 <BarChart3 className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">Analytics</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/admin/logs">
                 <Activity className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">System Logs</span>
@@ -216,57 +230,86 @@ function AdminDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function OwnerDashboard({ user }: { user: any }) {
-  const [stats, setStats] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Fetch stats once on mount
   useEffect(() => {
-    const types = "For-Dashboard"
+    const types = "For-Dashboard";
 
     const getStats = async () => {
       try {
-        const data = await fetchStats(types)
+        const data = await fetchStats(types);
 
         // Convert object from backend into array for map
         const statsArray = [
-          { label: "Total Pages", value: data.totalPages ?? 0, icon: FileText, change: "+3 this week", color: "text-blue-600" },
-          { label: "Published Pages", value: data.publishedPages ?? 0, icon: BarChart3, change: "+12 this week", color: "text-green-600" },
-          { label: "Draft Pages", value: data.draftPages ?? 0, icon: ImageIcon, change: "+5 this week", color: "text-purple-600" },
-        ]
+          {
+            label: "Total Pages",
+            value: data.totalPages ?? 0,
+            icon: FileText,
+            change: "+3 this week",
+            color: "text-blue-600",
+          },
+          {
+            label: "Published Pages",
+            value: data.publishedPages ?? 0,
+            icon: BarChart3,
+            change: "+12 this week",
+            color: "text-green-600",
+          },
+          {
+            label: "Draft Pages",
+            value: data.draftPages ?? 0,
+            icon: ImageIcon,
+            change: "+5 this week",
+            color: "text-purple-600",
+          },
+        ];
 
-        setStats(statsArray)
+        setStats(statsArray);
       } catch (err) {
-        console.error("Failed to fetch stats:", err)
+        console.error("Failed to fetch stats:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    getStats()
+    getStats();
 
-    
-    const interval = setInterval(getStats, 5000)
-    return () => clearInterval(interval)
-  }, [])
+    const interval = setInterval(getStats, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const pendingChanges = [
-    { type: "Menu", name: "Main Navigation", editor: "Sarah K.", time: "2 hours ago", status: "draft" },
-    { type: "Footer", name: "Site Footer", editor: "Mike R.", time: "5 hours ago", status: "draft" },
-  ]
+    {
+      type: "Menu",
+      name: "Main Navigation",
+      editor: "Sarah K.",
+      time: "2 hours ago",
+      status: "draft",
+    },
+    {
+      type: "Footer",
+      name: "Site Footer",
+      editor: "Mike R.",
+      time: "5 hours ago",
+      status: "draft",
+    },
+  ];
 
   const recentActivity = [
     { action: "Published page", item: "About Us", user: "Sarah K.", time: "10 min ago" },
     { action: "Updated menu", item: "Products Menu", user: "Mike R.", time: "1 hour ago" },
     { action: "Uploaded media", item: "hero-banner.jpg", user: "Admin", time: "2 hours ago" },
     { action: "Created page", item: "Services", user: "Sarah K.", time: "3 hours ago" },
-  ]
+  ];
 
-  if (loading) return <p className="text-center text-muted-foreground mt-8">Loading dashboard...</p>
-
+  if (loading)
+    return <p className="text-center text-muted-foreground mt-8">Loading dashboard...</p>;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -274,14 +317,18 @@ function OwnerDashboard({ user }: { user: any }) {
         <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">
           Welcome back, {user?.name.split(" ")[0]}!
         </h1>
-        <p className="text-pretty text-muted-foreground mt-2">Here's what's happening with your website.</p>
+        <p className="text-pretty text-muted-foreground mt-2">
+          Here's what's happening with your website.
+        </p>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat : any) => (
+        {stats.map((stat: any) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </CardTitle>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </CardHeader>
             <CardContent>
@@ -291,7 +338,7 @@ function OwnerDashboard({ user }: { user: any }) {
           </Card>
         ))}
       </div>
-{/* 
+      {/* 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
        
         <Card>
@@ -371,25 +418,41 @@ function OwnerDashboard({ user }: { user: any }) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/content/pages/new">
                 <FileText className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">New Page</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/content/blog/new">
                 <BarChart3 className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">New Post</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/media">
                 <ImageIcon className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">Media</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" className="h-auto py-4 flex flex-col gap-2 bg-transparent">
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto py-4 flex flex-col gap-2 bg-transparent"
+            >
               <Link href="/cms/global/menus">
                 <Globe className="h-5 w-5" />
                 <span className="text-xs sm:text-sm">Edit Menu</span>
@@ -399,5 +462,5 @@ function OwnerDashboard({ user }: { user: any }) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

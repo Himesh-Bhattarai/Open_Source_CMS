@@ -19,9 +19,7 @@ export const seoCheckpoint = async (req, res) => {
       return res.status(400).json({ message: "Invalid SEO scope" });
     }
     if (scope === "page" && !pageId) {
-      return res
-        .status(400)
-        .json({ message: "pageId is required for page-level SEO" });
+      return res.status(400).json({ message: "pageId is required for page-level SEO" });
     }
 
     // One global record per tenant/user, or one record per page.
@@ -41,11 +39,7 @@ export const seoCheckpoint = async (req, res) => {
     if (scope === "global") update.globalSEO = globalSEO;
     if (scope === "page") update.pageSEO = pageSEO;
 
-    const seo = await Seo.findOneAndUpdate(
-      query,
-      { $set: update },
-      { new: true, upsert: true },
-    );
+    const seo = await Seo.findOneAndUpdate(query, { $set: update }, { new: true, upsert: true });
 
     notif.createSEO({
       userId,

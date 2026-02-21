@@ -12,7 +12,9 @@ const loadMenuCreateRouter = async (handler) => {
 
 const loadMenuUpdateRouter = async (handler) => {
   jest.resetModules();
-  jest.unstable_mockModule("../../CheckPoint/Menu/UpdateMenu.js", () => ({ updateMenuCheckpoint: handler }));
+  jest.unstable_mockModule("../../CheckPoint/Menu/UpdateMenu.js", () => ({
+    updateMenuCheckpoint: handler,
+  }));
   return (await import("../../Routes/Menu/UpdateMenu.js")).default;
 };
 
@@ -34,9 +36,15 @@ const loadMenuDeleteRouter = async (menuModel) => {
 const loadExternalMenuRouter = async ({ getMenuImpl, tenantImpl, apiKeyImpl, trackImpl }) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Api/getMenu.js", () => ({ getMenu: getMenuImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({ tenantVerification: tenantImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({ apiKeyVerification: apiKeyImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({ trackIntegrationUsage: () => trackImpl }));
+  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({
+    tenantVerification: tenantImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({
+    apiKeyVerification: apiKeyImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({
+    trackIntegrationUsage: () => trackImpl,
+  }));
   return (await import("../../Routes/Api/getMenu.js")).default;
 };
 
@@ -70,15 +78,23 @@ describe("Menu routes", () => {
     const router = await loadMenuUpdateRouter((req, res) => res.status(200).json({ ok: true }));
     const app = createRouteTestApp("/menus", router);
 
-    const valid = await request(app).put("/menus/m1").set("Cookie", makeAuthCookie()).send({ title: "Updated" });
+    const valid = await request(app)
+      .put("/menus/m1")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "Updated" });
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).put("/menus/m1").send({ title: "Updated" });
     expect(invalid.status).toBe(401);
 
-    const edgeRouter = await loadMenuUpdateRouter((req, res, next) => next(new Error("update menu fail")));
+    const edgeRouter = await loadMenuUpdateRouter((req, res, next) =>
+      next(new Error("update menu fail")),
+    );
     const edgeApp = createRouteTestApp("/menus", edgeRouter);
-    const edge = await request(edgeApp).put("/menus/m1").set("Cookie", makeAuthCookie()).send({ title: "Updated" });
+    const edge = await request(edgeApp)
+      .put("/menus/m1")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "Updated" });
     expect(edge.status).toBe(500);
   });
 
@@ -128,7 +144,9 @@ describe("Menu routes", () => {
 
   test("DELETE menu valid invalid edge", async () => {
     const router = await loadMenuDeleteRouter({
-      findOneAndDelete: jest.fn().mockResolvedValue({ _id: "m1", menuName: "Main", websiteId: "w1" }),
+      findOneAndDelete: jest
+        .fn()
+        .mockResolvedValue({ _id: "m1", menuName: "Main", websiteId: "w1" }),
     });
     const app = createRouteTestApp("/delete", router);
 

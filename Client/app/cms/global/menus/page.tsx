@@ -1,58 +1,58 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { loadMenus } from "@/Api/Menu/Load"
-import { deleteMenuById } from "@/Api/Menu/Delete"
-import { toast } from "sonner"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { loadMenus } from "@/Api/Menu/Load";
+import { deleteMenuById } from "@/Api/Menu/Delete";
+import { toast } from "sonner";
 
 export default function MenusPage() {
-  const [loading, setLoading] = useState(false)
-  const [menusData, setMenusData] = useState<any[]>([])
+  const [loading, setLoading] = useState(false);
+  const [menusData, setMenusData] = useState<any[]>([]);
 
   // Keep card text compact in the grid layout.
   const truncate = (text = "", length = 50) =>
-    text.length > length ? `${text.slice(0, length)}...` : text
+    text.length > length ? `${text.slice(0, length)}...` : text;
 
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        setLoading(true)
-        const response = await loadMenus()
-        if (!response?.ok) throw new Error("Failed to load menus")
+        setLoading(true);
+        const response = await loadMenus();
+        if (!response?.ok) throw new Error("Failed to load menus");
         const safeMenus = Array.isArray(response.menus)
           ? response.menus.filter((menu) => menu?._id)
-          : []
-        setMenusData(safeMenus)
+          : [];
+        setMenusData(safeMenus);
       } catch (err: any) {
-        toast.error(err.message || "Failed to load menus")
+        toast.error(err.message || "Failed to load menus");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadMenu()
-  }, [])
+    loadMenu();
+  }, []);
 
   const deleteMenu = async (menuId: string) => {
-    const previous = menusData
+    const previous = menusData;
 
     // Optimistic UI update with rollback on failure.
-    setMenusData((prev) => prev.filter((m) => m._id !== menuId))
+    setMenusData((prev) => prev.filter((m) => m._id !== menuId));
 
     try {
-      const response = await deleteMenuById(menuId)
-      if (!response?.ok) throw new Error("Delete failed")
-      toast.success("Menu deleted")
+      const response = await deleteMenuById(menuId);
+      if (!response?.ok) throw new Error("Delete failed");
+      toast.success("Menu deleted");
     } catch (err: any) {
-      setMenusData(previous)
-      toast.error(err.message || "Failed to delete menu")
+      setMenusData(previous);
+      toast.error(err.message || "Failed to delete menu");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -72,15 +72,11 @@ export default function MenusPage() {
       </div>
 
       {loading && (
-        <div className="flex justify-center py-12 text-muted-foreground">
-          Loading menus...
-        </div>
+        <div className="flex justify-center py-12 text-muted-foreground">Loading menus...</div>
       )}
 
       {!loading && menusData.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          No menus found
-        </div>
+        <div className="text-center py-12 text-muted-foreground">No menus found</div>
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -90,9 +86,7 @@ export default function MenusPage() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-semibold">
-                      {menu.items?.length || 0}
-                    </span>
+                    <span className="text-primary font-semibold">{menu.items?.length || 0}</span>
                   </div>
                   <div>
                     <CardTitle className="text-lg">{menu.title}</CardTitle>
@@ -146,5 +140,5 @@ export default function MenusPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

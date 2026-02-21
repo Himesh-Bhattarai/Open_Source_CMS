@@ -18,25 +18,21 @@ router.get("/get-form", verificationMiddleware, async (req, res, next) => {
   }
 });
 
-router.get(
-  "/get-form/:formId",
-  verificationMiddleware,
-  async (req, res, next) => {
-    try {
-      const userId = req.user?.userId;
-      const formId = req.params.formId;
-      if (!userId || !formId) throw new Error("unauthorized");
+router.get("/get-form/:formId", verificationMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user?.userId;
+    const formId = req.params.formId;
+    if (!userId || !formId) throw new Error("unauthorized");
 
-      const getForm = await Form.findById({ _id: formId });
-      if (!getForm) throw new Error("Form not found");
-      if (String(getForm.userId) !== String(userId)) {
-        throw new Error("Forbidden");
-      }
-      return res.status(200).json({ data: getForm });
-    } catch (err) {
-      next(err);
+    const getForm = await Form.findById({ _id: formId });
+    if (!getForm) throw new Error("Form not found");
+    if (String(getForm.userId) !== String(userId)) {
+      throw new Error("Forbidden");
     }
-  },
-);
+    return res.status(200).json({ data: getForm });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;

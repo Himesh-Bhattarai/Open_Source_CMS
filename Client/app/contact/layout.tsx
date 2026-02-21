@@ -10,10 +10,6 @@ export const metadata: Metadata = createPageMetadata({
   keywords: ["contact contentflow", "cms support", "sales inquiry", "website cms help"],
 });
 
-export default function ContactLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ContactLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

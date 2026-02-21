@@ -48,9 +48,7 @@ export function MenusProvider({ children }: { children: React.ReactNode }) {
     refreshMenus();
   }, [user]);
   return (
-    <MenusContext.Provider
-      value={{ menus, activeMenu, setActiveMenu, refreshMenus }}
-    >
+    <MenusContext.Provider value={{ menus, activeMenu, setActiveMenu, refreshMenus }}>
       {children}
     </MenusContext.Provider>
   );

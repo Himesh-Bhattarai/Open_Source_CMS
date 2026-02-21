@@ -9,10 +9,6 @@ export const metadata: Metadata = createPageMetadata({
   noIndex: true,
 });
 
-export default function ForgotPasswordLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ForgotPasswordLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

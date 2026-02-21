@@ -1,5 +1,4 @@
-const BACKUP_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKUP_BASE_URL || "http://localhost:5000/api/v1/backup";
+const BACKUP_BASE_URL = process.env.NEXT_PUBLIC_BACKUP_BASE_URL;
 
 const safeParse = async (response) => {
   try {
@@ -10,6 +9,16 @@ const safeParse = async (response) => {
 };
 
 const request = async (path, options = {}) => {
+  if (!BACKUP_BASE_URL) {
+    return {
+      ok: false,
+      status: 500,
+      message: "NEXT_PUBLIC_BACKUP_BASE_URL is not configured",
+      data: null,
+      count: 0,
+    };
+  }
+
   const response = await fetch(`${BACKUP_BASE_URL}${path}`, {
     credentials: "include",
     ...options,
@@ -51,6 +60,15 @@ export const restoreBackup = async (data) =>
 
 export const downloadBackup = async (backupId) => {
   try {
+    if (!BACKUP_BASE_URL) {
+      return {
+        ok: false,
+        status: 500,
+        message: "NEXT_PUBLIC_BACKUP_BASE_URL is not configured",
+        data: null,
+      };
+    }
+
     const response = await fetch(`${BACKUP_BASE_URL}/download/${backupId}`, {
       method: "GET",
       credentials: "include",
@@ -59,9 +77,7 @@ export const downloadBackup = async (backupId) => {
     const contentType = response.headers.get("content-type") || "";
 
     if (!response.ok) {
-      const payload = contentType.includes("application/json")
-        ? await safeParse(response)
-        : null;
+      const payload = contentType.includes("application/json") ? await safeParse(response) : null;
       return {
         ok: false,
         status: response.status,

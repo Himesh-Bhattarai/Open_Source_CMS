@@ -15,21 +15,20 @@ router.post("/page-version", verificationMiddleware, async (req, res, next) => {
 
     const page = await Page.findOne({ _id: pageId, authorId: String(userId) });
     if (!page) return res.status(404).json({ message: "Page not found" });
-    const lockedBy = page.settings?.locked?.byUserId
-      ? String(page.settings.locked.byUserId)
-      : null;
+    const lockedBy = page.settings?.locked?.byUserId ? String(page.settings.locked.byUserId) : null;
     if (page.settings?.locked?.isLocked && lockedBy && lockedBy !== String(userId)) {
       return res.status(423).json({ message: "Page is locked by another user" });
     }
 
-    const snapshot = data && typeof data === "object"
-      ? data
-      : {
-          seo: page.seo,
-          settings: page.settings,
-          status: page.status,
-          publishedAt: page.publishedAt,
-        };
+    const snapshot =
+      data && typeof data === "object"
+        ? data
+        : {
+            seo: page.seo,
+            settings: page.settings,
+            status: page.status,
+            publishedAt: page.publishedAt,
+          };
 
     const version = await Version.create({
       _id: crypto.randomUUID(),
@@ -73,9 +72,7 @@ router.get("/page-version/:versionId", verificationMiddleware, async (req, res, 
       authorId: String(userId),
     });
     if (!page) return res.status(404).json({ message: "Page not found" });
-    const lockedBy = page.settings?.locked?.byUserId
-      ? String(page.settings.locked.byUserId)
-      : null;
+    const lockedBy = page.settings?.locked?.byUserId ? String(page.settings.locked.byUserId) : null;
     if (page.settings?.locked?.isLocked && lockedBy && lockedBy !== String(userId)) {
       return res.status(423).json({ message: "Page is locked by another user" });
     }

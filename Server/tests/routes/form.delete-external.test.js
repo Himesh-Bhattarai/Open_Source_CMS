@@ -15,16 +15,24 @@ const loadFormDeleteRouter = async (formModel) => {
 const loadExternalFormRouter = async ({ getFormImpl, tenantImpl, apiKeyImpl, trackImpl }) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Api/getForms.js", () => ({ getForm: getFormImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({ tenantVerification: tenantImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({ apiKeyVerification: apiKeyImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({ trackIntegrationUsage: () => trackImpl }));
+  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({
+    tenantVerification: tenantImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({
+    apiKeyVerification: apiKeyImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({
+    trackIntegrationUsage: () => trackImpl,
+  }));
   return (await import("../../Routes/Api/getForm.js")).default;
 };
 
 describe("Form delete/external routes", () => {
   test("DELETE form valid invalid edge", async () => {
     const router = await loadFormDeleteRouter({
-      findById: jest.fn().mockResolvedValue({ _id: "f1", formName: "Contact", websiteId: "w1", userId: "user-1" }),
+      findById: jest
+        .fn()
+        .mockResolvedValue({ _id: "f1", formName: "Contact", websiteId: "w1", userId: "user-1" }),
       findByIdAndDelete: jest.fn().mockResolvedValue({ _id: "f1" }),
     });
     const app = createRouteTestApp("/delete", router);

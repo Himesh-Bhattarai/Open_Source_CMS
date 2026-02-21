@@ -1,6 +1,6 @@
 const CHECK_SLUG_AVAILABILITY_URL = process.env.NEXT_PUBLIC_CHECK_SLUG_AVAILABILITY_URL;
 
-  //check slug
+//check slug
 export const checkSlugAvailability = async (slug, tenantId, value) => {
   try {
     const response = await fetch(

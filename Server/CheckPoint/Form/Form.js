@@ -1,12 +1,11 @@
 import { Form } from "../../Models/Form/Form.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 export const formCheckpoint = async (req, res, next) => {
   try {
     const userId = req.user?.userId;
     const { tenantId, ...form } = req.body;
 
-    if (!userId)
-      throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
+    if (!userId) throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
     if (!tenantId)
       throw Object.assign(new Error("TenantId is required"), {
         statusCode: 400,
@@ -23,8 +22,8 @@ export const formCheckpoint = async (req, res, next) => {
       userId,
       formName: createdForm.name,
       formId: createdForm._id,
-      websiteId: createdForm.tenantId
-    })
+      websiteId: createdForm.tenantId,
+    });
     return res.status(201).json({
       message: "Form created successfully",
       formId: createdForm._id,

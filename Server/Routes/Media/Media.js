@@ -12,15 +12,7 @@ router.post("/media", verificationMiddleware, mediaCheckpoint);
 router.get("/get-media", verificationMiddleware, async (req, res, next) => {
   try {
     const userId = req.user?.userId;
-    const {
-      tenantId,
-      scope,
-      entityType,
-      entityId,
-      search,
-      type,
-      limit = "200",
-    } = req.query;
+    const { tenantId, scope, entityType, entityId, search, type, limit = "200" } = req.query;
 
     if (!userId || !tenantId) {
       return res.status(400).json({ ok: false, message: "tenantId is required" });

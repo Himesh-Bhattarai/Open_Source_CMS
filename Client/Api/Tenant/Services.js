@@ -1,8 +1,6 @@
 const DELETE_TENANT_BY_ID = process.env.NEXT_PUBLIC_DELETE_TENANT_BY_ID;
-const DELETE_ALL_TENANTS =
-  process.env.NEXT_PUBLIC_DELETE_ALL_TENANTS;
+const DELETE_ALL_TENANTS = process.env.NEXT_PUBLIC_DELETE_ALL_TENANTS;
 const EDIT_TENANT_BY_ID = process.env.NEXT_PUBLIC_EDIT_TENANT_BY_ID;
-
 
 //delete tenant by id
 export const deleteTenantById = async (tenantId) => {
@@ -49,7 +47,6 @@ export const deleteAllTenants = async () => {
     return { ok: false, status: 500, data: null };
   }
 };
-
 
 //edit tenant
 export const editTenantById = async (tenantId, data) => {

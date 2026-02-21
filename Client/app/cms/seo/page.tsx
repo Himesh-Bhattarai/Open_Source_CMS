@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation"
+import { redirect } from "next/navigation";
 
 export default function CmsSeoAliasPage() {
-  redirect("/cms/global/seo")
+  redirect("/cms/global/seo");
 }

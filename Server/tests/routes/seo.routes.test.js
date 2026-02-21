@@ -5,8 +5,12 @@ import { makeAuthCookie } from "../helpers/auth.js";
 
 const loadSeoRouter = async (seoCheckpointImpl, updateSeoCheckpointImpl) => {
   jest.resetModules();
-  jest.unstable_mockModule("../../CheckPoint/Seo/Seo.js", () => ({ seoCheckpoint: seoCheckpointImpl }));
-  jest.unstable_mockModule("../../CheckPoint/Seo/updateSeo.js", () => ({ updateSeoCheckpoint: updateSeoCheckpointImpl }));
+  jest.unstable_mockModule("../../CheckPoint/Seo/Seo.js", () => ({
+    seoCheckpoint: seoCheckpointImpl,
+  }));
+  jest.unstable_mockModule("../../CheckPoint/Seo/updateSeo.js", () => ({
+    updateSeoCheckpoint: updateSeoCheckpointImpl,
+  }));
   return (await import("../../Routes/Seo/Seo.js")).default;
 };
 
@@ -28,42 +32,72 @@ const loadSeoDeleteRouter = async (seoModel) => {
 const loadExternalSeoRouter = async ({ getSeoImpl, tenantImpl, apiKeyImpl, trackImpl }) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Api/getSeo.js", () => ({ getSeo: getSeoImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({ tenantVerification: tenantImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({ apiKeyVerification: apiKeyImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({ trackIntegrationUsage: () => trackImpl }));
+  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({
+    tenantVerification: tenantImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({
+    apiKeyVerification: apiKeyImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({
+    trackIntegrationUsage: () => trackImpl,
+  }));
   return (await import("../../Routes/Api/getSeo.js")).default;
 };
 
 describe("SEO routes", () => {
   test("POST seo valid invalid edge", async () => {
-    const router = await loadSeoRouter((req, res) => res.status(201).json({ ok: true }), (req, res) => res.status(200).json({ ok: true }));
+    const router = await loadSeoRouter(
+      (req, res) => res.status(201).json({ ok: true }),
+      (req, res) => res.status(200).json({ ok: true }),
+    );
     const app = createRouteTestApp("/seo", router);
 
-    const valid = await request(app).post("/seo/seo").set("Cookie", makeAuthCookie()).send({ title: "SEO" });
+    const valid = await request(app)
+      .post("/seo/seo")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "SEO" });
     expect(valid.status).toBe(201);
 
     const invalid = await request(app).post("/seo/seo").send({ title: "SEO" });
     expect(invalid.status).toBe(401);
 
-    const edgeRouter = await loadSeoRouter((req, res, next) => next(new Error("seo fail")), (req, res) => res.status(200).json({ ok: true }));
+    const edgeRouter = await loadSeoRouter(
+      (req, res, next) => next(new Error("seo fail")),
+      (req, res) => res.status(200).json({ ok: true }),
+    );
     const edgeApp = createRouteTestApp("/seo", edgeRouter);
-    const edge = await request(edgeApp).post("/seo/seo").set("Cookie", makeAuthCookie()).send({ title: "SEO" });
+    const edge = await request(edgeApp)
+      .post("/seo/seo")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "SEO" });
     expect(edge.status).toBe(500);
   });
 
   test("PUT seo valid invalid edge", async () => {
-    const router = await loadSeoRouter((req, res) => res.status(201).json({ ok: true }), (req, res) => res.status(200).json({ ok: true }));
+    const router = await loadSeoRouter(
+      (req, res) => res.status(201).json({ ok: true }),
+      (req, res) => res.status(200).json({ ok: true }),
+    );
     const app = createRouteTestApp("/seo", router);
 
-    const valid = await request(app).put("/seo/seo/s1").set("Cookie", makeAuthCookie()).send({ title: "SEO2" });
+    const valid = await request(app)
+      .put("/seo/seo/s1")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "SEO2" });
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).put("/seo/seo/s1").send({ title: "SEO2" });
     expect(invalid.status).toBe(401);
 
-    const edgeRouter = await loadSeoRouter((req, res) => res.status(201).json({ ok: true }), (req, res, next) => next(new Error("update seo fail")));
+    const edgeRouter = await loadSeoRouter(
+      (req, res) => res.status(201).json({ ok: true }),
+      (req, res, next) => next(new Error("update seo fail")),
+    );
     const edgeApp = createRouteTestApp("/seo", edgeRouter);
-    const edge = await request(edgeApp).put("/seo/seo/s1").set("Cookie", makeAuthCookie()).send({ title: "SEO2" });
+    const edge = await request(edgeApp)
+      .put("/seo/seo/s1")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "SEO2" });
     expect(edge.status).toBe(500);
   });
 
@@ -85,7 +119,9 @@ describe("SEO routes", () => {
       findOne: jest.fn(),
     });
     const edgeApp = createRouteTestApp("/load", edgeRouter);
-    const edge = await request(edgeApp).get("/load/get-seo-settings").set("Cookie", makeAuthCookie());
+    const edge = await request(edgeApp)
+      .get("/load/get-seo-settings")
+      .set("Cookie", makeAuthCookie());
     expect(edge.status).toBe(500);
   });
 
@@ -96,7 +132,9 @@ describe("SEO routes", () => {
     });
     const app = createRouteTestApp("/load", router);
 
-    const valid = await request(app).get("/load/get-seo-settings/s1").set("Cookie", makeAuthCookie());
+    const valid = await request(app)
+      .get("/load/get-seo-settings/s1")
+      .set("Cookie", makeAuthCookie());
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).get("/load/get-seo-settings/s1");
@@ -107,13 +145,17 @@ describe("SEO routes", () => {
       findOne: jest.fn().mockResolvedValue(null),
     });
     const edgeApp = createRouteTestApp("/load", edgeRouter);
-    const edge = await request(edgeApp).get("/load/get-seo-settings/s1").set("Cookie", makeAuthCookie());
+    const edge = await request(edgeApp)
+      .get("/load/get-seo-settings/s1")
+      .set("Cookie", makeAuthCookie());
     expect(edge.status).toBe(500);
   });
 
   test("DELETE seo valid invalid edge", async () => {
     const router = await loadSeoDeleteRouter({
-      findById: jest.fn().mockResolvedValue({ _id: "s1", userId: "user-1", seoName: "SEO", websiteId: "w1" }),
+      findById: jest
+        .fn()
+        .mockResolvedValue({ _id: "s1", userId: "user-1", seoName: "SEO", websiteId: "w1" }),
       findByIdAndDelete: jest.fn().mockResolvedValue({ _id: "s1" }),
     });
     const app = createRouteTestApp("/delete", router);

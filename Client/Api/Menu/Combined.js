@@ -1,6 +1,4 @@
-const MENU_URL =
-  process.env.NEXT_PUBLIC_CREATE_MENU_URL ||
-  process.env.NEXT_PUBLIC_MENU_URL;
+const MENU_URL = process.env.NEXT_PUBLIC_CREATE_MENU_URL || process.env.NEXT_PUBLIC_MENU_URL;
 const MENU_ITEM_URL = process.env.NEXT_PUBLIC_CREATE_MENU_ITEM_URL;
 const UPDATE_MENU_URL = process.env.NEXT_PUBLIC_UPDATE_MENU_URL;
 
@@ -11,7 +9,6 @@ const parseJsonSafe = async (response) => {
     return null;
   }
 };
-
 
 //create menu
 export const createMenu = async (data) => {
@@ -54,7 +51,6 @@ export const createMenu = async (data) => {
   }
 };
 
-
 //this may not be using but , create menu item
 export const createMenuItem = async (data) => {
   try {
@@ -81,7 +77,6 @@ export const createMenuItem = async (data) => {
     return { ok: false, status: 500, message: "Network error while creating menu item" };
   }
 };
-
 
 //update menu
 export const updateMenu = async (menuId, data) => {

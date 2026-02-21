@@ -31,8 +31,7 @@ export const integrationsApi = async (req, res, next) => {
         );
         if (!record) return "ready";
 
-        const diffDays =
-          (new Date() - record.lastCalledAt) / (1000 * 60 * 60 * 24);
+        const diffDays = (new Date() - record.lastCalledAt) / (1000 * 60 * 60 * 24);
         return diffDays > 7 ? "disconnected" : "connected";
       };
 
@@ -54,9 +53,8 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/menu`,
               status: getEndpointStatus("menu", "default"),
               lastCalledAt:
-                usage.find(
-                  (u) => u.featureKey === "menu" && u.endpointKey === "default",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "menu" && u.endpointKey === "default")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -75,10 +73,8 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/footer`,
               status: getEndpointStatus("footer", "default"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "footer" && u.endpointKey === "default",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "footer" && u.endpointKey === "default")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -97,9 +93,8 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/seo`,
               status: getEndpointStatus("seo", "default"),
               lastCalledAt:
-                usage.find(
-                  (u) => u.featureKey === "seo" && u.endpointKey === "default",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "seo" && u.endpointKey === "default")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -119,29 +114,23 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/pages`,
               status: getEndpointStatus("page", "collection"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "page" && u.endpointKey === "collection",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "page" && u.endpointKey === "collection")
+                  ?.lastCalledAt || null,
             },
             {
               key: "detail",
               url: `/api/v1/external-request/${domain}/pages/{slug}`,
               status: getEndpointStatus("page", "detail"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "page" && u.endpointKey === "detail",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "page" && u.endpointKey === "detail")
+                  ?.lastCalledAt || null,
             },
           ],
         });
       }
 
       // ---------- BLOG ----------
-      const blogs = await BlogPost.find({ tenantId: tenant._id }).select(
-        "slug",
-      );
+      const blogs = await BlogPost.find({ tenantId: tenant._id }).select("slug");
       if (blogs.length) {
         integrations.push({
           id: "blog",
@@ -154,20 +143,16 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/blog`,
               status: getEndpointStatus("blog", "collection"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "blog" && u.endpointKey === "collection",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "blog" && u.endpointKey === "collection")
+                  ?.lastCalledAt || null,
             },
             {
               key: "detail",
               url: `/api/v1/external-request/${domain}/blog/{slug}`,
               status: getEndpointStatus("blog", "detail"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "blog" && u.endpointKey === "detail",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "blog" && u.endpointKey === "detail")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -186,9 +171,8 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/form`,
               status: getEndpointStatus("form", "default"),
               lastCalledAt:
-                usage.find(
-                  (u) => u.featureKey === "form" && u.endpointKey === "default",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "form" && u.endpointKey === "default")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -207,10 +191,8 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/theme`,
               status: getEndpointStatus("theme", "default"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "theme" && u.endpointKey === "default",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "theme" && u.endpointKey === "default")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -229,10 +211,8 @@ export const integrationsApi = async (req, res, next) => {
               url: `/api/v1/external-request/${domain}/media`,
               status: getEndpointStatus("media", "default"),
               lastCalledAt:
-                usage.find(
-                  (u) =>
-                    u.featureKey === "media" && u.endpointKey === "default",
-                )?.lastCalledAt || null,
+                usage.find((u) => u.featureKey === "media" && u.endpointKey === "default")
+                  ?.lastCalledAt || null,
             },
           ],
         });
@@ -245,9 +225,7 @@ export const integrationsApi = async (req, res, next) => {
       });
     }
 
-    res
-      .status(200)
-      .json({ ok: true, status: 200, message: "Success", data: result });
+    res.status(200).json({ ok: true, status: 200, message: "Success", data: result });
   } catch (err) {
     next(err);
   }

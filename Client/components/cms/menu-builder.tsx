@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,7 +42,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { createMenuItem, updateMenu } from "@/Api/Menu/Combined";
+import { updateMenu } from "@/Api/Menu/Combined";
 import { useRouter } from "next/navigation";
 import { loadMenuById } from "@/Api/Menu/Load";
 import { toast } from "sonner";
@@ -57,6 +51,21 @@ import { toast } from "sonner";
 type NavbarType = "static" | "dropdown" | "mega" | "breadcrumb";
 type LinkType = "internal" | "external" | "none";
 type MenuLocation = "navbar" | "sidebar";
+type MenuStatus = "draft" | "published";
+type MenuPlacement = "header" | "footer" | "sidebar";
+
+interface DbMenuItem {
+  _id?: string;
+  label?: string;
+  type?: LinkType;
+  link?: string;
+  enabled?: boolean;
+  order?: number;
+  children?: DbMenuItem[];
+  images?: MenuImage[];
+  textBlocks?: MenuTextBlock[];
+  buttons?: MenuButton[];
+}
 
 // Common content blocks that can be added to ANY menu item
 interface MenuImage {
@@ -209,9 +218,7 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
           `}
             >
               {Array.isArray(item.children)
-                ? item.children.map((child) =>
-                    renderPreviewItem(child as MenuItem, depth + 1),
-                  )
+                ? item.children.map((child) => renderPreviewItem(child as MenuItem, depth + 1))
                 : renderPreviewItem(item.children, depth + 1)}
             </div>
           )}
@@ -255,10 +262,7 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
         </div>
         <div>
           <div className="font-medium text-sm">
-            {config.location === "navbar"
-              ? `${config.navbarType} Navbar`
-              : "Sidebar"}{" "}
-            Preview
+            {config.location === "navbar" ? `${config.navbarType} Navbar` : "Sidebar"} Preview
           </div>
           <div className="text-xs text-muted-foreground">
             {menuItems.length} item{menuItems.length !== 1 ? "s" : ""}
@@ -266,9 +270,7 @@ function MenuPreview({ menuItems, config }: MenuPreviewProps) {
         </div>
       </div>
 
-      <div className="space-y-1">
-        {menuItems.map((item) => renderPreviewItem(item))}
-      </div>
+      <div className="space-y-1">{menuItems.map((item) => renderPreviewItem(item))}</div>
 
       {menuItems.length === 0 && (
         <div className="text-center py-8 text-muted-foreground text-sm">
@@ -285,6 +287,8 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     location: "navbar",
     navbarType: "static",
   });
+  const [menuStatus, setMenuStatus] = useState<MenuStatus>("draft");
+  const [menuPlacement, setMenuPlacement] = useState<MenuPlacement>("header");
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
@@ -324,6 +328,8 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
         };
 
         setConfig(resolvedConfig);
+        setMenuStatus(menu.status === "published" ? "published" : "draft");
+        setMenuPlacement(resolvePlacement(menu.menuLocation));
 
         const incomingItems = Array.isArray(menu.items) ? menu.items : [];
         setMenuItems(denormalizeMenuItemsFromDB(incomingItems, 0, resolvedConfig));
@@ -339,7 +345,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   }, [menuId]);
 
   const inferMenuType = (
-    item: any,
+    item: DbMenuItem,
     depth: number,
     config: MenuConfig,
   ): MenuItem["menuType"] => {
@@ -362,13 +368,20 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     return "navbar"; // default for "header" or undefined
   };
 
+  const resolvePlacement = (location?: string): MenuPlacement => {
+    if (location === "footer" || location === "sidebar" || location === "header") {
+      return location;
+    }
+    return "header";
+  };
+
   const denormalizeMenuItemsFromDB = (
-    items: any[],
+    items: DbMenuItem[],
     depth = 0,
     config: MenuConfig,
   ): MenuItem[] => {
     return items
-      .sort((a, b) => a.order - b.order)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((item) => {
         const menuType = inferMenuType(item, depth, config);
 
@@ -398,25 +411,19 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   const isDropdownChild = (item: MenuItem): item is DropdownChild =>
     item.menuType === "dropdown-child";
 
-  const isStaticItem = (item: MenuItem): item is StaticMenuItem =>
-    item.menuType === "static";
+  const isStaticItem = (item: MenuItem): item is StaticMenuItem => item.menuType === "static";
 
-  const isDropdownItem = (item: MenuItem): item is DropdownMenuItem =>
-    item.menuType === "dropdown";
+  const isDropdownItem = (item: MenuItem): item is DropdownMenuItem => item.menuType === "dropdown";
 
-  const isMegaItem = (item: MenuItem): item is MegaMenuItem =>
-    item.menuType === "mega";
+  const isMegaItem = (item: MenuItem): item is MegaMenuItem => item.menuType === "mega";
 
   const isBreadcrumbItem = (item: MenuItem): item is BreadcrumbMenuItem =>
     item.menuType === "breadcrumb";
 
-  const isSidebarItem = (item: MenuItem): item is SidebarMenuItem =>
-    item.menuType === "sidebar";
+  const isSidebarItem = (item: MenuItem): item is SidebarMenuItem => item.menuType === "sidebar";
 
   // Find selected item with proper type narrowing
-  const selectedItem = selectedItemId
-    ? findMenuItem(menuItems, selectedItemId)
-    : null;
+  const selectedItem = selectedItemId ? findMenuItem(menuItems, selectedItemId) : null;
 
   // ==================== FIXED UTILITY FUNCTIONS ====================
   function generateId(): string {
@@ -497,10 +504,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   }
 
   // FIXED: Update function with proper type handling
-  const updateMenuItem = (
-    id: string,
-    updates: Partial<Omit<MenuItem, "menuType">>,
-  ) => {
+  const updateMenuItem = (id: string, updates: Partial<Omit<MenuItem, "menuType">>) => {
     setMenuItems((prev) => {
       const updateInTree = (items: MenuItem[]): MenuItem[] => {
         return items.map((item) => {
@@ -514,9 +518,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
             return {
               ...item,
               children: item.children.map((child) =>
-                child.id === id
-                  ? ({ ...child, ...updates } as DropdownChild)
-                  : child,
+                child.id === id ? ({ ...child, ...updates } as DropdownChild) : child,
               ),
             } as DropdownMenuItem;
           }
@@ -587,10 +589,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 };
                 return {
                   ...item,
-                  children: [
-                    ...((item as MegaMenuItem).children || []),
-                    newMegaChild,
-                  ],
+                  children: [...((item as MegaMenuItem).children || []), newMegaChild],
                   expanded: true,
                 } as MegaMenuItem;
 
@@ -614,10 +613,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 };
                 return {
                   ...item,
-                  children: [
-                    ...((item as SidebarMenuItem).children || []),
-                    newSidebarChild,
-                  ],
+                  children: [...((item as SidebarMenuItem).children || []), newSidebarChild],
                   expanded: true,
                 } as SidebarMenuItem;
 
@@ -642,9 +638,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
           if (isBreadcrumbItem(item) && item.children) {
             return {
               ...item,
-              children: addChildRecursive(
-                item.children,
-              ) as BreadcrumbMenuItem[],
+              children: addChildRecursive(item.children) as BreadcrumbMenuItem[],
             };
           }
           if (isDropdownItem(item) && item.children) {
@@ -734,9 +728,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
 
           if (isBreadcrumbItem(item) && item.children) {
             // For breadcrumb, if child is deleted, clear the children
-            const updatedChildren = deleteFromTree(
-              item.children,
-            ) as BreadcrumbMenuItem[];
+            const updatedChildren = deleteFromTree(item.children) as BreadcrumbMenuItem[];
             if (updatedChildren.length === 0) {
               const { children, ...rest } = item;
               return rest as BreadcrumbMenuItem;
@@ -753,10 +745,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   };
 
   // FIXED: Add content block to any item
-  const addContentBlock = (
-    itemId: string,
-    type: "image" | "text" | "button",
-  ) => {
+  const addContentBlock = (itemId: string, type: "image" | "text" | "button") => {
     setMenuItems((prev) =>
       prev.map((item) => {
         if (item.id !== itemId) return item;
@@ -824,27 +813,21 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
             return {
               ...item,
               images: item.images?.map((img) =>
-                img.id === blockId
-                  ? ({ ...img, ...updates } as MenuImage)
-                  : img,
+                img.id === blockId ? ({ ...img, ...updates } as MenuImage) : img,
               ),
             };
           case "text":
             return {
               ...item,
               textBlocks: item.textBlocks?.map((text) =>
-                text.id === blockId
-                  ? ({ ...text, ...updates } as MenuTextBlock)
-                  : text,
+                text.id === blockId ? ({ ...text, ...updates } as MenuTextBlock) : text,
               ),
             };
           case "button":
             return {
               ...item,
               buttons: item.buttons?.map((btn) =>
-                btn.id === blockId
-                  ? ({ ...btn, ...updates } as MenuButton)
-                  : btn,
+                btn.id === blockId ? ({ ...btn, ...updates } as MenuButton) : btn,
               ),
             };
           default:
@@ -855,7 +838,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
   };
 
   // FIXED: Normalize menu items for database with proper type handling
-  const normalizeMenuItemsForDB = (items: MenuItem[]): any[] => {
+  const normalizeMenuItemsForDB = (items: MenuItem[]): DbMenuItem[] => {
     return items.map((item, index) => ({
       label: item.label,
       type: item.linkType ?? "internal",
@@ -867,24 +850,18 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       images: item.images || [],
       textBlocks: item.textBlocks || [],
       buttons: item.buttons || [],
-      children:
-        "children" in item && item.children
-          ? normalizeMenuItemsForDB(item.children)
-          : [],
+      children: "children" in item && item.children ? normalizeMenuItemsForDB(item.children) : [],
     }));
   };
 
   const router = useRouter();
 
-  const handleSave = async () => {
+  const handleSave = async (nextStatus?: MenuStatus) => {
+    const resolvedStatus = nextStatus ?? menuStatus;
     // Validate menu structure based on type
     const validationErrors: string[] = [];
 
-    const validateMenu = (
-      items: MenuItem[],
-      depth = 0,
-      parentLabel = "",
-    ): void => {
+    const validateMenu = (items: MenuItem[], depth = 0, parentLabel = ""): void => {
       items.forEach((item) => {
         // First, ensure we're dealing with a valid menu item
         if (!item || typeof item !== "object") {
@@ -897,21 +874,13 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
           // Use type assertion to check if it's a static item with children property
           const staticItem = item as StaticMenuItem;
           if ("children" in staticItem && staticItem.children) {
-            validationErrors.push(
-              `Static navbar item "${staticItem.label}" cannot have children`,
-            );
+            validationErrors.push(`Static navbar item "${staticItem.label}" cannot have children`);
           }
         }
 
         // Check dropdown nesting depth
-        if (
-          config.navbarType === "dropdown" &&
-          item.menuType === "dropdown" &&
-          depth > 1
-        ) {
-          validationErrors.push(
-            `Dropdown item "${item.label}" exceeds maximum depth of 1`,
-          );
+        if (config.navbarType === "dropdown" && item.menuType === "dropdown" && depth > 1) {
+          validationErrors.push(`Dropdown item "${item.label}" exceeds maximum depth of 1`);
         }
 
         // Recursively validate children based on type
@@ -944,8 +913,10 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
 
     const menuDataForDB = {
       items: normalizeMenuItemsForDB(menuItems),
-      location: config.location,
+      menuLocation: config.location === "sidebar" ? "sidebar" : menuPlacement,
       navbarType: config.location === "navbar" ? config.navbarType : undefined,
+      status: resolvedStatus,
+      publishedAt: resolvedStatus === "published" ? new Date().toISOString() : null,
       updatedAt: new Date().toISOString(),
     };
 
@@ -958,7 +929,10 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       const response = await updateMenu(menuId, menuDataForDB);
 
       if (response.ok) {
-        toast.success("Menu saved successfully");
+        setMenuStatus(resolvedStatus);
+        toast.success(
+          resolvedStatus === "published" ? "Menu published successfully" : "Menu saved as draft",
+        );
         // Wait 2 seconds before redirecting to show success message
         setTimeout(() => {
           router.push("/cms/global/menus");
@@ -985,19 +959,13 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
     const showAddChildButton =
       canAddChild &&
       config.navbarType !== "static" &&
-      !(
-        config.navbarType === "breadcrumb" &&
-        item.children &&
-        item.children.length > 0
-      );
+      !(config.navbarType === "breadcrumb" && item.children && item.children.length > 0);
 
     return (
       <div key={item.id} className="space-y-1">
         <div
           className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors ${
-            selectedItemId === item.id
-              ? "bg-primary/10 border border-primary/20"
-              : "hover:bg-muted"
+            selectedItemId === item.id ? "bg-primary/10 border border-primary/20" : "hover:bg-muted"
           }`}
           style={{ paddingLeft: `${depth * 1.5 + 0.5}rem` }}
           onClick={() => setSelectedItemId(item.id)}
@@ -1054,9 +1022,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
             {item.linkType === "external" && (
               <ExternalLink className="h-3 w-3 text-muted-foreground" />
             )}
-            {!item.enabled && (
-              <EyeOff className="h-3 w-3 text-muted-foreground" />
-            )}
+            {!item.enabled && <EyeOff className="h-3 w-3 text-muted-foreground" />}
           </div>
 
           {/* Add child button */}
@@ -1138,16 +1104,15 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
       {/* Header with Preview Dialog */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-balance text-3xl font-bold tracking-tight">
-            Menu Builder
-          </h1>
+          <h1 className="text-balance text-3xl font-bold tracking-tight">Menu Builder</h1>
           <p className="text-pretty text-muted-foreground mt-1">
-            Build{" "}
-            {config.location === "navbar"
-              ? `${config.navbarType} navbar`
-              : "sidebar"}{" "}
-            menu
+            Build {config.location === "navbar" ? `${config.navbarType} navbar` : "sidebar"} menu
           </p>
+          <div className="mt-2">
+            <Badge variant={menuStatus === "published" ? "default" : "secondary"}>
+              {menuStatus}
+            </Badge>
+          </div>
         </div>
         <div className="flex gap-2">
           <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
@@ -1164,9 +1129,13 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
               <MenuPreview menuItems={menuItems} config={config} />
             </DialogContent>
           </Dialog>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button variant="outline" onClick={() => handleSave("draft")} disabled={loading}>
             <Save className="h-4 w-4 mr-2" />
-            {loading ? "Saving..." : "Save Menu"}
+            {loading ? "Saving..." : "Save Draft"}
+          </Button>
+          <Button onClick={() => handleSave("published")} disabled={loading}>
+            <Save className="h-4 w-4 mr-2" />
+            {loading ? "Publishing..." : "Publish"}
           </Button>
         </div>
       </div>
@@ -1190,23 +1159,45 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="navbar" id="navbar" />
-                    <Label
-                      htmlFor="navbar"
-                      className="font-normal cursor-pointer"
-                    >
+                    <Label htmlFor="navbar" className="font-normal cursor-pointer">
                       Navbar
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="sidebar" id="sidebar" />
-                    <Label
-                      htmlFor="sidebar"
-                      className="font-normal cursor-pointer"
-                    >
+                    <Label htmlFor="sidebar" className="font-normal cursor-pointer">
                       Sidebar
                     </Label>
                   </div>
                 </RadioGroup>
+              </div>
+
+              {config.location === "navbar" && (
+                <div className="space-y-2">
+                  <Label htmlFor="menu-placement">Placement</Label>
+                  <select
+                    id="menu-placement"
+                    value={menuPlacement}
+                    onChange={(event) => setMenuPlacement(event.target.value as MenuPlacement)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="header">Header</option>
+                    <option value="footer">Footer</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="menu-status">Publishing Status</Label>
+                <select
+                  id="menu-status"
+                  value={menuStatus}
+                  onChange={(event) => setMenuStatus(event.target.value as MenuStatus)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
               </div>
 
               {config.location === "navbar" && (
@@ -1221,37 +1212,25 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     <div className="flex flex-wrap gap-2">
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="static" id="static" />
-                        <Label
-                          htmlFor="static"
-                          className="font-normal cursor-pointer text-xs"
-                        >
+                        <Label htmlFor="static" className="font-normal cursor-pointer text-xs">
                           Static (No children)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="dropdown" id="dropdown" />
-                        <Label
-                          htmlFor="dropdown"
-                          className="font-normal cursor-pointer text-xs"
-                        >
+                        <Label htmlFor="dropdown" className="font-normal cursor-pointer text-xs">
                           Dropdown (One level)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="mega" id="mega" />
-                        <Label
-                          htmlFor="mega"
-                          className="font-normal cursor-pointer text-xs"
-                        >
+                        <Label htmlFor="mega" className="font-normal cursor-pointer text-xs">
                           Mega (Unlimited nesting)
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="breadcrumb" id="breadcrumb" />
-                        <Label
-                          htmlFor="breadcrumb"
-                          className="font-normal cursor-pointer text-xs"
-                        >
+                        <Label htmlFor="breadcrumb" className="font-normal cursor-pointer text-xs">
                           Breadcrumb (Linear chain)
                         </Label>
                       </div>
@@ -1345,14 +1324,10 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     <Plus className="h-8 w-8" />
                   </div>
                   <p className="font-medium">No menu items yet</p>
-                  <p className="text-sm mt-1">
-                    Add your first item to start building
-                  </p>
+                  <p className="text-sm mt-1">Add your first item to start building</p>
                 </div>
               ) : (
-                <div className="space-y-1">
-                  {menuItems.map((item) => renderMenuItem(item))}
-                </div>
+                <div className="space-y-1">{menuItems.map((item) => renderMenuItem(item))}</div>
               )}
             </ScrollArea>
           </CardContent>
@@ -1361,9 +1336,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
         {/* Right Panel - Item Editor */}
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>
-              {selectedItem ? `Edit: ${selectedItem.label}` : "Item Editor"}
-            </CardTitle>
+            <CardTitle>{selectedItem ? `Edit: ${selectedItem.label}` : "Item Editor"}</CardTitle>
             <CardDescription>
               {selectedItem
                 ? `Configure ${config.location} item settings`
@@ -1406,28 +1379,19 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                       <div className="flex flex-wrap gap-4">
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="internal" id="internal" />
-                          <Label
-                            htmlFor="internal"
-                            className="font-normal cursor-pointer text-sm"
-                          >
+                          <Label htmlFor="internal" className="font-normal cursor-pointer text-sm">
                             Internal Page
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="external" id="external" />
-                          <Label
-                            htmlFor="external"
-                            className="font-normal cursor-pointer text-sm"
-                          >
+                          <Label htmlFor="external" className="font-normal cursor-pointer text-sm">
                             External URL
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="none" id="none" />
-                          <Label
-                            htmlFor="none"
-                            className="font-normal cursor-pointer text-sm"
-                          >
+                          <Label htmlFor="none" className="font-normal cursor-pointer text-sm">
                             No Link
                           </Label>
                         </div>
@@ -1439,9 +1403,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     selectedItem.linkType === "external") && (
                     <div className="space-y-2">
                       <Label>
-                        {selectedItem.linkType === "internal"
-                          ? "Page URL"
-                          : "External URL"}
+                        {selectedItem.linkType === "internal" ? "Page URL" : "External URL"}
                       </Label>
                       <Input
                         value={selectedItem.slug || ""}
@@ -1451,9 +1413,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                           })
                         }
                         placeholder={
-                          selectedItem.linkType === "internal"
-                            ? "/about"
-                            : "https://example.com"
+                          selectedItem.linkType === "internal" ? "/about" : "https://example.com"
                         }
                       />
                     </div>
@@ -1464,16 +1424,12 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                 <TabsContent value="blocks" className="space-y-6 mt-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">
-                        Content Blocks
-                      </Label>
+                      <Label className="text-sm font-medium">Content Blocks</Label>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            addContentBlock(selectedItem.id, "image")
-                          }
+                          onClick={() => addContentBlock(selectedItem.id, "image")}
                         >
                           <ImageIcon className="h-3 w-3 mr-2" />
                           Add Image
@@ -1481,9 +1437,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            addContentBlock(selectedItem.id, "text")
-                          }
+                          onClick={() => addContentBlock(selectedItem.id, "text")}
                         >
                           <Type className="h-3 w-3 mr-2" />
                           Add Text
@@ -1491,9 +1445,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() =>
-                            addContentBlock(selectedItem.id, "button")
-                          }
+                          onClick={() => addContentBlock(selectedItem.id, "button")}
                         >
                           <Link className="h-3 w-3 mr-2" />
                           Add Button
@@ -1518,24 +1470,18 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                                 placeholder="Image URL"
                                 value={img.url}
                                 onChange={(e) =>
-                                  updateContentBlock(
-                                    selectedItem.id,
-                                    "image",
-                                    img.id,
-                                    { url: e.target.value },
-                                  )
+                                  updateContentBlock(selectedItem.id, "image", img.id, {
+                                    url: e.target.value,
+                                  })
                                 }
                               />
                               <Input
                                 placeholder="Alt text"
                                 value={img.alt}
                                 onChange={(e) =>
-                                  updateContentBlock(
-                                    selectedItem.id,
-                                    "image",
-                                    img.id,
-                                    { alt: e.target.value },
-                                  )
+                                  updateContentBlock(selectedItem.id, "image", img.id, {
+                                    alt: e.target.value,
+                                  })
                                 }
                               />
                             </div>
@@ -1545,71 +1491,57 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                     )}
 
                     {/* Text Blocks */}
-                    {selectedItem.textBlocks &&
-                      selectedItem.textBlocks.length > 0 && (
-                        <div className="space-y-3">
-                          <Label className="text-sm">Text Blocks</Label>
-                          {selectedItem.textBlocks.map((text) => (
-                            <div
-                              key={text.id}
-                              className="p-3 border rounded-md"
-                            >
-                              <Textarea
-                                placeholder="Text content"
-                                value={text.content}
-                                onChange={(e) =>
-                                  updateContentBlock(
-                                    selectedItem.id,
-                                    "text",
-                                    text.id,
-                                    { content: e.target.value },
-                                  )
-                                }
-                                rows={3}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    {selectedItem.textBlocks && selectedItem.textBlocks.length > 0 && (
+                      <div className="space-y-3">
+                        <Label className="text-sm">Text Blocks</Label>
+                        {selectedItem.textBlocks.map((text) => (
+                          <div key={text.id} className="p-3 border rounded-md">
+                            <Textarea
+                              placeholder="Text content"
+                              value={text.content}
+                              onChange={(e) =>
+                                updateContentBlock(selectedItem.id, "text", text.id, {
+                                  content: e.target.value,
+                                })
+                              }
+                              rows={3}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Buttons */}
-                    {selectedItem.buttons &&
-                      selectedItem.buttons.length > 0 && (
-                        <div className="space-y-3">
-                          <Label className="text-sm">Buttons</Label>
-                          {selectedItem.buttons.map((btn) => (
-                            <div
-                              key={btn.id}
-                              className="flex items-center gap-3 p-3 border rounded-md"
-                            >
-                              <Input
-                                placeholder="Button label"
-                                value={btn.label}
-                                onChange={(e) =>
-                                  updateContentBlock(
-                                    selectedItem.id,
-                                    "button",
-                                    btn.id,
-                                    { label: e.target.value },
-                                  )
-                                }
-                              />
-                              <Input
-                                placeholder="Action URL"
-                                value={btn.action}
-                                onChange={(e) =>
-                                  updateContentBlock(
-                                    selectedItem.id,
-                                    "button",
-                                    btn.id,
-                                    { action: e.target.value },
-                                  )
-                                }
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    {selectedItem.buttons && selectedItem.buttons.length > 0 && (
+                      <div className="space-y-3">
+                        <Label className="text-sm">Buttons</Label>
+                        {selectedItem.buttons.map((btn) => (
+                          <div
+                            key={btn.id}
+                            className="flex items-center gap-3 p-3 border rounded-md"
+                          >
+                            <Input
+                              placeholder="Button label"
+                              value={btn.label}
+                              onChange={(e) =>
+                                updateContentBlock(selectedItem.id, "button", btn.id, {
+                                  label: e.target.value,
+                                })
+                              }
+                            />
+                            <Input
+                              placeholder="Action URL"
+                              value={btn.action}
+                              onChange={(e) =>
+                                updateContentBlock(selectedItem.id, "button", btn.id, {
+                                  action: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 
@@ -1618,9 +1550,7 @@ export function MenuBuilder({ menuId }: { menuId: string }) {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Enabled</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Show this item in the menu
-                      </p>
+                      <p className="text-xs text-muted-foreground">Show this item in the menu</p>
                     </div>
                     <Switch
                       checked={selectedItem.enabled}

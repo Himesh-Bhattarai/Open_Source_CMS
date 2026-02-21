@@ -10,10 +10,6 @@ export const metadata: Metadata = createPageMetadata({
   keywords: ["privacy policy", "contentflow privacy", "data protection", "user data"],
 });
 
-export default function PrivacyLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PrivacyLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

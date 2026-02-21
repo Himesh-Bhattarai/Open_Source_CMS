@@ -13,8 +13,11 @@ router.use("/logout", LogoutRoute);
 router.use("/register", RegisterRoute);
 router.use("/refresh", RefreshRoute);
 //protected
-router.get("/profile", verificationMiddleware,
-  
-    verifyMe);
+router.get(
+  "/profile",
+  verificationMiddleware,
+
+  verifyMe,
+);
 
 export default router;

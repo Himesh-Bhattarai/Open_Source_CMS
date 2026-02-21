@@ -1,6 +1,6 @@
 import express from "express";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 import { Seo } from "../../Models/Seo/Seo.js";
 
 const router = express.Router();

@@ -1,7 +1,6 @@
 const BLOG_CREATE_URL = process.env.NEXT_PUBLIC_BLOG_CREATE_URL;
 const UPDATE_BLOG_URL = process.env.NEXT_PUBLIC_UPDATE_BLOG_URL;
 
-
 //First step of create Blog
 export const blogPostApi = async (blogData, tenantId) => {
   const response = await fetch(BLOG_CREATE_URL, {
@@ -15,7 +14,6 @@ export const blogPostApi = async (blogData, tenantId) => {
 
   return response.json();
 };
-
 
 //second Step of create blog it work as both create and update
 //first create blog then same blog is update at the time of create, if need to update then it will update

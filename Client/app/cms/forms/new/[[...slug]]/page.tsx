@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +35,6 @@ import { createForm, updateForm } from "@/Api/Form/Create";
 import { loadFormsDataById } from "@/Api/Form/Load";
 import { useTenant } from "@/context/TenantContext";
 import { toast } from "sonner";
-
 
 interface FormField {
   id: string;
@@ -98,7 +91,7 @@ export default function NewFormPage() {
   // `/new` creates; `/new/:id` edits an existing form.
   const formId = slug?.[0] && slug[0] !== "new" ? slug[0] : undefined;
 
-  const isEditMode = Boolean(formId)
+  const isEditMode = Boolean(formId);
   const [isLoading, setIsLoading] = useState(!!formId);
   const { tenants, activeTenant, setActiveTenant } = useTenant();
 
@@ -109,16 +102,16 @@ export default function NewFormPage() {
         name: t.name,
         domain: t.domain,
       })),
-    [tenants]
+    [tenants],
   );
 
   const [selectedWebsite, setSelectedWebsite] = useState<Website | null>(
     activeTenant
       ? {
-        id: activeTenant._id,
-        name: activeTenant.name,
-        domain: activeTenant.domain,
-      }
+          id: activeTenant._id,
+          name: activeTenant.name,
+          domain: activeTenant.domain,
+        }
       : null,
   );
 
@@ -180,7 +173,6 @@ export default function NewFormPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
-   
     if (!isEditMode || !formId) {
       setIsLoading(false);
       return;
@@ -204,11 +196,9 @@ export default function NewFormPage() {
             status: existingForm.status || "draft",
             scope: existingForm.scope || "global",
             submitButtonText: existingForm.submitButtonText || "Submit",
-            successMessage:
-              existingForm.successMessage || "Thank you for your submission!",
+            successMessage: existingForm.successMessage || "Thank you for your submission!",
             behavior: {
-              storeSubmissions:
-                existingForm.behavior?.storeSubmissions ?? true,
+              storeSubmissions: existingForm.behavior?.storeSubmissions ?? true,
               notifyEmail: existingForm.behavior?.notifyEmail || "",
               redirectUrl: existingForm.behavior?.redirectUrl || "",
             },
@@ -230,11 +220,8 @@ export default function NewFormPage() {
             },
           });
 
-       
           if (existingForm.tenantId) {
-            const website = tenantWebsites.find(
-              (w) => w.id === existingForm.tenantId
-            );
+            const website = tenantWebsites.find((w) => w.id === existingForm.tenantId);
             if (website) {
               setSelectedWebsite(website);
             } else {
@@ -289,9 +276,7 @@ export default function NewFormPage() {
   const removeField = (id: string) => {
     setFormState((prev) => ({
       ...prev,
-      fields: prev.fields
-        .filter((f) => f.id !== id)
-        .map((f, index) => ({ ...f, order: index })),
+      fields: prev.fields.filter((f) => f.id !== id).map((f, index) => ({ ...f, order: index })),
     }));
   };
 
@@ -330,10 +315,7 @@ export default function NewFormPage() {
   };
 
   const getFieldTypeBadge = (type: string) => {
-    const types: Record<
-      string,
-      { label: string; variant: "default" | "secondary" | "outline" }
-    > = {
+    const types: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
       text: { label: "Text", variant: "default" },
       email: { label: "Email", variant: "secondary" },
       tel: { label: "Phone", variant: "secondary" },
@@ -368,10 +350,7 @@ export default function NewFormPage() {
       errors.push("Field min length cannot be greater than max length");
     }
 
-    if (
-      formState.behavior.notifyEmail &&
-      !/\S+@\S+\.\S+/.test(formState.behavior.notifyEmail)
-    ) {
+    if (formState.behavior.notifyEmail && !/\S+@\S+\.\S+/.test(formState.behavior.notifyEmail)) {
       errors.push("Notification email is invalid");
     }
 
@@ -401,7 +380,6 @@ export default function NewFormPage() {
     try {
       if (isEditMode && formId) {
         const updatePayload = {
-
           name: formState.name,
           description: formState.description,
           status: formState.status,
@@ -411,7 +389,7 @@ export default function NewFormPage() {
           behavior: formState.behavior,
           fields: formState.fields,
           metadata: {
-            version: formState.metadata.version + 1, 
+            version: formState.metadata.version + 1,
           },
         };
 
@@ -487,17 +465,11 @@ export default function NewFormPage() {
             )}
           </div>
           <p className="text-muted-foreground mt-2">
-            {isEditMode
-              ? "Edit your existing form"
-              : "Build a custom form for your website"}
+            {isEditMode ? "Edit your existing form" : "Build a custom form for your website"}
           </p>
         </div>
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={saveState === "saving"}
-          >
+          <Button variant="outline" onClick={() => router.back()} disabled={saveState === "saving"}>
             Cancel
           </Button>
           <Button
@@ -525,12 +497,9 @@ export default function NewFormPage() {
           <div className="flex items-center gap-2.5">
             <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
             <div>
-              <p className="text-amber-800 font-medium text-sm">
-                Select a website
-              </p>
+              <p className="text-amber-800 font-medium text-sm">Select a website</p>
               <p className="text-amber-700 text-sm">
-                Choose which website this form belongs to. You can continue
-                editing while we wait.
+                Choose which website this form belongs to. You can continue editing while we wait.
               </p>
             </div>
           </div>
@@ -560,9 +529,7 @@ export default function NewFormPage() {
                     <Globe className="h-5 w-5" />
                     Website & Form Settings
                   </CardTitle>
-                  <CardDescription>
-                    Configure where and how this form will be used
-                  </CardDescription>
+                  <CardDescription>Configure where and how this form will be used</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-3">
@@ -573,9 +540,7 @@ export default function NewFormPage() {
                     <Select
                       value={selectedWebsite?.id || ""}
                       onValueChange={(value) => {
-                        const website = tenantWebsites.find(
-                          (w) => w.id === value,
-                        );
+                        const website = tenantWebsites.find((w) => w.id === value);
                         if (website) {
                           setSelectedWebsite(website);
                           setActiveTenant({
@@ -594,9 +559,7 @@ export default function NewFormPage() {
                         {tenantWebsites.map((website) => (
                           <SelectItem key={website.id} value={website.id}>
                             <div className="flex flex-col">
-                              <span className="font-medium">
-                                {website.name}
-                              </span>
+                              <span className="font-medium">{website.name}</span>
                               <span className="text-xs text-muted-foreground">
                                 {website.domain}
                               </span>
@@ -624,9 +587,7 @@ export default function NewFormPage() {
                     <Label className="text-sm font-medium">Form Name *</Label>
                     <Input
                       value={formState.name}
-                      onChange={(e) =>
-                        updateFormState({ name: e.target.value })
-                      }
+                      onChange={(e) => updateFormState({ name: e.target.value })}
                       placeholder="Contact Form"
                       className="h-11"
                     />
@@ -639,9 +600,7 @@ export default function NewFormPage() {
                     <Label className="text-sm font-medium">Description</Label>
                     <Textarea
                       value={formState.description}
-                      onChange={(e) =>
-                        updateFormState({ description: e.target.value })
-                      }
+                      onChange={(e) => updateFormState({ description: e.target.value })}
                       placeholder="Brief description of this form's purpose..."
                       rows={3}
                       className="resize-none"
@@ -690,11 +649,7 @@ export default function NewFormPage() {
                     <div className="space-y-3">
                       <Label className="text-sm font-medium">Scope</Label>
                       <div className="relative">
-                        <Input
-                          value="Global"
-                          disabled
-                          className="h-11 bg-muted/50"
-                        />
+                        <Input value="Global" disabled className="h-11 bg-muted/50" />
                         <Badge
                           className="absolute right-2 top-1/2 -translate-y-1/2"
                           variant="secondary"
@@ -711,27 +666,19 @@ export default function NewFormPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <Label className="text-sm font-medium">
-                        Submit Button Text
-                      </Label>
+                      <Label className="text-sm font-medium">Submit Button Text</Label>
                       <Input
                         value={formState.submitButtonText}
-                        onChange={(e) =>
-                          updateFormState({ submitButtonText: e.target.value })
-                        }
+                        onChange={(e) => updateFormState({ submitButtonText: e.target.value })}
                         placeholder="Submit"
                         className="h-11"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label className="text-sm font-medium">
-                        Success Message
-                      </Label>
+                      <Label className="text-sm font-medium">Success Message</Label>
                       <Input
                         value={formState.successMessage}
-                        onChange={(e) =>
-                          updateFormState({ successMessage: e.target.value })
-                        }
+                        onChange={(e) => updateFormState({ successMessage: e.target.value })}
                         placeholder="Thank you for your submission!"
                         className="h-11"
                       />
@@ -745,29 +692,22 @@ export default function NewFormPage() {
               <Card className="border-2">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-xl">Submission Behavior</CardTitle>
-                  <CardDescription>
-                    Configure what happens after form submission
-                  </CardDescription>
+                  <CardDescription>Configure what happens after form submission</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2.5">
                         <Database className="h-5 w-5 text-muted-foreground" />
-                        <Label className="text-base font-medium">
-                          Store Submissions
-                        </Label>
+                        <Label className="text-base font-medium">Store Submissions</Label>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Save form submissions to the CMS database for later
-                        review
+                        Save form submissions to the CMS database for later review
                       </p>
                     </div>
                     <Switch
                       checked={formState.behavior.storeSubmissions}
-                      onCheckedChange={(checked) =>
-                        updateBehavior({ storeSubmissions: checked })
-                      }
+                      onCheckedChange={(checked) => updateBehavior({ storeSubmissions: checked })}
                     />
                   </div>
 
@@ -782,15 +722,12 @@ export default function NewFormPage() {
                     <Input
                       type="email"
                       value={formState.behavior.notifyEmail || ""}
-                      onChange={(e) =>
-                        updateBehavior({ notifyEmail: e.target.value })
-                      }
+                      onChange={(e) => updateBehavior({ notifyEmail: e.target.value })}
                       placeholder="notify@example.com"
                       className="h-11"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Receive email notifications for new submissions. Leave
-                      blank to disable.
+                      Receive email notifications for new submissions. Leave blank to disable.
                     </p>
                   </div>
 
@@ -804,9 +741,7 @@ export default function NewFormPage() {
                     </Label>
                     <Input
                       value={formState.behavior.redirectUrl || ""}
-                      onChange={(e) =>
-                        updateBehavior({ redirectUrl: e.target.value })
-                      }
+                      onChange={(e) => updateBehavior({ redirectUrl: e.target.value })}
                       placeholder="https://example.com/thank-you"
                       className="h-11"
                     />
@@ -826,8 +761,7 @@ export default function NewFormPage() {
                       <CardTitle className="text-xl">Form Fields</CardTitle>
                       <CardDescription>
                         {formState.fields.length} field
-                        {formState.fields.length !== 1 ? "s" : ""} - Drag to
-                        reorder
+                        {formState.fields.length !== 1 ? "s" : ""} - Drag to reorder
                       </CardDescription>
                     </div>
                     <Button onClick={addField} size="sm" className="h-9">
@@ -853,29 +787,19 @@ export default function NewFormPage() {
                                 const moveHandler = (moveEvent: MouseEvent) => {
                                   moveEvent.preventDefault();
                                   if (moveEvent.button === 0) {
-                                    const direction =
-                                      moveEvent.movementY > 0 ? 1 : -1;
+                                    const direction = moveEvent.movementY > 0 ? 1 : -1;
                                     const newIndex = Math.max(
                                       0,
-                                      Math.min(
-                                        formState.fields.length - 1,
-                                        index + direction,
-                                      ),
+                                      Math.min(formState.fields.length - 1, index + direction),
                                     );
                                     moveField(index, newIndex);
                                   }
                                 };
-                                document.addEventListener(
-                                  "mousemove",
-                                  moveHandler,
-                                );
+                                document.addEventListener("mousemove", moveHandler);
                                 document.addEventListener(
                                   "mouseup",
                                   () => {
-                                    document.removeEventListener(
-                                      "mousemove",
-                                      moveHandler,
-                                    );
+                                    document.removeEventListener("mousemove", moveHandler);
                                   },
                                   { once: true },
                                 );
@@ -894,10 +818,7 @@ export default function NewFormPage() {
                                 {field.label || `Field ${index + 1}`}
                               </span>
                               {field.required && (
-                                <Badge
-                                  variant="destructive"
-                                  className="text-xs py-0.5 px-2"
-                                >
+                                <Badge variant="destructive" className="text-xs py-0.5 px-2">
                                   Required
                                 </Badge>
                               )}
@@ -916,14 +837,10 @@ export default function NewFormPage() {
                         <div className="grid gap-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium">
-                                Field Type
-                              </Label>
+                              <Label className="text-xs font-medium">Field Type</Label>
                               <Select
                                 value={field.type}
-                                onValueChange={(value) =>
-                                  updateField(field.id, { type: value })
-                                }
+                                onValueChange={(value) => updateField(field.id, { type: value })}
                               >
                                 <SelectTrigger className="h-9">
                                   <SelectValue />
@@ -932,22 +849,14 @@ export default function NewFormPage() {
                                   <SelectItem value="text">Text</SelectItem>
                                   <SelectItem value="email">Email</SelectItem>
                                   <SelectItem value="tel">Phone</SelectItem>
-                                  <SelectItem value="textarea">
-                                    Textarea
-                                  </SelectItem>
-                                  <SelectItem value="select">
-                                    Select Dropdown
-                                  </SelectItem>
-                                  <SelectItem value="checkbox">
-                                    Checkbox
-                                  </SelectItem>
+                                  <SelectItem value="textarea">Textarea</SelectItem>
+                                  <SelectItem value="select">Select Dropdown</SelectItem>
+                                  <SelectItem value="checkbox">Checkbox</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium">
-                                Default Value
-                              </Label>
+                              <Label className="text-xs font-medium">Default Value</Label>
                               <Input
                                 value={field.defaultValue || ""}
                                 onChange={(e) =>
@@ -963,9 +872,7 @@ export default function NewFormPage() {
 
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium">
-                                Label
-                              </Label>
+                              <Label className="text-xs font-medium">Label</Label>
                               <Input
                                 value={field.label}
                                 onChange={(e) =>
@@ -978,9 +885,7 @@ export default function NewFormPage() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-xs font-medium">
-                                Placeholder Text
-                              </Label>
+                              <Label className="text-xs font-medium">Placeholder Text</Label>
                               <Input
                                 value={field.placeholder}
                                 onChange={(e) =>
@@ -995,9 +900,7 @@ export default function NewFormPage() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label className="text-xs font-medium">
-                              Help Text
-                            </Label>
+                            <Label className="text-xs font-medium">Help Text</Label>
                             <Input
                               value={field.helperText || ""}
                               onChange={(e) =>
@@ -1010,39 +913,30 @@ export default function NewFormPage() {
                             />
                           </div>
 
-                          {(field.type === "select" ||
-                            field.type === "checkbox") && (
-                              <div className="space-y-2">
-                                <Label className="text-xs font-medium">
-                                  Options (one per line)
-                                </Label>
-                                <Textarea
-                                  value={field.options?.join("\n") || ""}
-                                  onChange={(e) =>
-                                    updateField(field.id, {
-                                      options: e.target.value
-                                        .split("\n")
-                                        .filter((opt) => opt.trim()),
-                                    })
-                                  }
-                                  placeholder="Option 1\nOption 2\nOption 3"
-                                  rows={3}
-                                  className="text-sm resize-none"
-                                />
-                              </div>
-                            )}
+                          {(field.type === "select" || field.type === "checkbox") && (
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium">Options (one per line)</Label>
+                              <Textarea
+                                value={field.options?.join("\n") || ""}
+                                onChange={(e) =>
+                                  updateField(field.id, {
+                                    options: e.target.value.split("\n").filter((opt) => opt.trim()),
+                                  })
+                                }
+                                placeholder="Option 1\nOption 2\nOption 3"
+                                rows={3}
+                                className="text-sm resize-none"
+                              />
+                            </div>
+                          )}
 
                           <div className="pt-4 border-t space-y-3">
                             <div className="flex items-center justify-between">
-                              <Label className="text-xs font-medium">
-                                Field Settings
-                              </Label>
+                              <Label className="text-xs font-medium">Field Settings</Label>
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                               <div className="flex items-center justify-between p-3 border rounded-lg">
-                                <Label className="text-xs font-medium">
-                                  Required
-                                </Label>
+                                <Label className="text-xs font-medium">Required</Label>
                                 <Switch
                                   checked={field.required}
                                   onCheckedChange={(checked) =>
@@ -1052,9 +946,7 @@ export default function NewFormPage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-xs font-medium">
-                                  Min Length
-                                </Label>
+                                <Label className="text-xs font-medium">Min Length</Label>
                                 <Input
                                   type="number"
                                   value={field.validation?.minLength ?? ""}
@@ -1074,9 +966,7 @@ export default function NewFormPage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-xs font-medium">
-                                  Max Length
-                                </Label>
+                                <Label className="text-xs font-medium">Max Length</Label>
                                 <Input
                                   type="number"
                                   value={field.validation?.maxLength ?? ""}
@@ -1107,9 +997,7 @@ export default function NewFormPage() {
                         <Plus className="h-12 w-12 mx-auto" />
                       </div>
                       <p className="mb-3 font-medium">No fields added yet</p>
-                      <p className="text-sm mb-4">
-                        Add fields to build your form
-                      </p>
+                      <p className="text-sm mb-4">Add fields to build your form</p>
                       <Button onClick={addField} variant="outline">
                         Add First Field
                       </Button>
@@ -1133,18 +1021,12 @@ export default function NewFormPage() {
                       Editing
                     </Badge>
                   )}
-                  <Badge
-                    variant={
-                      formState.status === "published" ? "default" : "secondary"
-                    }
-                  >
+                  <Badge variant={formState.status === "published" ? "default" : "secondary"}>
                     {formState.status}
                   </Badge>
                 </div>
               </div>
-              <CardDescription>
-                How your form will appear on the website
-              </CardDescription>
+              <CardDescription>How your form will appear on the website</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-5 p-6 border-2 rounded-lg bg-background">
@@ -1152,9 +1034,7 @@ export default function NewFormPage() {
                   <div className="space-y-1">
                     <h3 className="text-lg font-semibold">{formState.name}</h3>
                     {formState.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {formState.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{formState.description}</p>
                     )}
                   </div>
                 )}
@@ -1166,14 +1046,10 @@ export default function NewFormPage() {
                     <div key={field.id} className="space-y-2.5">
                       <Label className="flex items-center gap-1">
                         {field.label}
-                        {field.required && (
-                          <span className="text-red-500 ml-0.5">*</span>
-                        )}
+                        {field.required && <span className="text-red-500 ml-0.5">*</span>}
                       </Label>
                       {field.helperText && (
-                        <p className="text-xs text-muted-foreground">
-                          {field.helperText}
-                        </p>
+                        <p className="text-xs text-muted-foreground">{field.helperText}</p>
                       )}
                       {field.type === "textarea" ? (
                         <Textarea
@@ -1184,11 +1060,7 @@ export default function NewFormPage() {
                       ) : field.type === "select" ? (
                         <Select defaultValue={field.defaultValue}>
                           <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                field.placeholder || "Select an option"
-                              }
-                            />
+                            <SelectValue placeholder={field.placeholder || "Select an option"} />
                           </SelectTrigger>
                           <SelectContent>
                             {field.options?.map((option, idx) => (
@@ -1201,18 +1073,9 @@ export default function NewFormPage() {
                       ) : field.type === "checkbox" ? (
                         <div className="space-y-3">
                           {field.options?.map((option, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center space-x-3"
-                            >
-                              <input
-                                type="checkbox"
-                                id={`preview-${field.id}-${idx}`}
-                              />
-                              <Label
-                                htmlFor={`preview-${field.id}-${idx}`}
-                                className="font-normal"
-                              >
+                            <div key={idx} className="flex items-center space-x-3">
+                              <input type="checkbox" id={`preview-${field.id}-${idx}`} />
+                              <Label htmlFor={`preview-${field.id}-${idx}`} className="font-normal">
                                 {option}
                               </Label>
                             </div>
@@ -1230,9 +1093,7 @@ export default function NewFormPage() {
 
                 {formState.fields.length > 0 && (
                   <div className="pt-2">
-                    <Button className="w-full h-11">
-                      {formState.submitButtonText}
-                    </Button>
+                    <Button className="w-full h-11">{formState.submitButtonText}</Button>
                     {formState.behavior.redirectUrl && (
                       <div className="mt-3 p-3 border border-blue-200 bg-blue-50 rounded-lg">
                         <div className="flex items-center gap-2 text-blue-700 text-sm">
@@ -1252,9 +1113,7 @@ export default function NewFormPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="p-4 border-2 rounded-lg">
                     <div className="font-medium">Fields</div>
-                    <div className="text-2xl font-bold mt-1">
-                      {formState.fields.length}
-                    </div>
+                    <div className="text-2xl font-bold mt-1">{formState.fields.length}</div>
                   </div>
                   <div className="p-4 border-2 rounded-lg">
                     <div className="font-medium">Required</div>
@@ -1272,23 +1131,14 @@ export default function NewFormPage() {
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center justify-between">
                       <span>Store submissions</span>
-                      <Badge
-                        variant={
-                          formState.behavior.storeSubmissions
-                            ? "default"
-                            : "outline"
-                        }
-                      >
+                      <Badge variant={formState.behavior.storeSubmissions ? "default" : "outline"}>
                         {formState.behavior.storeSubmissions ? "Yes" : "No"}
                       </Badge>
                     </div>
                     {formState.behavior.notifyEmail && (
                       <div className="flex items-center justify-between">
                         <span>Email notifications</span>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs truncate max-w-35"
-                        >
+                        <Badge variant="secondary" className="text-xs truncate max-w-35">
                           {formState.behavior.notifyEmail}
                         </Badge>
                       </div>

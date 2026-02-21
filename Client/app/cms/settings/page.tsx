@@ -279,11 +279,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Input
-                        value={displayValue}
-                        readOnly
-                        className="font-mono"
-                      />
+                      <Input value={displayValue} readOnly className="font-mono" />
                       <Button
                         type="button"
                         variant="outline"
@@ -330,7 +326,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>System Alerts</Label>
-              <p className="text-sm text-muted-foreground">Critical system updates and maintenance</p>
+              <p className="text-sm text-muted-foreground">
+                Critical system updates and maintenance
+              </p>
             </div>
             <Switch checked={systemAlerts} onCheckedChange={setSystemAlerts} />
           </div>
@@ -431,7 +429,8 @@ export default function SettingsPage() {
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Warning: This action cannot be undone. All your data, settings, and content will be permanently erased.
+              Warning: This action cannot be undone. All your data, settings, and content will be
+              permanently erased.
             </AlertDescription>
           </Alert>
 

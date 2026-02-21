@@ -9,6 +9,7 @@ export const getMenu = async (req, res, next) => {
 
     const getMenu = await Menu.find({
       tenantId,
+      status: "published",
     })
       .sort({ createdAt: -1 })
       .lean();

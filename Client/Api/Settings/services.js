@@ -1,4 +1,3 @@
-
 const VALIDATE_USER = process.env.NEXT_PUBLIC_VALIDATE_USER;
 const FEEDBACK_COLLECT = process.env.NEXT_PUBLIC_FEEDBACK_COLLECT;
 const CHANGE_PASSWORD = process.env.NEXT_PUBLIC_CHANGE_PASSWORD;
@@ -48,7 +47,6 @@ export const validateUser = async (par1, par2) => {
   }
 };
 
-
 export const feedbackCollector = async (payload) => {
   try {
     if (!FEEDBACK_COLLECT) throw new Error("FEEDBACK_COLLECT URL is not configured");
@@ -80,7 +78,6 @@ export const feedbackCollector = async (payload) => {
     };
   }
 };
-
 
 //Change password
 
@@ -114,7 +111,6 @@ export const changePassword = async (payload) => {
     };
   }
 };
-
 
 //get api keys
 export const getApiKeys = async () => {

@@ -35,9 +35,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ForwardRefExoticComponent, RefAttributes } from "react";
 import type { LucideProps } from "lucide-react";
 
-type IconType = ForwardRefExoticComponent<
-  Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
->;
+type IconType = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
 
 interface NavLinkItem {
   type: "link";
@@ -183,19 +181,12 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
         <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border shrink-0">
           <Link href="/cms" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                CF
-              </span>
+              <span className="text-primary-foreground font-bold text-sm">CF</span>
             </div>
             <span className="font-semibold text-lg">ContentFlow</span>
           </Link>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden h-8 w-8"
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -207,8 +198,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
                   <div
                     className={cn(
                       "space-y-1",
-                      item.highlight &&
-                        "bg-primary/5 rounded-lg p-2 border border-primary/20",
+                      item.highlight && "bg-primary/5 rounded-lg p-2 border border-primary/20",
                     )}
                   >
                     <div className="flex items-center gap-2 px-2 py-1.5">

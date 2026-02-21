@@ -31,7 +31,5 @@ export const seedCollections = async (collections = {}) => {
 
 export const clearCollections = async () => {
   const collections = mongoose.connection.collections;
-  await Promise.all(
-    Object.values(collections).map((c) => c.deleteMany({}))
-  );
+  await Promise.all(Object.values(collections).map((c) => c.deleteMany({})));
 };

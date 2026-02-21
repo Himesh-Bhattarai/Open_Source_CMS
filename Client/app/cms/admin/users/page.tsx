@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Users, Search, Mail, Building2, Calendar } from "lucide-react"
-import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Users, Search, Mail, Building2, Calendar } from "lucide-react";
+import { useState } from "react";
 
 export default function AdminUsersPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
   const users = [
     {
@@ -41,14 +41,14 @@ export default function AdminUsersPage() {
       role: "owner",
       joinedAt: "2024-01-20",
     },
-  ]
+  ];
 
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.website.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  );
 
   return (
     <div className="space-y-6">
@@ -88,7 +88,9 @@ export default function AdminUsersPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <h3 className="font-medium">{user.name}</h3>
-                    <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>
+                    <Badge variant={user.status === "active" ? "default" : "secondary"}>
+                      {user.status}
+                    </Badge>
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -114,5 +116,5 @@ export default function AdminUsersPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

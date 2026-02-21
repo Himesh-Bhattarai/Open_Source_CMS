@@ -95,7 +95,9 @@ describe("Blog routes", () => {
     const invalid = await request(app).put("/combined/update-blog/b1").send({ title: "Updated" });
     expect(invalid.status).toBe(401);
 
-    const edgeRouter = await loadBlogCombinedRouter((req, res, next) => next(new Error("update fail")));
+    const edgeRouter = await loadBlogCombinedRouter((req, res, next) =>
+      next(new Error("update fail")),
+    );
     const edgeApp = createRouteTestApp("/combined", edgeRouter);
     const edge = await request(edgeApp)
       .put("/combined/update-blog/b1")

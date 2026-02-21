@@ -43,16 +43,12 @@ export function AdvancedSearch() {
     {
       id: "1",
       name: "Published Pages",
-      filters: [
-        { id: "1", field: "status", operator: "equals", value: "published" },
-      ],
+      filters: [{ id: "1", field: "status", operator: "equals", value: "published" }],
     },
     {
       id: "2",
       name: "My Drafts",
-      filters: [
-        { id: "2", field: "author", operator: "equals", value: "Sarah K." },
-      ],
+      filters: [{ id: "2", field: "author", operator: "equals", value: "Sarah K." }],
     },
   ]);
 
@@ -87,14 +83,8 @@ export function AdvancedSearch() {
     setFilters(filters.filter((f) => f.id !== id));
   };
 
-  const updateFilter = (
-    id: string,
-    field: keyof SearchFilter,
-    value: string,
-  ) => {
-    setFilters(
-      filters.map((f) => (f.id === id ? { ...f, [field]: value } : f)),
-    );
+  const updateFilter = (id: string, field: keyof SearchFilter, value: string) => {
+    setFilters(filters.map((f) => (f.id === id ? { ...f, [field]: value } : f)));
   };
 
   const applyFilters = () => {
@@ -113,9 +103,7 @@ export function AdvancedSearch() {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Advanced Search</DialogTitle>
-          <DialogDescription>
-            Create complex search queries with multiple filters
-          </DialogDescription>
+          <DialogDescription>Create complex search queries with multiple filters</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -151,9 +139,7 @@ export function AdvancedSearch() {
 
             {filters.length === 0 ? (
               <div className="text-center py-8 border rounded-lg bg-muted/30">
-                <p className="text-sm text-muted-foreground">
-                  No filters added yet
-                </p>
+                <p className="text-sm text-muted-foreground">No filters added yet</p>
               </div>
             ) : (
               filters.map((filter, index) => (
@@ -165,9 +151,7 @@ export function AdvancedSearch() {
                   )}
                   <Select
                     value={filter.field}
-                    onValueChange={(value) =>
-                      updateFilter(filter.id, "field", value)
-                    }
+                    onValueChange={(value) => updateFilter(filter.id, "field", value)}
                   >
                     <SelectTrigger className="w-35">
                       <SelectValue />
@@ -182,9 +166,7 @@ export function AdvancedSearch() {
                   </Select>
                   <Select
                     value={filter.operator}
-                    onValueChange={(value) =>
-                      updateFilter(filter.id, "operator", value)
-                    }
+                    onValueChange={(value) => updateFilter(filter.id, "operator", value)}
                   >
                     <SelectTrigger className="w-35">
                       <SelectValue />
@@ -200,16 +182,10 @@ export function AdvancedSearch() {
                   <Input
                     placeholder="Value"
                     value={filter.value}
-                    onChange={(e) =>
-                      updateFilter(filter.id, "value", e.target.value)
-                    }
+                    onChange={(e) => updateFilter(filter.id, "value", e.target.value)}
                     className="flex-1"
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeFilter(filter.id)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => removeFilter(filter.id)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>

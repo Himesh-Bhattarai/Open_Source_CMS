@@ -1,41 +1,43 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, Activity, RefreshCw } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { fetchStats } from "@/Api/Stats/Stats"
-import { toast } from "sonner"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3, Activity, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { fetchStats } from "@/Api/Stats/Stats";
+import { toast } from "sonner";
 
 export default function AdminAnalyticsPage() {
-  const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<Record<string, any>>({})
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Record<string, any>>({});
 
   const loadStats = async () => {
     try {
-      setLoading(true)
-      const dashboard = await fetchStats("For-Dashboard")
-      setStats(dashboard?.data || dashboard || {})
+      setLoading(true);
+      const dashboard = await fetchStats("For-Dashboard");
+      setStats(dashboard?.data || dashboard || {});
     } catch (error: any) {
-      toast.error(error?.message || "Failed to load analytics")
-      setStats({})
+      toast.error(error?.message || "Failed to load analytics");
+      setStats({});
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadStats()
-  }, [])
+    loadStats();
+  }, []);
 
-  const metricEntries = Object.entries(stats || {}).slice(0, 6)
+  const metricEntries = Object.entries(stats || {}).slice(0, 6);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Platform Analytics</h1>
-          <p className="text-muted-foreground mt-2">Monitor platform-wide metrics and performance</p>
+          <p className="text-muted-foreground mt-2">
+            Monitor platform-wide metrics and performance
+          </p>
         </div>
         <Button variant="outline" onClick={loadStats} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
@@ -49,7 +51,9 @@ export default function AdminAnalyticsPage() {
             <BarChart3 className="h-5 w-5" />
             Analytics Snapshot
           </CardTitle>
-          <CardDescription>Live dashboard values from the backend statistics service</CardDescription>
+          <CardDescription>
+            Live dashboard values from the backend statistics service
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -77,9 +81,10 @@ export default function AdminAnalyticsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          This page reads backend stats only. Role/permission controls remain enforced by backend middleware.
+          This page reads backend stats only. Role/permission controls remain enforced by backend
+          middleware.
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

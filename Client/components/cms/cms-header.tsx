@@ -2,17 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Bell,
-  Search,
-  Moon,
-  Sun,
-  Menu,
-  Shield,
-  User,
-  SettingsIcon,
-  LogOut,
-} from "lucide-react";
+import { Bell, Search, Moon, Sun, Menu, Shield, User, SettingsIcon, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -34,24 +24,15 @@ interface CMSHeaderProps {
 
 export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   const { setTheme, theme } = useTheme();
-  const {
-    user,
-    isAdmin,
-    impersonatedTenant,
-    stopImpersonation,
-    isImpersonating,
-  } = useAuth();
+  const { user, isAdmin, impersonatedTenant, stopImpersonation, isImpersonating } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const router = useRouter();
-  const [notification , setNotifications] = useState([]);
+  const [notification, setNotifications] = useState([]);
 
-  
-  const [unread, setUnread] = useState(
-    notification.some((n : any) => !n.read) 
-  );
-  
+  const [unread, setUnread] = useState(notification.some((n: any) => !n.read));
+
   useEffect(() => {
-    const hasUnread = notification.some((n : any) => !n.read);
+    const hasUnread = notification.some((n: any) => !n.read);
     setUnread(hasUnread);
   }, [notification]);
   const handleOpen = () => {
@@ -64,7 +45,6 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
     router.push("/");
     router.refresh();
   };
-
 
   useEffect(() => {
     const loadNotification = async () => {
@@ -101,7 +81,6 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
     loadNotification();
   }, []);
 
-
   return (
     <header className="h-14 md:h-16 border-b bg-card shrink-0 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
       {isImpersonating && (
@@ -121,23 +100,13 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
         </div>
       )}
 
-      <div
-        className={`flex items-center gap-2 md:gap-3 ${isImpersonating ? "mt-6" : ""}`}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden h-9 w-9"
-          onClick={onMenuClick}
-        >
+      <div className={`flex items-center gap-2 md:gap-3 ${isImpersonating ? "mt-6" : ""}`}>
+        <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
-
       </div>
 
-      <div
-        className={`flex-1 max-w-xl ${searchOpen ? "block" : "hidden md:block"}`}
-      >
+      <div className={`flex-1 max-w-xl ${searchOpen ? "block" : "hidden md:block"}`}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -167,19 +136,14 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-80 max-w-[calc(100vw-2rem)]"
-          >
+          <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-2rem)]">
             <div className="p-3">
               <p className="font-semibold mb-3">Notifications</p>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {notification.map((notification: any, index: number) => (
                   <div key={index} className="p-3 rounded-md bg-muted/50 text-sm">
                     <p className="font-medium">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {notification.message}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                   </div>
                 ))}
               </div>
@@ -204,9 +168,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                 <User className="h-4 w-4 text-primary" />
               </div>
               <div className="text-left hidden xl:block">
-                <p className="text-sm font-medium leading-tight">
-                  {user?.name}
-                </p>
+                <p className="text-sm font-medium leading-tight">{user?.name}</p>
                 <p className="text-xs text-muted-foreground leading-tight">
                   {user?.tenantName || "Platform"}
                 </p>
@@ -221,9 +183,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground truncate mb-2">
-                    {user?.email}
-                  </p>
+                  <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
                   {isAdmin ? (
                     <Badge variant="default" className="bg-primary">
                       <Shield className="h-3 w-3 mr-1" />
@@ -231,7 +191,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                     </Badge>
                   ) : (
                     <Badge variant="secondary">
-                        {user?.role === "web-owner" && "web-owner"}
+                      {user?.role === "web-owner" && "web-owner"}
                       {user?.role === "manager" && "Manager"}
                       {user?.role === "editor" && "Editor"}
                       {user?.role === "viewer" && "Viewer"}
@@ -246,10 +206,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
               Account Settings
             </DropdownMenuItem>
 
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={handleLogout}
-            >
+            <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Log Out
             </DropdownMenuItem>

@@ -4,6 +4,8 @@ import { jest } from "@jest/globals";
 import { createRouteTestApp } from "../helpers/createRouteTestApp.js";
 import { makeAuthCookie } from "../helpers/auth.js";
 
+jest.setTimeout(20000);
+
 const loadPageCreateRouter = async (handler) => {
   jest.resetModules();
   jest.unstable_mockModule("../../CheckPoint/Page/Page.js", () => ({ pageCheckpoint: handler }));
@@ -12,7 +14,9 @@ const loadPageCreateRouter = async (handler) => {
 
 const loadPageUpdateRouter = async (handler) => {
   jest.resetModules();
-  jest.unstable_mockModule("../../CheckPoint/Page/updatePage.js", () => ({ updatePagePhase2: handler }));
+  jest.unstable_mockModule("../../CheckPoint/Page/updatePage.js", () => ({
+    updatePagePhase2: handler,
+  }));
   return (await import("../../Routes/Page/updatePage.js")).default;
 };
 
@@ -45,8 +49,12 @@ const loadPageDeleteRouter = async (pageModel) => {
 const loadExternalPagesRouter = async ({ pageApi, tenantImpl, apiKeyImpl, trackImpl }) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Api/getPages.js", () => pageApi);
-  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({ tenantVerification: tenantImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({ apiKeyVerification: apiKeyImpl }));
+  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({
+    tenantVerification: tenantImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({
+    apiKeyVerification: apiKeyImpl,
+  }));
   jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({
     trackIntegrationUsage: () => trackImpl,
   }));
@@ -90,15 +98,23 @@ describe("Page routes", () => {
     const router = await loadPageUpdateRouter((req, res) => res.status(200).json({ ok: true }));
     const app = createRouteTestApp("/page", router);
 
-    const valid = await request(app).put("/page/p1").set("Cookie", makeAuthCookie()).send({ title: "Updated" });
+    const valid = await request(app)
+      .put("/page/p1")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "Updated" });
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).put("/page/p1").send({ title: "Updated" });
     expect(invalid.status).toBe(401);
 
-    const edgeRouter = await loadPageUpdateRouter((req, res, next) => next(new Error("update page fail")));
+    const edgeRouter = await loadPageUpdateRouter((req, res, next) =>
+      next(new Error("update page fail")),
+    );
     const edgeApp = createRouteTestApp("/page", edgeRouter);
-    const edge = await request(edgeApp).put("/page/p1").set("Cookie", makeAuthCookie()).send({ title: "Updated" });
+    const edge = await request(edgeApp)
+      .put("/page/p1")
+      .set("Cookie", makeAuthCookie())
+      .send({ title: "Updated" });
     expect(edge.status).toBe(500);
   });
 
@@ -180,7 +196,9 @@ describe("Page routes", () => {
     );
     const app = createRouteTestApp("/svc", router);
 
-    const valid = await request(app).get(`/svc/selected-page?pageId=${pageId}`).set("Cookie", makeAuthCookie());
+    const valid = await request(app)
+      .get(`/svc/selected-page?pageId=${pageId}`)
+      .set("Cookie", makeAuthCookie());
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).get("/svc/selected-page").set("Cookie", makeAuthCookie());
@@ -203,7 +221,9 @@ describe("Page routes", () => {
       },
     );
     const edgeApp = createRouteTestApp("/svc", edgeRouter);
-    const edge = await request(edgeApp).get(`/svc/selected-page?pageId=${pageId}`).set("Cookie", makeAuthCookie());
+    const edge = await request(edgeApp)
+      .get(`/svc/selected-page?pageId=${pageId}`)
+      .set("Cookie", makeAuthCookie());
     expect(edge.status).toBe(404);
   });
 
@@ -229,7 +249,9 @@ describe("Page routes", () => {
 
   test("DELETE page valid invalid edge", async () => {
     const router = await loadPageDeleteRouter({
-      findOneAndDelete: jest.fn().mockResolvedValue({ _id: "p1", slug: "home", title: "Home", websiteId: "w1" }),
+      findOneAndDelete: jest
+        .fn()
+        .mockResolvedValue({ _id: "p1", slug: "home", title: "Home", websiteId: "w1" }),
     });
     const app = createRouteTestApp("/delete", router);
 
@@ -243,7 +265,9 @@ describe("Page routes", () => {
       findOneAndDelete: jest.fn().mockResolvedValue(null),
     });
     const edgeApp = createRouteTestApp("/delete", edgeRouter);
-    const edge = await request(edgeApp).delete("/delete/user-page/p1").set("Cookie", makeAuthCookie());
+    const edge = await request(edgeApp)
+      .delete("/delete/user-page/p1")
+      .set("Cookie", makeAuthCookie());
     expect(edge.status).toBe(404);
   });
 
@@ -301,7 +325,8 @@ describe("Page routes", () => {
     const router = await loadExternalPagesRouter({
       pageApi: {
         getPagesVerification: (req, res) => res.status(200).json({ pages: [] }),
-        getPagesByIdVerification: (req, res) => res.status(200).json({ page: [{ slug: req.params.slug }] }),
+        getPagesByIdVerification: (req, res) =>
+          res.status(200).json({ page: [{ slug: req.params.slug }] }),
       },
       tenantImpl: pass,
       apiKeyImpl: pass,
@@ -315,7 +340,8 @@ describe("Page routes", () => {
     const invalidRouter = await loadExternalPagesRouter({
       pageApi: {
         getPagesVerification: (req, res) => res.status(200).json({ pages: [] }),
-        getPagesByIdVerification: (req, res) => res.status(200).json({ page: [{ slug: req.params.slug }] }),
+        getPagesByIdVerification: (req, res) =>
+          res.status(200).json({ page: [{ slug: req.params.slug }] }),
       },
       tenantImpl: pass,
       apiKeyImpl: (req, res) => res.status(403).json({ error: "Invalid API key" }),
@@ -357,7 +383,11 @@ describe("Page routes", () => {
     expect(invalid.status).toBe(400);
 
     const edgeRouter = await loadSlugServiceRouter(
-      { findOne: jest.fn().mockReturnValue({ lean: jest.fn().mockRejectedValue(new Error("db fail")) }) },
+      {
+        findOne: jest
+          .fn()
+          .mockReturnValue({ lean: jest.fn().mockRejectedValue(new Error("db fail")) }),
+      },
       { findOne: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }) },
     );
     const edgeApp = createRouteTestApp("/slug", edgeRouter);

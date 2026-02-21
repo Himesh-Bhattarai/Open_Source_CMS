@@ -4,13 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -96,14 +90,7 @@ interface PageSEO {
   twitterTitle?: string;
   twitterDescription?: string;
   twitterImage?: string;
-  schemaType?:
-    | "Article"
-    | "BlogPosting"
-    | "Product"
-    | "WebPage"
-    | "Event"
-    | "Person"
-    | "None";
+  schemaType?: "Article" | "BlogPosting" | "Product" | "WebPage" | "Event" | "Person" | "None";
   schemaData?: Record<string, any>;
   breadcrumbs?: Array<{
     name: string;
@@ -168,7 +155,7 @@ const generateRobotsMeta = (
   pageSEO: PageSEO,
   globalRobots: any,
   pageData: Page,
-  environment: string
+  environment: string,
 ): string => {
   let index = pageSEO.robots.index;
   let follow = pageSEO.robots.follow;
@@ -198,42 +185,30 @@ const generateRobotsMeta = (
   return directives.join(", ");
 };
 
-const validateSEO = (
-  pageSEO: PageSEO,
-  globalSEO: SEOData,
-  pageData: Page
-): SEOValidation => {
+const validateSEO = (pageSEO: PageSEO, globalSEO: SEOData, pageData: Page): SEOValidation => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
   // Title validation
   const title = pageSEO.title || pageData.title;
   if (title.length > 60) {
-    warnings.push(
-      `Title (${title.length} chars) exceeds recommended 60 characters`
-    );
+    warnings.push(`Title (${title.length} chars) exceeds recommended 60 characters`);
   }
   if (title.length < 15) {
-    warnings.push(
-      `Title (${title.length} chars) is shorter than recommended 15 characters`
-    );
+    warnings.push(`Title (${title.length} chars) is shorter than recommended 15 characters`);
   }
 
   // Description validation
-  const description =
-    pageSEO.metaDescription || globalSEO.general.metaDescription || "";
+  const description = pageSEO.metaDescription || globalSEO.general.metaDescription || "";
   if (!description.trim()) {
     warnings.push("Missing meta description");
   } else if (description.length > 160) {
-    warnings.push(
-      `Description (${description.length} chars) exceeds 160 characters`
-    );
+    warnings.push(`Description (${description.length} chars) exceeds 160 characters`);
   }
 
   // Canonical validation
   const canonical =
-    pageSEO.canonicalUrl ||
-    generateCanonical(globalSEO.general.siteUrl, pageData.slug);
+    pageSEO.canonicalUrl || generateCanonical(globalSEO.general.siteUrl, pageData.slug);
   if (!canonical.startsWith("http")) {
     errors.push("Canonical URL must be an absolute URL");
   }
@@ -256,19 +231,13 @@ const validateSEO = (
   };
 };
 
-const generateSchemaMarkup = (
-  pageSEO: PageSEO,
-  globalSEO: SEOData,
-  pageData: Page
-) => {
+const generateSchemaMarkup = (pageSEO: PageSEO, globalSEO: SEOData, pageData: Page) => {
   const baseSchema = {
     "@context": "https://schema.org",
     "@type": pageSEO.schemaType || "WebPage",
     name: pageSEO.title || pageData.title,
     description: pageSEO.metaDescription || globalSEO.general.metaDescription,
-    url:
-      pageSEO.canonicalUrl ||
-      generateCanonical(globalSEO.general.siteUrl, pageData.slug),
+    url: pageSEO.canonicalUrl || generateCanonical(globalSEO.general.siteUrl, pageData.slug),
     publisher: {
       "@type": globalSEO.schemaData.organizationType,
       name: globalSEO.schemaData.organizationName,
@@ -329,7 +298,7 @@ const generateSchemaMarkup = (
 const getImageFallback = (
   pageImage?: string,
   pageOgImage?: string,
-  globalOgImage?: string
+  globalOgImage?: string,
 ): string => {
   return pageImage || pageOgImage || globalOgImage || "";
 };
@@ -339,8 +308,7 @@ export default function SEOSettingsPage() {
   const router = useRouter();
   const { id: idParam } = useParams();
 
-  const seoId =
-    Array.isArray(idParam) && idParam.length > 0 ? idParam[0] : undefined;
+  const seoId = Array.isArray(idParam) && idParam.length > 0 ? idParam[0] : undefined;
   const isEditMode = !!seoId;
 
   // Default active page
@@ -385,10 +353,7 @@ export default function SEOSettingsPage() {
       organizationName: "ContentFlow Inc.",
       organizationType: "Organization",
       logo: "/logo.svg",
-      socialProfiles: [
-        "https://twitter.com/contentflow",
-        "https://facebook.com/contentflow",
-      ],
+      socialProfiles: ["https://twitter.com/contentflow", "https://facebook.com/contentflow"],
     },
     analytics: {
       googleAnalyticsId: "G-XXXXXXXXXX",
@@ -426,9 +391,7 @@ export default function SEOSettingsPage() {
   });
 
   const [showPreview, setShowPreview] = useState(false);
-  const [environment, setEnvironment] = useState<"production" | "staging">(
-    "production"
-  );
+  const [environment, setEnvironment] = useState<"production" | "staging">("production");
   const [seoScope, setSeoScope] = useState<"global" | "page">("global");
   const [pages, setPages] = useState<Page[]>([]);
   const [selectedPageId, setSelectedPageId] = useState<string>("");
@@ -451,8 +414,7 @@ export default function SEOSettingsPage() {
   }, [globalSEO.general.siteUrl, activePage.slug]);
 
   useEffect(() => {
-    const fallbackOrigin =
-      typeof window !== "undefined" ? window.location.origin : "";
+    const fallbackOrigin = typeof window !== "undefined" ? window.location.origin : "";
     const tenantOrigin = activeTenant?.domain
       ? `https://${activeTenant.domain.replace(/^https?:\/\//, "")}`
       : "";
@@ -473,19 +435,14 @@ export default function SEOSettingsPage() {
 
   // Final robots meta
   const finalRobotsMeta = useMemo(() => {
-    return generateRobotsMeta(
-      pageSEO,
-      globalSEO.robots,
-      activePage,
-      environment
-    );
+    return generateRobotsMeta(pageSEO, globalSEO.robots, activePage, environment);
   }, [pageSEO, globalSEO.robots, activePage, environment]);
 
   // Image fallback chain
   const finalOgImage = getImageFallback(
     activePage.featuredImage,
     pageSEO.ogImage,
-    globalSEO.general.defaultOgImage
+    globalSEO.general.defaultOgImage,
   );
 
   // Load pages for the tenant
@@ -543,34 +500,25 @@ export default function SEOSettingsPage() {
         setSeoScope(scope);
 
         if (scope === "global") {
-       
           if (fetchedSeo.globalSEO) {
-         
             setGlobalSEO(fetchedSeo.globalSEO);
           }
         } else {
-      
           if (fetchedSeo.pageSEO) {
-        
             setPageSEO(fetchedSeo.pageSEO);
           }
 
           // Set page if available
           if (fetchedSeo.pageId) {
-         
             setSelectedPageId(fetchedSeo.pageId);
 
             // Find and set the active page if pages are loaded
             if (pages.length > 0) {
               const page = pages.find((p) => p._id === fetchedSeo.pageId);
               if (page) {
-            
                 setActivePage(page);
               } else {
-                console.warn(
-                  "Page not found in pages list:",
-                  fetchedSeo.pageId
-                );
+                console.warn("Page not found in pages list:", fetchedSeo.pageId);
               }
             }
           }
@@ -592,18 +540,12 @@ export default function SEOSettingsPage() {
     loadSeoData();
   }, [isEditMode, seoId, pages]);
 
-
   // Update activePage when pages are loaded in edit mode
   useEffect(() => {
-    if (!isEditMode || !seoData || !seoData.pageId || pages.length === 0)
-      return;
+    if (!isEditMode || !seoData || !seoData.pageId || pages.length === 0) return;
 
     // Only update if we have a page scope and the page hasn't been set yet
-    if (
-      seoData.scope === "page" &&
-      seoData.pageId &&
-      activePage._id === defaultPage._id
-    ) {
+    if (seoData.scope === "page" && seoData.pageId && activePage._id === defaultPage._id) {
       const page = pages.find((p) => p._id === seoData.pageId);
       if (page) {
         setActivePage(page);
@@ -620,12 +562,7 @@ export default function SEOSettingsPage() {
 
   // Update activePage when selectedPageId changes (for create mode or manual selection)
   useEffect(() => {
-    if (
-      seoScope === "page" &&
-      selectedPageId &&
-      pages.length > 0 &&
-      !isEditMode
-    ) {
+    if (seoScope === "page" && selectedPageId && pages.length > 0 && !isEditMode) {
       const page = pages.find((p) => p._id === selectedPageId);
       if (page && page._id !== activePage._id) {
         setActivePage(page);
@@ -633,14 +570,7 @@ export default function SEOSettingsPage() {
     } else if (seoScope === "global" && activePage._id !== defaultPage._id) {
       setActivePage(defaultPage);
     }
-  }, [
-    selectedPageId,
-    pages,
-    seoScope,
-    activePage._id,
-    defaultPage._id,
-    isEditMode,
-  ]);
+  }, [selectedPageId, pages, seoScope, activePage._id, defaultPage._id, isEditMode]);
 
   // Normalize and prepare data for saving
   const prepareSeoData = useCallback(() => {
@@ -757,8 +687,7 @@ export default function SEOSettingsPage() {
       if (value === "global") {
         setActivePage(defaultPage);
       } else if (value === "page" && pages.length > 0) {
-        const pageToSet =
-          pages.find((p) => p._id === selectedPageId) || pages[0];
+        const pageToSet = pages.find((p) => p._id === selectedPageId) || pages[0];
         if (pageToSet) {
           setActivePage(pageToSet);
           setSelectedPageId(pageToSet._id);
@@ -794,9 +723,7 @@ export default function SEOSettingsPage() {
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Failed to load data</h2>
-          <p className="text-muted-foreground mb-4">
-            Please try refreshing the page.
-          </p>
+          <p className="text-muted-foreground mb-4">Please try refreshing the page.</p>
           <Button onClick={() => window.location.reload()}>Refresh Page</Button>
         </div>
       </div>
@@ -808,9 +735,7 @@ export default function SEOSettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {seoId ? "Edit SEO" : "Create SEO"}
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">{seoId ? "Edit SEO" : "Create SEO"}</h1>
           <p className="text-muted-foreground">
             {seoId ? "Update existing SEO settings" : "Create new SEO settings"}
           </p>
@@ -828,16 +753,9 @@ export default function SEOSettingsPage() {
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!activeTenant?._id || loadingState.loadingSeo}
-          >
+          <Button onClick={handleSubmit} disabled={!activeTenant?._id || loadingState.loadingSeo}>
             <Save className="h-4 w-4 mr-2" />
-            {loadingState.loadingSeo
-              ? "Saving..."
-              : seoId
-              ? "Update SEO"
-              : "Save SEO"}
+            {loadingState.loadingSeo ? "Saving..." : seoId ? "Update SEO" : "Save SEO"}
           </Button>
           {seoId && (
             <Button variant="outline" onClick={() => router.push("/cms/global/seo")}>
@@ -851,9 +769,7 @@ export default function SEOSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Website Selection</CardTitle>
-          <CardDescription>
-            Select the website to configure SEO for
-          </CardDescription>
+          <CardDescription>Select the website to configure SEO for</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -881,9 +797,7 @@ export default function SEOSettingsPage() {
                         <Globe className="h-4 w-4" />
                         <span>{tenant.name}</span>
                         {tenant.domain && (
-                          <span className="text-muted-foreground text-sm">
-                            ({tenant.domain})
-                          </span>
+                          <span className="text-muted-foreground text-sm">({tenant.domain})</span>
                         )}
                       </div>
                     </SelectItem>
@@ -891,9 +805,7 @@ export default function SEOSettingsPage() {
                 </SelectContent>
               </Select>
               {activeTenant && (
-                <p className="text-sm text-muted-foreground">
-                  Selected: {activeTenant?.domain}
-                </p>
+                <p className="text-sm text-muted-foreground">Selected: {activeTenant?.domain}</p>
               )}
             </div>
 
@@ -903,9 +815,7 @@ export default function SEOSettingsPage() {
               <Label>Apply SEO to:</Label>
               <RadioGroup
                 value={seoScope} // This should now be "page" from the API
-                onValueChange={(value: "global" | "page") =>
-                  handleScopeChange(value)
-                }
+                onValueChange={(value: "global" | "page") => handleScopeChange(value)}
                 className="flex flex-col space-y-2"
               >
                 <div className="flex items-center space-x-2">
@@ -949,8 +859,8 @@ export default function SEOSettingsPage() {
                         loadingState.loadingPages
                           ? "Loading pages..."
                           : pages.length === 0
-                          ? "No pages available"
-                          : "Select a page"
+                            ? "No pages available"
+                            : "Select a page"
                       }
                     />
                   </SelectTrigger>
@@ -993,8 +903,7 @@ export default function SEOSettingsPage() {
             <div>
               <p className="font-medium">Global SEO Settings</p>
               <p className="text-sm text-muted-foreground">
-                These settings apply to all pages unless overridden at the page
-                level
+                These settings apply to all pages unless overridden at the page level
               </p>
             </div>
           </div>
@@ -1002,41 +911,31 @@ export default function SEOSettingsPage() {
       </Card>
 
       {/* Page Settings - Only show when scope is page */}
-      {seoScope === "page" &&
-        activePage &&
-        activePage._id !== defaultPage._id && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Page Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">{activePage.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    /{activePage.slug}
-                  </p>
-                </div>
-                <Badge
-                  variant={
-                    activePage.status === "published" ? "default" : "secondary"
-                  }
-                >
-                  {activePage.status || "published"}
-                </Badge>
+      {seoScope === "page" && activePage && activePage._id !== defaultPage._id && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Page Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <p className="font-medium">{activePage.title}</p>
+                <p className="text-sm text-muted-foreground">/{activePage.slug}</p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <Badge variant={activePage.status === "published" ? "default" : "secondary"}>
+                {activePage.status || "published"}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Global Settings - Only show when scope is global */}
       {seoScope === "global" && (
         <Card>
           <CardHeader>
             <CardTitle>Global Settings</CardTitle>
-            <CardDescription>
-              These settings will apply to the entire website
-            </CardDescription>
+            <CardDescription>These settings will apply to the entire website</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3 p-4 border rounded-lg bg-muted/50">
@@ -1113,9 +1012,7 @@ export default function SEOSettingsPage() {
                   <Input
                     id="pageTitle"
                     value={pageSEO.title}
-                    onChange={(e) =>
-                      handlePageSEOChange({ title: e.target.value })
-                    }
+                    onChange={(e) => handlePageSEOChange({ title: e.target.value })}
                     placeholder={activePage.title}
                   />
                   <p className="text-xs text-muted-foreground">
@@ -1124,31 +1021,24 @@ export default function SEOSettingsPage() {
                   <div className="text-sm">
                     Preview:{" "}
                     <span className="font-medium">
-                      {pageSEO.title || activePage.title}{" "}
-                      {globalSEO.general.siteTitleSeparator}{" "}
+                      {pageSEO.title || activePage.title} {globalSEO.general.siteTitleSeparator}{" "}
                       {globalSEO.general.siteTitle}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="pageDescription">
-                    Meta Description Override
-                  </Label>
+                  <Label htmlFor="pageDescription">Meta Description Override</Label>
                   <Textarea
                     id="pageDescription"
                     value={pageSEO.metaDescription}
-                    onChange={(e) =>
-                      handlePageSEOChange({ metaDescription: e.target.value })
-                    }
+                    onChange={(e) => handlePageSEOChange({ metaDescription: e.target.value })}
                     placeholder={globalSEO.general.metaDescription}
                     rows={3}
                   />
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>If empty, uses global description</span>
-                    <span>
-                      {pageSEO.metaDescription?.length || 0} / 160 characters
-                    </span>
+                    <span>{pageSEO.metaDescription?.length || 0} / 160 characters</span>
                   </div>
                 </div>
 
@@ -1159,24 +1049,18 @@ export default function SEOSettingsPage() {
                       <Input
                         id="canonicalUrl"
                         value={pageSEO.canonicalUrl || ""}
-                        onChange={(e) =>
-                          handlePageSEOChange({ canonicalUrl: e.target.value })
-                        }
+                        onChange={(e) => handlePageSEOChange({ canonicalUrl: e.target.value })}
                         placeholder={autoCanonical}
                       />
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          handlePageSEOChange({ canonicalUrl: "" })
-                        }
+                        onClick={() => handlePageSEOChange({ canonicalUrl: "" })}
                       >
                         Auto
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Auto-generated: {autoCanonical}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Auto-generated: {autoCanonical}</p>
                     <p className="text-xs text-muted-foreground">
                       Final canonical: {finalCanonical}
                     </p>
@@ -1193,8 +1077,7 @@ export default function SEOSettingsPage() {
                         <Label htmlFor="pageIndex">Index</Label>
                         <p className="text-sm text-muted-foreground">
                           {activePage.status === "draft" ||
-                          (environment === "staging" &&
-                            globalSEO.robots.stagingNoIndex)
+                          (environment === "staging" && globalSEO.robots.stagingNoIndex)
                             ? "Forced noindex due to status/environment"
                             : "Allow search engines to index this page"}
                         </p>
@@ -1209,8 +1092,7 @@ export default function SEOSettingsPage() {
                         }
                         disabled={
                           activePage.status === "draft" ||
-                          (environment === "staging" &&
-                            globalSEO.robots.stagingNoIndex)
+                          (environment === "staging" && globalSEO.robots.stagingNoIndex)
                         }
                       />
                     </div>
@@ -1235,9 +1117,7 @@ export default function SEOSettingsPage() {
                   </div>
                   <div className="text-sm">
                     Final robots meta:{" "}
-                    <code className="bg-muted px-2 py-1 rounded">
-                      {finalRobotsMeta}
-                    </code>
+                    <code className="bg-muted px-2 py-1 rounded">{finalRobotsMeta}</code>
                   </div>
                 </div>
 
@@ -1249,9 +1129,7 @@ export default function SEOSettingsPage() {
                     <Input
                       id="ogImage"
                       value={pageSEO.ogImage || ""}
-                      onChange={(e) =>
-                        handlePageSEOChange({ ogImage: e.target.value })
-                      }
+                      onChange={(e) => handlePageSEOChange({ ogImage: e.target.value })}
                       placeholder="Leave empty for global/default"
                     />
                     <Button variant="outline">
@@ -1259,8 +1137,7 @@ export default function SEOSettingsPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Image fallback chain: Page featured image → Page OG image →
-                    Global OG image
+                    Image fallback chain: Page featured image → Page OG image → Global OG image
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Final image: {finalOgImage || "No image set"}
@@ -1271,9 +1148,7 @@ export default function SEOSettingsPage() {
                   <Label htmlFor="schemaType">Schema Type</Label>
                   <Select
                     value={pageSEO.schemaType}
-                    onValueChange={(value: any) =>
-                      handlePageSEOChange({ schemaType: value })
-                    }
+                    onValueChange={(value: any) => handlePageSEOChange({ schemaType: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select schema type" />
@@ -1302,9 +1177,7 @@ export default function SEOSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>General SEO Settings</CardTitle>
-              <CardDescription>
-                Default meta information for your site
-              </CardDescription>
+              <CardDescription>Default meta information for your site</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -1342,9 +1215,7 @@ export default function SEOSettingsPage() {
                     })
                   }
                 />
-                <p className="text-xs text-muted-foreground">
-                  Your main site title (brand name)
-                </p>
+                <p className="text-xs text-muted-foreground">Your main site title (brand name)</p>
               </div>
 
               <div className="space-y-2">
@@ -1369,9 +1240,7 @@ export default function SEOSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="metaDescription">
-                  Default Meta Description
-                </Label>
+                <Label htmlFor="metaDescription">Default Meta Description</Label>
                 <Textarea
                   id="metaDescription"
                   value={globalSEO.general.metaDescription}
@@ -1388,9 +1257,7 @@ export default function SEOSettingsPage() {
                 />
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>Used when pages don't have their own description</span>
-                  <span>
-                    {globalSEO.general.metaDescription.length} / 160 characters
-                  </span>
+                  <span>{globalSEO.general.metaDescription.length} / 160 characters</span>
                 </div>
               </div>
 
@@ -1414,9 +1281,7 @@ export default function SEOSettingsPage() {
                     <ImageIcon className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Recommended: 1200 x 630 pixels
-                </p>
+                <p className="text-xs text-muted-foreground">Recommended: 1200 x 630 pixels</p>
               </div>
 
               <div className="space-y-2">
@@ -1483,8 +1348,7 @@ export default function SEOSettingsPage() {
                   <div className="space-y-0.5">
                     <Label htmlFor="followLinks">Follow Links</Label>
                     <p className="text-sm text-muted-foreground">
-                      Allow search engines to follow links on your site by
-                      default
+                      Allow search engines to follow links on your site by default
                     </p>
                   </div>
                   <Switch
@@ -1525,8 +1389,7 @@ export default function SEOSettingsPage() {
                   <div className="space-y-0.5">
                     <Label htmlFor="sitemap">XML Sitemap</Label>
                     <p className="text-sm text-muted-foreground">
-                      Automatically generate sitemap.xml (excludes noindex
-                      pages)
+                      Automatically generate sitemap.xml (excludes noindex pages)
                     </p>
                   </div>
                   <Switch
@@ -1572,9 +1435,7 @@ export default function SEOSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="robotsTxt">Robots.txt</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Generate robots.txt file
-                    </p>
+                    <p className="text-sm text-muted-foreground">Generate robots.txt file</p>
                   </div>
                   <Switch
                     id="robotsTxt"
@@ -1599,52 +1460,26 @@ export default function SEOSettingsPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Page Status:</span>
-                    <Badge
-                      variant={
-                        activePage.status === "published"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
+                    <Badge variant={activePage.status === "published" ? "default" : "secondary"}>
                       {activePage.status}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Environment:</span>
-                    <Badge
-                      variant={
-                        environment === "production" ? "default" : "secondary"
-                      }
-                    >
+                    <Badge variant={environment === "production" ? "default" : "secondary"}>
                       {environment}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Final Indexing:</span>
-                    <Badge
-                      variant={
-                        finalRobotsMeta.includes("noindex")
-                          ? "secondary"
-                          : "default"
-                      }
-                    >
-                      {finalRobotsMeta.includes("noindex")
-                        ? "Noindex"
-                        : "Index"}
+                    <Badge variant={finalRobotsMeta.includes("noindex") ? "secondary" : "default"}>
+                      {finalRobotsMeta.includes("noindex") ? "Noindex" : "Index"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Sitemap Inclusion:</span>
-                    <Badge
-                      variant={
-                        finalRobotsMeta.includes("noindex")
-                          ? "secondary"
-                          : "default"
-                      }
-                    >
-                      {finalRobotsMeta.includes("noindex")
-                        ? "Excluded"
-                        : "Included"}
+                    <Badge variant={finalRobotsMeta.includes("noindex") ? "secondary" : "default"}>
+                      {finalRobotsMeta.includes("noindex") ? "Excluded" : "Included"}
                     </Badge>
                   </div>
                 </div>
@@ -1658,9 +1493,7 @@ export default function SEOSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Open Graph & Social Media</CardTitle>
-              <CardDescription>
-                Optimize how your content appears when shared
-              </CardDescription>
+              <CardDescription>Optimize how your content appears when shared</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -1691,25 +1524,20 @@ export default function SEOSettingsPage() {
                   <Label htmlFor="twitterCard">Twitter Card Type</Label>
                   <Select
                     value={pageSEO.twitterCard || globalSEO.social.twitterCard}
-                    onValueChange={(value: any) =>
-                      handlePageSEOChange({ twitterCard: value })
-                    }
+                    onValueChange={(value: any) => handlePageSEOChange({ twitterCard: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Twitter card type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="summary">Summary</SelectItem>
-                      <SelectItem value="summary_large_image">
-                        Summary Large Image
-                      </SelectItem>
+                      <SelectItem value="summary_large_image">Summary Large Image</SelectItem>
                       <SelectItem value="app">App</SelectItem>
                       <SelectItem value="player">Player</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    Current page override:{" "}
-                    {pageSEO.twitterCard || "Using global"}
+                    Current page override: {pageSEO.twitterCard || "Using global"}
                   </p>
                 </div>
 
@@ -1763,22 +1591,16 @@ export default function SEOSettingsPage() {
                           <ImageIcon className="h-8 w-8 text-muted-foreground" />
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No image set
-                        </p>
+                        <p className="text-sm text-muted-foreground">No image set</p>
                       )}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Twitter Card Type</Label>
                     <div className="border rounded-lg p-4">
-                      <Badge>
-                        {pageSEO.twitterCard || globalSEO.social.twitterCard}
-                      </Badge>
+                      <Badge>{pageSEO.twitterCard || globalSEO.social.twitterCard}</Badge>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {pageSEO.twitterCard
-                          ? "Page override"
-                          : "Global setting"}
+                        {pageSEO.twitterCard ? "Page override" : "Global setting"}
                       </p>
                     </div>
                   </div>
@@ -1793,9 +1615,7 @@ export default function SEOSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Structured Data (Schema.org)</CardTitle>
-              <CardDescription>
-                Help search engines understand your content
-              </CardDescription>
+              <CardDescription>Help search engines understand your content</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -1866,9 +1686,7 @@ export default function SEOSettingsPage() {
                       key={index}
                       value={profile}
                       onChange={(e) => {
-                        const newProfiles = [
-                          ...globalSEO.schemaData.socialProfiles,
-                        ];
+                        const newProfiles = [...globalSEO.schemaData.socialProfiles];
                         newProfiles[index] = e.target.value;
                         setGlobalSEO({
                           ...globalSEO,
@@ -1895,11 +1713,7 @@ export default function SEOSettingsPage() {
                   <div className="border rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{pageSEO.schemaType}</span>
-                      <Badge>
-                        {pageSEO.schemaType === "WebPage"
-                          ? "Default"
-                          : "Custom"}
-                      </Badge>
+                      <Badge>{pageSEO.schemaType === "WebPage" ? "Default" : "Custom"}</Badge>
                     </div>
                     {pageSEO.schemaType !== "WebPage" && (
                       <p className="text-xs text-muted-foreground mt-2">
@@ -1911,15 +1725,13 @@ export default function SEOSettingsPage() {
 
                 <Accordion type="single" collapsible>
                   <AccordionItem value="preview">
-                    <AccordionTrigger>
-                      Preview Generated Schema
-                    </AccordionTrigger>
+                    <AccordionTrigger>Preview Generated Schema</AccordionTrigger>
                     <AccordionContent>
                       <pre className="bg-muted p-4 rounded-lg text-xs overflow-auto">
                         {JSON.stringify(
                           generateSchemaMarkup(pageSEO, globalSEO, activePage),
                           null,
-                          2
+                          2,
                         )}
                       </pre>
                     </AccordionContent>
@@ -1935,9 +1747,7 @@ export default function SEOSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Analytics & Tracking</CardTitle>
-              <CardDescription>
-                Integrate analytics and tracking tools
-              </CardDescription>
+              <CardDescription>Integrate analytics and tracking tools</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -1957,16 +1767,8 @@ export default function SEOSettingsPage() {
                   placeholder="G-XXXXXXXXXX"
                 />
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant={
-                      globalSEO.analytics.googleAnalyticsId
-                        ? "default"
-                        : "secondary"
-                    }
-                  >
-                    {globalSEO.analytics.googleAnalyticsId
-                      ? "Connected"
-                      : "Not Connected"}
+                  <Badge variant={globalSEO.analytics.googleAnalyticsId ? "default" : "secondary"}>
+                    {globalSEO.analytics.googleAnalyticsId ? "Connected" : "Not Connected"}
                   </Badge>
                 </div>
               </div>
@@ -2015,9 +1817,7 @@ export default function SEOSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Advanced SEO Settings</CardTitle>
-              <CardDescription>
-                Advanced controls for SEO experts
-              </CardDescription>
+              <CardDescription>Advanced controls for SEO experts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -2092,9 +1892,7 @@ export default function SEOSettingsPage() {
                       <Input
                         value={crumb.name}
                         onChange={(e) => {
-                          const newBreadcrumbs = [
-                            ...(pageSEO.breadcrumbs || []),
-                          ];
+                          const newBreadcrumbs = [...(pageSEO.breadcrumbs || [])];
                           newBreadcrumbs[index] = {
                             ...crumb,
                             name: e.target.value,
@@ -2106,9 +1904,7 @@ export default function SEOSettingsPage() {
                       <Input
                         value={crumb.url}
                         onChange={(e) => {
-                          const newBreadcrumbs = [
-                            ...(pageSEO.breadcrumbs || []),
-                          ];
+                          const newBreadcrumbs = [...(pageSEO.breadcrumbs || [])];
                           newBreadcrumbs[index] = {
                             ...crumb,
                             url: e.target.value,
@@ -2121,9 +1917,7 @@ export default function SEOSettingsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          const newBreadcrumbs = [
-                            ...(pageSEO.breadcrumbs || []),
-                          ];
+                          const newBreadcrumbs = [...(pageSEO.breadcrumbs || [])];
                           newBreadcrumbs.splice(index, 1);
                           handlePageSEOChange({ breadcrumbs: newBreadcrumbs });
                         }}
@@ -2176,11 +1970,7 @@ export default function SEOSettingsPage() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      const data = generateSchemaMarkup(
-                        pageSEO,
-                        globalSEO,
-                        activePage
-                      );
+                      const data = generateSchemaMarkup(pageSEO, globalSEO, activePage);
                       const blob = new Blob([JSON.stringify(data, null, 2)], {
                         type: "application/ld+json",
                       });
@@ -2206,8 +1996,7 @@ export default function SEOSettingsPage() {
           <DialogHeader>
             <DialogTitle>SEO Preview</DialogTitle>
             <DialogDescription>
-              Preview how your page will appear in search results and social
-              media
+              Preview how your page will appear in search results and social media
             </DialogDescription>
           </DialogHeader>
 
@@ -2222,29 +2011,19 @@ export default function SEOSettingsPage() {
               <div className="border rounded-lg p-6">
                 <div className="space-y-2">
                   <div className="text-blue-800 text-xl hover:underline cursor-pointer">
-                    {pageSEO.title || activePage.title}{" "}
-                    {globalSEO.general.siteTitleSeparator}{" "}
+                    {pageSEO.title || activePage.title} {globalSEO.general.siteTitleSeparator}{" "}
                     {globalSEO.general.siteTitle}
                   </div>
                   <div className="text-green-700 text-sm">{finalCanonical}</div>
                   <div className="text-gray-600">
-                    {pageSEO.metaDescription ||
-                      globalSEO.general.metaDescription}
+                    {pageSEO.metaDescription || globalSEO.general.metaDescription}
                   </div>
                 </div>
                 <div className="mt-4 text-xs text-muted-foreground">
-                  <div>
-                    Title: {(pageSEO.title || activePage.title).length}{" "}
-                    characters
-                  </div>
+                  <div>Title: {(pageSEO.title || activePage.title).length} characters</div>
                   <div>
                     Description:{" "}
-                    {
-                      (
-                        pageSEO.metaDescription ||
-                        globalSEO.general.metaDescription
-                      ).length
-                    }{" "}
+                    {(pageSEO.metaDescription || globalSEO.general.metaDescription).length}{" "}
                     characters
                   </div>
                   <div>Canonical: {finalCanonical}</div>
@@ -2272,12 +2051,9 @@ export default function SEOSettingsPage() {
                     <div className="text-blue-600 text-sm uppercase">
                       {globalSEO.social.ogSiteName}
                     </div>
-                    <div className="font-bold mt-1">
-                      {pageSEO.title || activePage.title}
-                    </div>
+                    <div className="font-bold mt-1">{pageSEO.title || activePage.title}</div>
                     <div className="text-gray-600 text-sm mt-2">
-                      {pageSEO.metaDescription ||
-                        globalSEO.general.metaDescription}
+                      {pageSEO.metaDescription || globalSEO.general.metaDescription}
                     </div>
                   </div>
                 </div>
@@ -2299,9 +2075,7 @@ export default function SEOSettingsPage() {
                   <div className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-bold">
-                          {globalSEO.social.ogSiteName}
-                        </div>
+                        <div className="font-bold">{globalSEO.social.ogSiteName}</div>
                         <div className="text-gray-600 text-sm">
                           @{globalSEO.social.twitterSite.replace("@", "")}
                         </div>
@@ -2309,20 +2083,14 @@ export default function SEOSettingsPage() {
                       <div className="text-blue-500">Follow</div>
                     </div>
                     <div className="mt-3">
-                      <div className="font-bold">
-                        {pageSEO.title || activePage.title}
-                      </div>
+                      <div className="font-bold">{pageSEO.title || activePage.title}</div>
                       <div className="text-gray-600 mt-1">
-                        {pageSEO.metaDescription ||
-                          globalSEO.general.metaDescription}
+                        {pageSEO.metaDescription || globalSEO.general.metaDescription}
                       </div>
-                      <div className="text-blue-500 text-sm mt-2">
-                        {finalCanonical}
-                      </div>
+                      <div className="text-blue-500 text-sm mt-2">{finalCanonical}</div>
                     </div>
                     <div className="mt-4 text-xs text-gray-500">
-                      Card:{" "}
-                      {pageSEO.twitterCard || globalSEO.social.twitterCard}
+                      Card: {pageSEO.twitterCard || globalSEO.social.twitterCard}
                     </div>
                   </div>
                 </div>

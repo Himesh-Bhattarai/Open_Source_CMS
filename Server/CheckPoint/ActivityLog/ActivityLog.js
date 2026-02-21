@@ -1,14 +1,12 @@
 import { logger as log } from "../../Utils/Logger/logger.js";
 import { Tenant } from "../../Models/Tenant/Tenant.js";
 import { ActivityLog } from "../../Models/ActivityLog/ActivityLog.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const ActivityLogCheckpoint = async (req, res, next) => {
   try {
-    const { action, entityType, entityId, details, ipAddress, userAgent } =
-      req.body;
-    if (!action || !entityType || !entityId)
-      throw new Error("Missing required fields");
+    const { action, entityType, entityId, details, ipAddress, userAgent } = req.body;
+    if (!action || !entityType || !entityId) throw new Error("Missing required fields");
 
     const userId = req.user.userId;
     const tenantId = await Tenant.findOne({ userId }).select("tenantId");

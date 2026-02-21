@@ -1,22 +1,22 @@
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TeamMember {
-  name: string
-  role: string
-  bio?: string
-  image?: string
+  name: string;
+  role: string;
+  bio?: string;
+  image?: string;
 }
 
 interface TeamBlockProps {
   data: {
-    title?: string
-    subtitle?: string
-    members?: TeamMember[]
-  }
+    title?: string;
+    subtitle?: string;
+    members?: TeamMember[];
+  };
 }
 
 export function TeamBlock({ data }: TeamBlockProps) {
-  const members = data.members || []
+  const members = data.members || [];
 
   return (
     <section className="py-16 lg:py-24 bg-muted/30">
@@ -25,7 +25,9 @@ export function TeamBlock({ data }: TeamBlockProps) {
           <h2 className="text-balance text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             {data.title || "Meet Our Team"}
           </h2>
-          {data.subtitle && <p className="text-pretty text-xl text-muted-foreground">{data.subtitle}</p>}
+          {data.subtitle && (
+            <p className="text-pretty text-xl text-muted-foreground">{data.subtitle}</p>
+          )}
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
@@ -54,5 +56,5 @@ export function TeamBlock({ data }: TeamBlockProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }

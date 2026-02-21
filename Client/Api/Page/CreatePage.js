@@ -1,7 +1,6 @@
 const CREATE_PAGE_URL = process.env.NEXT_PUBLIC_CREATE_PAGE_URL;
 const UPDATE_PAGE_URL =
-  process.env.NEXT_PUBLIC_UPDATE_PAGE_URL ||
-  process.env.NEXT_PUBLIC_UPDATA_PAGE_URL;
+  process.env.NEXT_PUBLIC_UPDATE_PAGE_URL || process.env.NEXT_PUBLIC_UPDATA_PAGE_URL;
 const CREATE_PAGE_VERSION = process.env.NEXT_PUBLIC_CREATE_PAGE_VERSION;
 
 const parseJsonSafe = async (response) => {
@@ -12,8 +11,7 @@ const parseJsonSafe = async (response) => {
   }
 };
 
-
-  //Create Page
+//Create Page
 export const createPage = async (data) => {
   if (!data) throw new Error("No data Provided");
 
@@ -32,7 +30,6 @@ export const createPage = async (data) => {
   }
   return request;
 };
-
 
 //Create Page v1
 export const createPageVersion = async (data) => {
@@ -57,7 +54,6 @@ export const createPageVersion = async (data) => {
 
 //Update Page
 export const updatePage = async (pageId, { data, etag, options }) => {
-
   // http://localhost:3000/api/v1/update-page/page/:pageId
   const normalizedPageId = String(pageId ?? "").trim();
   if (!normalizedPageId || normalizedPageId === "undefined" || normalizedPageId === "null") {

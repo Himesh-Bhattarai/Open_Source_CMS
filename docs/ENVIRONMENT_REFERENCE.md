@@ -38,6 +38,8 @@ Do not commit real secrets.
 - `HOST`
 - `NODE_ENV`
 - `CORS_ORIGIN`
+- `CSRF_PROTECTION` (optional, set `false` to disable same-origin CSRF guard)
+- `METRICS_TOKEN` (optional token for `/metrics` endpoint)
 - `ACCESS_TOKEN_EXPIRES_IN`
 - `REFRESH_TOKEN_EXPIRES_IN`
 - `FRONTEND_AUTH_REDIRECT`
@@ -147,3 +149,11 @@ Notes:
   `Client/Api/ExternalCall/*` and should be added when those calls are enabled.
 - `NEXT_PUBLIC_USE_MOCK_THEME_DATA` is read in `Client/app/cms/theme/page.tsx`
   and may be added when you want mock theme mode.
+
+## QA / test-only env keys
+
+- `E2E_BASE_URL` (Playwright target base URL, defaults to `http://127.0.0.1:3000`)
+- `E2E_START_SERVER` (set `true` to let Playwright launch Next dev server)
+- `PERF_TARGET_URL` (TTFB check script target URL)
+- `PERF_TTFB_THRESHOLD_MS` (TTFB threshold override)
+- `PERF_SAMPLE_COUNT` (TTFB sample count override)

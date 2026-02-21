@@ -1,8 +1,6 @@
 const ALL_BLOG_LOAD_API = process.env.NEXT_PUBLIC_ALL_BLOG_LOAD_API;
 const BLOG_LOAD_BY_ID_API = process.env.NEXT_PUBLIC_BLOG_LOAD_BY_ID_API;
 
-
-
 //Load all Blogs for user
 export const loadAllBlogs = async () => {
   try {
@@ -23,7 +21,6 @@ export const loadAllBlogs = async () => {
     throw err;
   }
 };
-
 
 ///specified blog load
 export const loadBlogById = async (blogId) => {

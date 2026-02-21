@@ -1,11 +1,10 @@
 const NOTIFY_GET = process.env.NEXT_PUBLIC_NOTIFY_GET;
 const NOTIFY_BASE = (NOTIFY_GET || "").replace(/\/get-notification$/, "");
 
-
 //get notification
 export const getNotification = async () => {
   try {
-    const response = await fetch(NOTIFY_GET,{
+    const response = await fetch(NOTIFY_GET, {
       method: "GET",
       credentials: "include",
     });

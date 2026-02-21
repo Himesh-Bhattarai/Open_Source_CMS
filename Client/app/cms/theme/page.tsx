@@ -1,21 +1,42 @@
+"use client";
 
-
-"use client"
-
-import { useState, useEffect, useCallback, useRef, useMemo } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { Palette, Type, LayoutIcon, Sparkles, Save, RotateCcw, CheckCircle, XCircle, AlertCircle, Globe, Server, Zap, Building, Monitor, Activity, Shield } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
+  Palette,
+  Type,
+  LayoutIcon,
+  Sparkles,
+  Save,
+  RotateCcw,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Globe,
+  Server,
+  Zap,
+  Building,
+  Monitor,
+  Activity,
+  Shield,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { createTheme, fetchThemeSetting } from "@/Api/Theme/create";
 import { useTenant } from "@/context/TenantContext";
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_THEME_DATA === "true" || false;
 
 const loadThemeSetting = async (websiteId: string) => {
   const response = await fetchThemeSetting(websiteId);
@@ -27,7 +48,7 @@ const loadThemeSetting = async (websiteId: string) => {
   if (!data.theme) return null;
   if (data.theme?.metadata?.scope !== "global") return null;
   return data;
-}
+};
 
 /**
  * Create or update theme settings
@@ -40,12 +61,11 @@ const createThemeSetting = async (payload: any) => {
     throw new Error(response?.message || "Failed to save theme");
   }
   return response;
-}
+};
 
-const DEFAULT_THEME_NAME = "Global Theme"
+const DEFAULT_THEME_NAME = "Global Theme";
 const normalizeLayoutForBackend = (layout: any) => {
-  const containerWidth =
-    layout?.containerWidth === "full" ? "full" : "boxed";
+  const containerWidth = layout?.containerWidth === "full" ? "full" : "boxed";
   const sectionSpacing =
     layout?.sectionSpacing === "relaxed" ? "spacious" : layout?.sectionSpacing || "normal";
   const headerStyle =
@@ -60,76 +80,76 @@ const normalizeLayoutForBackend = (layout: any) => {
 };
 
 export default function ThemePage() {
-  const { tenants, activeTenant, setActiveTenant } = useTenant()
-  
+  const { tenants, activeTenant, setActiveTenant } = useTenant();
+
   // ==================== EXISTING STATE VARIABLES (DO NOT RENAME) ====================
-  const [primaryColor, setPrimaryColor] = useState("#8b5cf6")
-  const [secondaryColor, setSecondaryColor] = useState("#10b981")
-  const [fontHeading, setFontHeading] = useState("Inter")
-  const [fontBody, setFontBody] = useState("Inter")
+  const [primaryColor, setPrimaryColor] = useState("#8b5cf6");
+  const [secondaryColor, setSecondaryColor] = useState("#10b981");
+  const [fontHeading, setFontHeading] = useState("Inter");
+  const [fontBody, setFontBody] = useState("Inter");
 
   // ==================== NEW STATE VARIABLES ====================
   // Layout state (from existing UI controls)
-  const [containerWidth, setContainerWidth] = useState("1280")
-  const [borderRadius, setBorderRadius] = useState("medium")
-  const [sectionSpacing, setSectionSpacing] = useState("normal")
-  const [headerStyle, setHeaderStyle] = useState("fixed")
+  const [containerWidth, setContainerWidth] = useState("1280");
+  const [borderRadius, setBorderRadius] = useState("medium");
+  const [sectionSpacing, setSectionSpacing] = useState("normal");
+  const [headerStyle, setHeaderStyle] = useState("fixed");
 
   // Theme metadata
-  const [themeName, setThemeName] = useState(DEFAULT_THEME_NAME)
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null)
-  const [themeVersion, setThemeVersion] = useState(1)
+  const [themeName, setThemeName] = useState(DEFAULT_THEME_NAME);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const [themeVersion, setThemeVersion] = useState(1);
 
   // UI state
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<any>(null)
-  const [environmentMode, setEnvironmentMode] = useState<"live" | "offline">("live")
-  const [backendUnavailable, setBackendUnavailable] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<any>(null);
+  const [environmentMode, setEnvironmentMode] = useState<"live" | "offline">("live");
+  const [backendUnavailable, setBackendUnavailable] = useState(false);
 
   // ==================== MULTI-TENANT STATE VARIABLES ====================
-  const [selectedTenantId, setSelectedTenantId] = useState<string>("")
-  const [selectedWebsiteId, setSelectedWebsiteId] = useState<string>("")
-  const [selectedWebsite, setSelectedWebsite] = useState<any>(null)
-  const [availableWebsites, setAvailableWebsites] = useState<any[]>([])
+  const [selectedTenantId, setSelectedTenantId] = useState<string>("");
+  const [selectedWebsiteId, setSelectedWebsiteId] = useState<string>("");
+  const [selectedWebsite, setSelectedWebsite] = useState<any>(null);
+  const [availableWebsites, setAvailableWebsites] = useState<any[]>([]);
 
   const resetEditorToDefaults = useCallback(() => {
-    setPrimaryColor("#8b5cf6")
-    setSecondaryColor("#10b981")
-    setFontHeading("Inter")
-    setFontBody("Inter")
-    setContainerWidth("1280")
-    setBorderRadius("medium")
-    setSectionSpacing("normal")
-    setHeaderStyle("fixed")
-    setThemeName(DEFAULT_THEME_NAME)
-    setThemeVersion(1)
-    setLastUpdatedAt(null)
-    setLastSavedSnapshot(null)
-    setHasUnsavedChanges(false)
-  }, [])
+    setPrimaryColor("#8b5cf6");
+    setSecondaryColor("#10b981");
+    setFontHeading("Inter");
+    setFontBody("Inter");
+    setContainerWidth("1280");
+    setBorderRadius("medium");
+    setSectionSpacing("normal");
+    setHeaderStyle("fixed");
+    setThemeName(DEFAULT_THEME_NAME);
+    setThemeVersion(1);
+    setLastUpdatedAt(null);
+    setLastSavedSnapshot(null);
+    setHasUnsavedChanges(false);
+  }, []);
 
   const tenantOptions = useMemo(() => {
-    if (!tenants?.length) return []
+    if (!tenants?.length) return [];
     return tenants.map((t) => ({
       id: t._id,
       name: t.name,
       status: "active",
-    }))
-  }, [tenants])
+    }));
+  }, [tenants]);
 
   const websiteOptions = useMemo(() => {
-    if (!tenants?.length) return []
+    if (!tenants?.length) return [];
     return tenants.map((t) => ({
       id: t._id,
       name: t.name,
       domain: t.domain,
       tenantId: t._id,
       status: "active",
-    }))
-  }, [tenants])
+    }));
+  }, [tenants]);
 
   // ==================== STRUCTURED THEME PAYLOAD ====================
   const themePayload = useRef({
@@ -161,9 +181,9 @@ export default function ThemePage() {
         scope: "global", // ENFORCED: Always global scope
         version: themeVersion,
         lastUpdated: lastUpdatedAt,
-      }
-    }
-  })
+      },
+    },
+  });
 
   // Update payload when state changes
   useEffect(() => {
@@ -196,164 +216,192 @@ export default function ThemePage() {
           scope: "global", // ENFORCED: Always global scope
           version: themeVersion,
           lastUpdated: lastUpdatedAt,
-        }
-      }
-    }
-  }, [primaryColor, secondaryColor, fontHeading, fontBody, containerWidth, borderRadius, sectionSpacing, headerStyle, themeName, themeVersion, lastUpdatedAt, selectedWebsiteId, selectedWebsite, selectedTenantId])
+        },
+      },
+    };
+  }, [
+    primaryColor,
+    secondaryColor,
+    fontHeading,
+    fontBody,
+    containerWidth,
+    borderRadius,
+    sectionSpacing,
+    headerStyle,
+    themeName,
+    themeVersion,
+    lastUpdatedAt,
+    selectedWebsiteId,
+    selectedWebsite,
+    selectedTenantId,
+  ]);
 
   // ==================== LIVE PREVIEW VIA CSS VARIABLES ====================
   const applyCSSVariables = useCallback((theme: any) => {
-    if (typeof document === 'undefined' || !theme) return
+    if (typeof document === "undefined" || !theme) return;
 
-    const root = document.documentElement
+    const root = document.documentElement;
 
     // Set CSS variables for live preview
     if (theme.colors?.primary) {
-      root.style.setProperty('--theme-primary', theme.colors.primary)
+      root.style.setProperty("--theme-primary", theme.colors.primary);
     }
     if (theme.colors?.secondary) {
-      root.style.setProperty('--theme-secondary', theme.colors.secondary)
+      root.style.setProperty("--theme-secondary", theme.colors.secondary);
     }
     if (theme.typography?.headingFont) {
-      root.style.setProperty('--theme-font-heading', theme.typography.headingFont)
+      root.style.setProperty("--theme-font-heading", theme.typography.headingFont);
     }
     if (theme.typography?.bodyFont) {
-      root.style.setProperty('--theme-font-body', theme.typography.bodyFont)
+      root.style.setProperty("--theme-font-body", theme.typography.bodyFont);
     }
 
     // Set layout variables
     if (theme.layout?.containerWidth) {
-      root.style.setProperty('--theme-container-width',
-        theme.layout.containerWidth === 'full' ? '100%' : `${theme.layout.containerWidth}px`)
+      root.style.setProperty(
+        "--theme-container-width",
+        theme.layout.containerWidth === "full" ? "100%" : `${theme.layout.containerWidth}px`,
+      );
     }
 
     // Map border radius values to CSS
     if (theme.layout?.borderRadius) {
       const borderRadiusMap: Record<string, string> = {
-        'none': '0',
-        'small': '4px',
-        'medium': '8px',
-        'large': '16px'
-      }
-      root.style.setProperty('--theme-border-radius',
-        borderRadiusMap[theme.layout.borderRadius] || '8px')
+        none: "0",
+        small: "4px",
+        medium: "8px",
+        large: "16px",
+      };
+      root.style.setProperty(
+        "--theme-border-radius",
+        borderRadiusMap[theme.layout.borderRadius] || "8px",
+      );
     }
 
     // Set spacing values
     if (theme.layout?.sectionSpacing) {
       const spacingMap: Record<string, string> = {
-        'compact': '2rem',
-        'normal': '3rem',
-        'relaxed': '4rem'
-      }
-      root.style.setProperty('--theme-section-spacing',
-        spacingMap[theme.layout.sectionSpacing] || '3rem')
+        compact: "2rem",
+        normal: "3rem",
+        relaxed: "4rem",
+      };
+      root.style.setProperty(
+        "--theme-section-spacing",
+        spacingMap[theme.layout.sectionSpacing] || "3rem",
+      );
     }
-  }, [])
+  }, []);
 
   const applyLivePreview = useCallback(() => {
-    applyCSSVariables(themePayload.current.theme)
-  }, [applyCSSVariables])
+    applyCSSVariables(themePayload.current.theme);
+  }, [applyCSSVariables]);
 
   // Apply live preview on state changes
   useEffect(() => {
-    applyLivePreview()
-  }, [applyLivePreview])
+    applyLivePreview();
+  }, [applyLivePreview]);
 
   // ==================== WEBSITE SELECTION HANDLERS ====================
-  const handleTenantChange = useCallback((tenantId: string) => {
-    if (hasUnsavedChanges) {
-      const confirmChange = window.confirm(
-        "You have unsaved theme changes. Changing tenant will discard these changes. Continue?"
-      )
-      if (!confirmChange) return
-    }
+  const handleTenantChange = useCallback(
+    (tenantId: string) => {
+      if (hasUnsavedChanges) {
+        const confirmChange = window.confirm(
+          "You have unsaved theme changes. Changing tenant will discard these changes. Continue?",
+        );
+        if (!confirmChange) return;
+      }
 
-    setSelectedTenantId(tenantId)
+      setSelectedTenantId(tenantId);
 
-    // Filter websites for selected tenant
-    const tenantWebsites = websiteOptions.filter(w => w.tenantId === tenantId)
-    setAvailableWebsites(tenantWebsites)
+      // Filter websites for selected tenant
+      const tenantWebsites = websiteOptions.filter((w) => w.tenantId === tenantId);
+      setAvailableWebsites(tenantWebsites);
 
-    // Auto-select first website in tenant if available
-    if (tenantWebsites.length > 0) {
-      const firstWebsite = tenantWebsites[0]
-      setSelectedWebsiteId(firstWebsite.id)
-      setSelectedWebsite(firstWebsite)
-      const tenant = tenants.find((t) => t._id === firstWebsite.id)
-      if (tenant) setActiveTenant(tenant as any)
+      // Auto-select first website in tenant if available
+      if (tenantWebsites.length > 0) {
+        const firstWebsite = tenantWebsites[0];
+        setSelectedWebsiteId(firstWebsite.id);
+        setSelectedWebsite(firstWebsite);
+        const tenant = tenants.find((t) => t._id === firstWebsite.id);
+        if (tenant) setActiveTenant(tenant as any);
+
+        // Reset unsaved changes state
+        setHasUnsavedChanges(false);
+      }
+    },
+    [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant],
+  );
+
+  const handleWebsiteChange = useCallback(
+    (websiteId: string) => {
+      if (hasUnsavedChanges) {
+        const confirmChange = window.confirm(
+          "You have unsaved theme changes. Changing website will discard these changes. Continue?",
+        );
+        if (!confirmChange) return;
+      }
+
+      const website = websiteOptions.find((w) => w.id === websiteId);
+      if (!website) return;
+
+      setSelectedWebsiteId(websiteId);
+      setSelectedWebsite(website);
+      const tenant = tenants.find((t) => t._id === websiteId);
+      if (tenant) setActiveTenant(tenant as any);
 
       // Reset unsaved changes state
-      setHasUnsavedChanges(false)
-
-    }
-  }, [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant])
-
-  const handleWebsiteChange = useCallback((websiteId: string) => {
-    if (hasUnsavedChanges) {
-      const confirmChange = window.confirm(
-        "You have unsaved theme changes. Changing website will discard these changes. Continue?"
-      )
-      if (!confirmChange) return
-    }
-
-    const website = websiteOptions.find(w => w.id === websiteId)
-    if (!website) return
-
-    setSelectedWebsiteId(websiteId)
-    setSelectedWebsite(website)
-    const tenant = tenants.find((t) => t._id === websiteId)
-    if (tenant) setActiveTenant(tenant as any)
-
-    // Reset unsaved changes state
-    setHasUnsavedChanges(false)
-
-  }, [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant])
+      setHasUnsavedChanges(false);
+    },
+    [hasUnsavedChanges, websiteOptions, tenants, setActiveTenant],
+  );
 
   // ==================== BACKEND INTEGRATION ====================
-  const loadThemeForWebsite = useCallback(async (websiteId: string) => {
-    if (!websiteId) return
-    setIsLoading(true)
-    setBackendUnavailable(false)
-    setSaveStatus("idle")
+  const loadThemeForWebsite = useCallback(
+    async (websiteId: string) => {
+      if (!websiteId) return;
+      setIsLoading(true);
+      setBackendUnavailable(false);
+      setSaveStatus("idle");
 
-    try {
-      // Use semantic backend function with selected website ID
-      const data = await loadThemeSetting(websiteId)
+      try {
+        // Use semantic backend function with selected website ID
+        const data = await loadThemeSetting(websiteId);
 
-      if (data?.theme) {
-        // SUCCESS: Backend returned data
-        setEnvironmentMode("live")
+        if (data?.theme) {
+          // SUCCESS: Backend returned data
+          setEnvironmentMode("live");
 
-        // Hydrate state from backend data
-        hydrateStateFromTheme(data.theme)
+          // Hydrate state from backend data
+          hydrateStateFromTheme(data.theme);
 
-        // Save snapshot for reset functionality
-        setLastSavedSnapshot(data.theme)
+          // Save snapshot for reset functionality
+          setLastSavedSnapshot(data.theme);
 
-        // Apply CSS variables
-        applyCSSVariables(data.theme)
-      } else {
-        // No theme exists yet for this website. Start from defaults and allow save.
-        setEnvironmentMode("live")
-        setBackendUnavailable(false)
-        resetEditorToDefaults()
-        toast.info("No theme exists yet. Configure and save to create one.")
+          // Apply CSS variables
+          applyCSSVariables(data.theme);
+        } else {
+          // No theme exists yet for this website. Start from defaults and allow save.
+          setEnvironmentMode("live");
+          setBackendUnavailable(false);
+          resetEditorToDefaults();
+          toast.info("No theme exists yet. Configure and save to create one.");
+        }
+      } catch (error) {
+        console.error("Error in theme loading process:", error);
+        setEnvironmentMode("offline");
+        setBackendUnavailable(true);
+        setSaveStatus("idle");
+        toast.error("Theme backend unavailable");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error in theme loading process:', error)
-      setEnvironmentMode("offline")
-      setBackendUnavailable(true)
-      setSaveStatus("idle")
-      toast.error("Theme backend unavailable")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [applyCSSVariables, resetEditorToDefaults])
+    },
+    [applyCSSVariables, resetEditorToDefaults],
+  );
 
   const saveThemeSettings = useCallback(async () => {
-    setIsSaving(true)
-    setSaveStatus("saving")
+    setIsSaving(true);
+    setSaveStatus("saving");
 
     try {
       // ENFORCE GLOBAL SCOPE before saving
@@ -364,106 +412,102 @@ export default function ThemePage() {
           layout: normalizeLayoutForBackend(themePayload.current.theme.layout),
           metadata: {
             ...themePayload.current.theme.metadata,
-            scope: "global" // Force global scope
-          }
-        }
-      }
+            scope: "global", // Force global scope
+          },
+        },
+      };
 
       // Use semantic backend function
-      await createThemeSetting(payload)
+      await createThemeSetting(payload);
 
-      setSaveStatus("saved")
-      setHasUnsavedChanges(false)
-      setLastSavedSnapshot(themePayload.current.theme)
-      setLastUpdatedAt(new Date().toISOString())
-      setEnvironmentMode("live")
-      setBackendUnavailable(false)
+      setSaveStatus("saved");
+      setHasUnsavedChanges(false);
+      setLastSavedSnapshot(themePayload.current.theme);
+      setLastUpdatedAt(new Date().toISOString());
+      setEnvironmentMode("live");
+      setBackendUnavailable(false);
 
       toast.success("Theme saved successfully", {
         description: `Global website theme has been updated for ${selectedWebsite?.name}`,
-      })
+      });
 
       // Reset status after 3 seconds
       setTimeout(() => {
         if (saveStatus === "saved") {
-          setSaveStatus("idle")
+          setSaveStatus("idle");
         }
-      }, 3000)
+      }, 3000);
     } catch (error) {
-      console.error('Error saving theme:', error)
-      setSaveStatus("error")
+      console.error("Error saving theme:", error);
+      setSaveStatus("error");
 
       toast.error("Failed to save theme", {
         description: "Please check your connection and try again",
-      })
+      });
 
       // Reset error status after 5 seconds
       setTimeout(() => {
         if (saveStatus === "error") {
-          setSaveStatus("idle")
+          setSaveStatus("idle");
         }
-      }, 5000)
+      }, 5000);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }, [saveStatus, selectedWebsite])
+  }, [saveStatus, selectedWebsite]);
 
   // Helper function to hydrate state from theme data
   const hydrateStateFromTheme = useCallback((theme: any) => {
     const uiContainerWidth =
-      theme.layout?.containerWidth === "boxed"
-        ? "1280"
-        : (theme.layout?.containerWidth || "1280");
+      theme.layout?.containerWidth === "boxed" ? "1280" : theme.layout?.containerWidth || "1280";
     const uiSectionSpacing =
       theme.layout?.sectionSpacing === "spacious"
         ? "relaxed"
-        : (theme.layout?.sectionSpacing || "normal");
+        : theme.layout?.sectionSpacing || "normal";
     const uiHeaderStyle =
-      theme.layout?.headerStyle === "standard"
-        ? "static"
-        : (theme.layout?.headerStyle || "fixed");
+      theme.layout?.headerStyle === "standard" ? "static" : theme.layout?.headerStyle || "fixed";
 
-    setPrimaryColor(theme.colors?.primary || "#8b5cf6")
-    setSecondaryColor(theme.colors?.secondary || "#10b981")
-    setFontHeading(theme.typography?.headingFont || "Inter")
-    setFontBody(theme.typography?.bodyFont || "Inter")
-    setContainerWidth(uiContainerWidth)
-    setBorderRadius(theme.layout?.borderRadius || "medium")
-    setSectionSpacing(uiSectionSpacing)
-    setHeaderStyle(uiHeaderStyle)
-    setThemeName(theme.name || DEFAULT_THEME_NAME)
-    setThemeVersion(theme.metadata?.version || 1)
-    setLastUpdatedAt(theme.metadata?.lastUpdated || null)
-  }, [])
+    setPrimaryColor(theme.colors?.primary || "#8b5cf6");
+    setSecondaryColor(theme.colors?.secondary || "#10b981");
+    setFontHeading(theme.typography?.headingFont || "Inter");
+    setFontBody(theme.typography?.bodyFont || "Inter");
+    setContainerWidth(uiContainerWidth);
+    setBorderRadius(theme.layout?.borderRadius || "medium");
+    setSectionSpacing(uiSectionSpacing);
+    setHeaderStyle(uiHeaderStyle);
+    setThemeName(theme.name || DEFAULT_THEME_NAME);
+    setThemeVersion(theme.metadata?.version || 1);
+    setLastUpdatedAt(theme.metadata?.lastUpdated || null);
+  }, []);
 
   // ==================== RESET LOGIC WITH CSS VARIABLES ====================
   const resetToSavedState = useCallback(() => {
     if (!lastSavedSnapshot) {
       toast.info("No saved state to reset to", {
         description: "Save your theme first or load from backend",
-      })
-      return
+      });
+      return;
     }
 
     if (hasUnsavedChanges) {
       const confirmReset = window.confirm(
-        "You have unsaved changes. Are you sure you want to reset to the last saved state?"
-      )
-      if (!confirmReset) return
+        "You have unsaved changes. Are you sure you want to reset to the last saved state?",
+      );
+      if (!confirmReset) return;
     }
 
     // Reset state to last saved snapshot
-    hydrateStateFromTheme(lastSavedSnapshot)
+    hydrateStateFromTheme(lastSavedSnapshot);
 
     // Keep runtime CSS vars in sync with restored theme state.
-    applyCSSVariables(lastSavedSnapshot)
+    applyCSSVariables(lastSavedSnapshot);
 
-    setHasUnsavedChanges(false)
+    setHasUnsavedChanges(false);
 
     toast.info("Theme reset to last saved state", {
       description: "CSS variables have been restored",
-    })
-  }, [lastSavedSnapshot, hasUnsavedChanges, hydrateStateFromTheme, applyCSSVariables])
+    });
+  }, [lastSavedSnapshot, hasUnsavedChanges, hydrateStateFromTheme, applyCSSVariables]);
 
   // ==================== PRESET THEMES ====================
   const presetThemes = [
@@ -473,25 +517,28 @@ export default function ThemePage() {
     { name: "Sunset", primary: "#f97316", secondary: "#f59e0b" },
     { name: "Rose", primary: "#f43f5e", secondary: "#ec4899" },
     { name: "Midnight", primary: "#6366f1", secondary: "#8b5cf6" },
-  ]
+  ];
 
-  const applyPresetTheme = useCallback((preset: { primary: string; secondary: string; name: string }) => {
-    setPrimaryColor(preset.primary)
-    setSecondaryColor(preset.secondary)
-    setThemeName(`Preset: ${preset.name}`)
-    setHasUnsavedChanges(true)
+  const applyPresetTheme = useCallback(
+    (preset: { primary: string; secondary: string; name: string }) => {
+      setPrimaryColor(preset.primary);
+      setSecondaryColor(preset.secondary);
+      setThemeName(`Preset: ${preset.name}`);
+      setHasUnsavedChanges(true);
 
-    toast.info("Preset theme applied", {
-      description: "Review changes before saving to global website theme",
-    })
-  }, [])
+      toast.info("Preset theme applied", {
+        description: "Review changes before saving to global website theme",
+      });
+    },
+    [],
+  );
 
   // ==================== TRACK UNSAVED CHANGES ====================
   useEffect(() => {
     // Compare current state with last saved snapshot
-    if (!lastSavedSnapshot) return
+    if (!lastSavedSnapshot) return;
 
-    const currentTheme = themePayload.current.theme
+    const currentTheme = themePayload.current.theme;
     const hasChanges =
       currentTheme.colors.primary !== lastSavedSnapshot.colors?.primary ||
       currentTheme.colors.secondary !== lastSavedSnapshot.colors?.secondary ||
@@ -501,37 +548,55 @@ export default function ThemePage() {
       currentTheme.layout.borderRadius !== lastSavedSnapshot.layout?.borderRadius ||
       currentTheme.layout.sectionSpacing !== lastSavedSnapshot.layout?.sectionSpacing ||
       currentTheme.layout.headerStyle !== lastSavedSnapshot.layout?.headerStyle ||
-      currentTheme.name !== lastSavedSnapshot.name
+      currentTheme.name !== lastSavedSnapshot.name;
 
-    setHasUnsavedChanges(hasChanges)
-  }, [primaryColor, secondaryColor, fontHeading, fontBody, containerWidth, borderRadius, sectionSpacing, headerStyle, themeName, lastSavedSnapshot])
+    setHasUnsavedChanges(hasChanges);
+  }, [
+    primaryColor,
+    secondaryColor,
+    fontHeading,
+    fontBody,
+    containerWidth,
+    borderRadius,
+    sectionSpacing,
+    headerStyle,
+    themeName,
+    lastSavedSnapshot,
+  ]);
 
   // ==================== INITIAL LOAD ====================
   useEffect(() => {
-    if (!selectedWebsiteId) return
-    loadThemeForWebsite(selectedWebsiteId)
-  }, [loadThemeForWebsite, selectedWebsiteId])
+    if (!selectedWebsiteId) return;
+    loadThemeForWebsite(selectedWebsiteId);
+  }, [loadThemeForWebsite, selectedWebsiteId]);
 
   useEffect(() => {
-    if (!tenants?.length) return
-    const initial = activeTenant || tenants[0]
-    if (!initial) return
+    if (!tenants?.length) return;
+    const initial = activeTenant || tenants[0];
+    if (!initial) return;
 
-    setSelectedTenantId(initial._id)
-    setSelectedWebsiteId(initial._id)
+    setSelectedTenantId(initial._id);
+    setSelectedWebsiteId(initial._id);
     setSelectedWebsite({
       id: initial._id,
       name: initial.name,
       domain: initial.domain,
       tenantId: initial._id,
       status: "active",
-    })
-    setAvailableWebsites(
-      websiteOptions.filter((w) => w.tenantId === initial._id)
-    )
-  }, [tenants, activeTenant, websiteOptions])
+    });
+    setAvailableWebsites(websiteOptions.filter((w) => w.tenantId === initial._id));
+  }, [tenants, activeTenant, websiteOptions]);
 
-  const fonts = ["Inter", "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins", "Playfair Display", "Merriweather"]
+  const fonts = [
+    "Inter",
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Montserrat",
+    "Poppins",
+    "Playfair Display",
+    "Merriweather",
+  ];
 
   return (
     <div className="space-y-6">
@@ -559,10 +624,7 @@ export default function ThemePage() {
                 <Building className="h-4 w-4" />
                 Tenant
               </Label>
-              <Select
-                value={selectedTenantId}
-                onValueChange={handleTenantChange}
-              >
+              <Select value={selectedTenantId} onValueChange={handleTenantChange}>
                 <SelectTrigger id="tenant-selector" className="h-11 bg-background">
                   <SelectValue placeholder="Select tenant" />
                 </SelectTrigger>
@@ -585,10 +647,10 @@ export default function ThemePage() {
             </div>
 
             <div className="space-y-2">
-                  <Label htmlFor="website-selector" className="flex items-center gap-2">
-                    <Monitor className="h-4 w-4" />
-                    Website
-                  </Label>
+              <Label htmlFor="website-selector" className="flex items-center gap-2">
+                <Monitor className="h-4 w-4" />
+                Website
+              </Label>
               <Select
                 value={selectedWebsiteId}
                 onValueChange={handleWebsiteChange}
@@ -641,9 +703,10 @@ export default function ThemePage() {
 
             <Badge
               variant={environmentMode === "live" ? "default" : "outline"}
-              className={environmentMode === "live"
-                ? "bg-green-100 text-green-800 border-green-200"
-                : "bg-amber-50 text-amber-800 border-amber-200"
+              className={
+                environmentMode === "live"
+                  ? "bg-green-100 text-green-800 border-green-200"
+                  : "bg-amber-50 text-amber-800 border-amber-200"
               }
             >
               {environmentMode === "live" ? (
@@ -662,9 +725,10 @@ export default function ThemePage() {
             {selectedWebsite?.status && (
               <Badge
                 variant={selectedWebsite.status === "active" ? "default" : "outline"}
-                className={selectedWebsite.status === "active"
-                  ? "bg-green-100 text-green-800 border-green-200"
-                  : "bg-yellow-50 text-yellow-800 border-yellow-200"
+                className={
+                  selectedWebsite.status === "active"
+                    ? "bg-green-100 text-green-800 border-green-200"
+                    : "bg-yellow-50 text-yellow-800 border-yellow-200"
                 }
               >
                 <Activity className="h-3 w-3 mr-1" />
@@ -728,19 +792,31 @@ export default function ThemePage() {
       {/* ==================== IMPROVED TABS UI ==================== */}
       <Tabs defaultValue="colors" className="space-y-6">
         <TabsList className="h-12 w-full bg-muted/50 p-1 rounded-lg border">
-          <TabsTrigger value="colors" className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger
+            value="colors"
+            className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
             <Palette className="h-4 w-4 mr-2" />
             Colors
           </TabsTrigger>
-          <TabsTrigger value="typography" className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger
+            value="typography"
+            className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
             <Type className="h-4 w-4 mr-2" />
             Typography
           </TabsTrigger>
-          <TabsTrigger value="layout" className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger
+            value="layout"
+            className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
             <LayoutIcon className="h-4 w-4 mr-2" />
             Layout
           </TabsTrigger>
-          <TabsTrigger value="presets" className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger
+            value="presets"
+            className="h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
             <Sparkles className="h-4 w-4 mr-2" />
             Presets
           </TabsTrigger>
@@ -762,21 +838,23 @@ export default function ThemePage() {
                       type="color"
                       value={primaryColor}
                       onChange={(e) => {
-                        setPrimaryColor(e.target.value)
-                        setHasUnsavedChanges(true)
+                        setPrimaryColor(e.target.value);
+                        setHasUnsavedChanges(true);
                       }}
                       className="w-20 h-10 cursor-pointer"
                     />
                     <Input
                       value={primaryColor}
                       onChange={(e) => {
-                        setPrimaryColor(e.target.value)
-                        setHasUnsavedChanges(true)
+                        setPrimaryColor(e.target.value);
+                        setHasUnsavedChanges(true);
                       }}
                       className="flex-1"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">Used for buttons, links, and accents</p>
+                  <p className="text-xs text-muted-foreground">
+                    Used for buttons, links, and accents
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -787,21 +865,23 @@ export default function ThemePage() {
                       type="color"
                       value={secondaryColor}
                       onChange={(e) => {
-                        setSecondaryColor(e.target.value)
-                        setHasUnsavedChanges(true)
+                        setSecondaryColor(e.target.value);
+                        setHasUnsavedChanges(true);
                       }}
                       className="w-20 h-10 cursor-pointer"
                     />
                     <Input
                       value={secondaryColor}
                       onChange={(e) => {
-                        setSecondaryColor(e.target.value)
-                        setHasUnsavedChanges(true)
+                        setSecondaryColor(e.target.value);
+                        setHasUnsavedChanges(true);
                       }}
                       className="flex-1"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">Used for secondary actions and highlights</p>
+                  <p className="text-xs text-muted-foreground">
+                    Used for secondary actions and highlights
+                  </p>
                 </div>
               </div>
 
@@ -841,8 +921,8 @@ export default function ThemePage() {
                   <Select
                     value={fontHeading}
                     onValueChange={(value) => {
-                      setFontHeading(value)
-                      setHasUnsavedChanges(true)
+                      setFontHeading(value);
+                      setHasUnsavedChanges(true);
                     }}
                   >
                     <SelectTrigger id="heading-font">
@@ -864,8 +944,8 @@ export default function ThemePage() {
                   <Select
                     value={fontBody}
                     onValueChange={(value) => {
-                      setFontBody(value)
-                      setHasUnsavedChanges(true)
+                      setFontBody(value);
+                      setHasUnsavedChanges(true);
                     }}
                   >
                     <SelectTrigger id="body-font">
@@ -898,8 +978,9 @@ export default function ThemePage() {
                     Heading Level 3
                   </h3>
                   <p className="text-base leading-relaxed" style={{ fontFamily: fontBody }}>
-                    This is sample body text. The quick brown fox jumps over the lazy dog. Lorem ipsum dolor sit amet,
-                    consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    This is sample body text. The quick brown fox jumps over the lazy dog. Lorem
+                    ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
                   </p>
                 </div>
               </div>
@@ -920,8 +1001,8 @@ export default function ThemePage() {
                   <Select
                     value={containerWidth}
                     onValueChange={(value) => {
-                      setContainerWidth(value)
-                      setHasUnsavedChanges(true)
+                      setContainerWidth(value);
+                      setHasUnsavedChanges(true);
                     }}
                   >
                     <SelectTrigger id="container-width">
@@ -941,8 +1022,8 @@ export default function ThemePage() {
                   <Select
                     value={borderRadius}
                     onValueChange={(value) => {
-                      setBorderRadius(value)
-                      setHasUnsavedChanges(true)
+                      setBorderRadius(value);
+                      setHasUnsavedChanges(true);
                     }}
                   >
                     <SelectTrigger id="border-radius">
@@ -962,8 +1043,8 @@ export default function ThemePage() {
                   <Select
                     value={sectionSpacing}
                     onValueChange={(value) => {
-                      setSectionSpacing(value)
-                      setHasUnsavedChanges(true)
+                      setSectionSpacing(value);
+                      setHasUnsavedChanges(true);
                     }}
                   >
                     <SelectTrigger id="section-spacing">
@@ -982,8 +1063,8 @@ export default function ThemePage() {
                   <Select
                     value={headerStyle}
                     onValueChange={(value) => {
-                      setHeaderStyle(value)
-                      setHasUnsavedChanges(true)
+                      setHeaderStyle(value);
+                      setHasUnsavedChanges(true);
                     }}
                   >
                     <SelectTrigger id="header-style">
@@ -1010,12 +1091,21 @@ export default function ThemePage() {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {presetThemes.map((theme) => (
-                  <Card key={theme.name} className="cursor-pointer hover:border-primary transition-colors">
+                  <Card
+                    key={theme.name}
+                    className="cursor-pointer hover:border-primary transition-colors"
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="flex gap-1">
-                          <div className="h-10 w-10 rounded" style={{ backgroundColor: theme.primary }} />
-                          <div className="h-10 w-10 rounded" style={{ backgroundColor: theme.secondary }} />
+                          <div
+                            className="h-10 w-10 rounded"
+                            style={{ backgroundColor: theme.primary }}
+                          />
+                          <div
+                            className="h-10 w-10 rounded"
+                            style={{ backgroundColor: theme.secondary }}
+                          />
                         </div>
                         <h3 className="font-semibold">{theme.name}</h3>
                       </div>
@@ -1040,11 +1130,17 @@ export default function ThemePage() {
         <div className="text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Globe className="h-3 w-3" />
-            <span>Theme scope: <span className="font-medium">Global Website</span></span>
+            <span>
+              Theme scope: <span className="font-medium">Global Website</span>
+            </span>
             <span className="mx-2">|</span>
-            <span>Version: <span className="font-medium">{themeVersion}</span></span>
+            <span>
+              Version: <span className="font-medium">{themeVersion}</span>
+            </span>
             <span className="mx-2">|</span>
-            <span>Tenant: <span className="font-medium">{selectedTenantId}</span></span>
+            <span>
+              Tenant: <span className="font-medium">{selectedTenantId}</span>
+            </span>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
             This theme applies to the entire website. Page-level overrides are not supported.
@@ -1070,6 +1166,5 @@ export default function ThemePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

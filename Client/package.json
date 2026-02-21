@@ -5,9 +5,14 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev -H 0.0.0.0 -p 3000 --hostname 0.0.0.0",
+    "dev:e2e": "next dev -H 127.0.0.1 -p 3100 --hostname 127.0.0.1",
     "lint": "eslint .",
+    "test:e2e": "playwright test --config=playwright.config.mjs",
+    "test:e2e:headed": "playwright test --config=playwright.config.mjs --headed",
+    "test:e2e:install": "playwright install --with-deps",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "start": "next start"
+    "start": "next start",
+    "start:e2e": "next start -H 127.0.0.1 -p 3100 --hostname 127.0.0.1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -70,6 +75,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@playwright/test": "^1.56.1",
     "@typescript-eslint/parser": "^8.46.2",
     "autoprefixer": "^10.4.24",
     "eslint": "^9.39.2",

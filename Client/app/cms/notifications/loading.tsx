@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NotificationsLoading() {
   return (
@@ -20,5 +20,5 @@ export default function NotificationsLoading() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -9,6 +9,7 @@ export const getForm = async (req, res, next) => {
 
     const form = await Form.findOne({
       tenantId,
+      status: "published",
     }).lean();
 
     if (!form) {

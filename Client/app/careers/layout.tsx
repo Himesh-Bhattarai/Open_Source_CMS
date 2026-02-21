@@ -7,13 +7,15 @@ export const metadata: Metadata = createPageMetadata({
   description:
     "Explore open roles at ContentFlow and help build production-grade CMS infrastructure for multi-tenant web teams.",
   path: "/careers",
-  keywords: ["contentflow careers", "cms jobs", "frontend engineer", "backend engineer", "product designer"],
+  keywords: [
+    "contentflow careers",
+    "cms jobs",
+    "frontend engineer",
+    "backend engineer",
+    "product designer",
+  ],
 });
 
-export default function CareersLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function CareersLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

@@ -11,11 +11,15 @@ export const validateSchema = (schema, data) => {
 
 export const pageResponseSchema = z.object({
   data: z.any().optional(),
-  pages: z.array(z.object({
-    _id: z.any(),
-    title: z.string().optional(),
-    slug: z.string().optional(),
-  })).optional(),
+  pages: z
+    .array(
+      z.object({
+        _id: z.any(),
+        title: z.string().optional(),
+        slug: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const blogResponseSchema = z.object({

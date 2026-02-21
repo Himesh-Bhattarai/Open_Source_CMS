@@ -9,8 +9,6 @@ const parseJsonSafe = async (response) => {
   }
 };
 
-
-
 //delete menu by id
 export const deleteMenuById = async (menuId) => {
   try {
@@ -20,8 +18,7 @@ export const deleteMenuById = async (menuId) => {
     });
 
     const request = await parseJsonSafe(response);
-    if (!response.ok)
-      throw new Error(request.message || "Internal Server Error");
+    if (!response.ok) throw new Error(request.message || "Internal Server Error");
     return {
       ok: response.ok,
       status: response.status,
@@ -33,7 +30,6 @@ export const deleteMenuById = async (menuId) => {
   }
 };
 
-
 //delete menu all
 export const deleteMenu = async () => {
   try {
@@ -43,8 +39,7 @@ export const deleteMenu = async () => {
     });
 
     const request = await parseJsonSafe(response);
-    if (!response.ok)
-      throw new Error(request.message || "Internal Server Error");
+    if (!response.ok) throw new Error(request.message || "Internal Server Error");
     return {
       ok: response.ok,
       status: response.status,

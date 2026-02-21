@@ -4,7 +4,8 @@ import { createPageMetadata } from "@/lib/seo/site-metadata";
 
 export const metadata: Metadata = createPageMetadata({
   title: "Sign In",
-  description: "Sign in to your ContentFlow account to manage websites, pages, SEO, and tenant settings.",
+  description:
+    "Sign in to your ContentFlow account to manage websites, pages, SEO, and tenant settings.",
   path: "/login",
   noIndex: true,
 });

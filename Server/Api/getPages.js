@@ -10,6 +10,7 @@ export const getPagesVerification = async (req, res, next) => {
 
     const pages = await Page.find({
       tenantId,
+      status: "published",
     })
       .select("title slug settings status updatedAt")
       .sort({ createdAt: -1 });
@@ -32,6 +33,7 @@ export const getPagesByIdVerification = async (req, res, next) => {
     const page = await Page.findOne({
       tenantId,
       slug: String(slugId),
+      status: "published",
     })
       .select("title slug pageTree seo settings status publishedAt updatedAt tenantId")
       .lean();

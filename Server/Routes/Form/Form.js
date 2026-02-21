@@ -3,7 +3,7 @@ const router = express.Router();
 import { formCheckpoint } from "../../CheckPoint/Form/Form.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
 import { Form } from "../../Models/Form/Form.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 //import validate later
 router.post("/form", verificationMiddleware, formCheckpoint);
 

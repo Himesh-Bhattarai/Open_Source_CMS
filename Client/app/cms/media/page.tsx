@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Upload,
   Search,
@@ -34,40 +34,40 @@ import {
   Loader2,
   Globe,
   File,
-} from "lucide-react"
-import { toast } from "sonner"
-import { useTenant } from "@/context/TenantContext"
-import { createMedia } from "@/Api/Media/Create"
-import { loadMedia } from "@/Api/Media/Fetch"
-import { deleteMediaById } from "@/Api/Media/Delete"
-import { getUserPages } from "@/Api/Page/Fetch"
-import { loadAllBlogs } from "@/Api/Blog/Load"
+} from "lucide-react";
+import { toast } from "sonner";
+import { useTenant } from "@/context/TenantContext";
+import { createMedia } from "@/Api/Media/Create";
+import { loadMedia } from "@/Api/Media/Fetch";
+import { deleteMediaById } from "@/Api/Media/Delete";
+import { getUserPages } from "@/Api/Page/Fetch";
+import { loadAllBlogs } from "@/Api/Blog/Load";
 
-type Scope = "global" | "page" | "blog"
-type MediaType = "image" | "video" | "document"
+type Scope = "global" | "page" | "blog";
+type MediaType = "image" | "video" | "document";
 
-type PageItem = { _id: string; title: string; tenantId?: string }
-type BlogItem = { _id: string; title: string; tenantId?: string }
+type PageItem = { _id: string; title: string; tenantId?: string };
+type BlogItem = { _id: string; title: string; tenantId?: string };
 
 type MediaItem = {
-  id: string
-  name: string
-  type: MediaType
-  size: number
-  mimeType: string
-  url?: string
-  status: "ready" | "uploading" | "failed"
-  createdAt?: string
-  scope: Scope
-  entityType: "page" | "blog" | null
-  entityId: string | null
-}
+  id: string;
+  name: string;
+  type: MediaType;
+  size: number;
+  mimeType: string;
+  url?: string;
+  status: "ready" | "uploading" | "failed";
+  createdAt?: string;
+  scope: Scope;
+  entityType: "page" | "blog" | null;
+  entityId: string | null;
+};
 
 const getTypeFromMime = (mimeType = ""): MediaType => {
-  if (mimeType.startsWith("image/")) return "image"
-  if (mimeType.startsWith("video/")) return "video"
-  return "document"
-}
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("video/")) return "video";
+  return "document";
+};
 
 const normalizeMedia = (raw: any): MediaItem => ({
   id: String(raw?._id || raw?.id || ""),
@@ -81,60 +81,63 @@ const normalizeMedia = (raw: any): MediaItem => ({
   scope: (raw?.scope || "global") as Scope,
   entityType: raw?.entityType || null,
   entityId: raw?.entityId || null,
-})
+});
 
 const toDataUrlIfPreviewable = (file: File): Promise<string> =>
   new Promise((resolve) => {
     if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-      resolve("")
-      return
+      resolve("");
+      return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      resolve("")
-      return
+      resolve("");
+      return;
     }
-    const reader = new FileReader()
-    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "")
-    reader.onerror = () => resolve("")
-    reader.readAsDataURL(file)
-  })
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => resolve("");
+    reader.readAsDataURL(file);
+  });
 
 export default function MediaLibraryPage() {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const { tenants, activeTenant, selectedTenantId, setActiveTenant } = useTenant()
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { tenants, activeTenant, selectedTenantId, setActiveTenant } = useTenant();
 
-  const [scope, setScope] = useState<Scope>("global")
-  const [pages, setPages] = useState<PageItem[]>([])
-  const [blogs, setBlogs] = useState<BlogItem[]>([])
-  const [selectedPageId, setSelectedPageId] = useState("")
-  const [selectedBlogId, setSelectedBlogId] = useState("")
+  const [scope, setScope] = useState<Scope>("global");
+  const [pages, setPages] = useState<PageItem[]>([]);
+  const [blogs, setBlogs] = useState<BlogItem[]>([]);
+  const [selectedPageId, setSelectedPageId] = useState("");
+  const [selectedBlogId, setSelectedBlogId] = useState("");
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
 
-  const [isUploading, setIsUploading] = useState(false)
-  const [isLoadingMedia, setIsLoadingMedia] = useState(false)
-  const [isLoadingContent, setIsLoadingContent] = useState(false)
-  const [mediaList, setMediaList] = useState<MediaItem[]>([])
-  const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null)
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoadingMedia, setIsLoadingMedia] = useState(false);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [mediaList, setMediaList] = useState<MediaItem[]>([]);
+  const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
 
-  const entityType = scope === "page" ? "page" : scope === "blog" ? "blog" : null
-  const entityId = scope === "page" ? selectedPageId : scope === "blog" ? selectedBlogId : ""
+  const entityType = scope === "page" ? "page" : scope === "blog" ? "blog" : null;
+  const entityId = scope === "page" ? selectedPageId : scope === "blog" ? selectedBlogId : "";
 
   const canLoadScopedMedia =
-    !!selectedTenantId && (scope === "global" || (scope === "page" && !!selectedPageId) || (scope === "blog" && !!selectedBlogId))
+    !!selectedTenantId &&
+    (scope === "global" ||
+      (scope === "page" && !!selectedPageId) ||
+      (scope === "blog" && !!selectedBlogId));
 
   useEffect(() => {
-    if (!selectedTenantId) return
+    if (!selectedTenantId) return;
 
     const loadContent = async () => {
-      setIsLoadingContent(true)
+      setIsLoadingContent(true);
       try {
         const [pagesResponse, blogsResponse] = await Promise.allSettled([
           getUserPages(),
           loadAllBlogs(),
-        ])
+        ]);
 
         const allPages =
           pagesResponse.status === "fulfilled"
@@ -145,7 +148,7 @@ export default function MediaLibraryPage() {
                 : Array.isArray(pagesResponse.value?.data)
                   ? pagesResponse.value.data
                   : []
-            : []
+            : [];
 
         const allBlogs =
           blogsResponse.status === "fulfilled"
@@ -156,77 +159,75 @@ export default function MediaLibraryPage() {
                 : Array.isArray(blogsResponse.value?.data)
                   ? blogsResponse.value.data
                   : []
-            : []
+            : [];
 
-        setPages(allPages.filter((p: any) => !p?.tenantId || p.tenantId === selectedTenantId))
-        setBlogs(allBlogs.filter((b: any) => !b?.tenantId || b.tenantId === selectedTenantId))
+        setPages(allPages.filter((p: any) => !p?.tenantId || p.tenantId === selectedTenantId));
+        setBlogs(allBlogs.filter((b: any) => !b?.tenantId || b.tenantId === selectedTenantId));
       } catch (error) {
-        console.error(error)
+        console.error(error);
       } finally {
-        setIsLoadingContent(false)
+        setIsLoadingContent(false);
       }
-    }
+    };
 
-    loadContent()
-  }, [selectedTenantId])
+    loadContent();
+  }, [selectedTenantId]);
 
   useEffect(() => {
     if (!selectedTenantId || !canLoadScopedMedia) {
-      setMediaList([])
-      return
+      setMediaList([]);
+      return;
     }
 
     const fetchMedia = async () => {
-      setIsLoadingMedia(true)
+      setIsLoadingMedia(true);
       const response = await loadMedia({
         tenantId: selectedTenantId,
         scope,
         entityType,
         entityId,
-      })
+      });
 
       if (!response?.ok) {
-        toast.error(response?.message || "Failed to load media")
-        setMediaList([])
-        setIsLoadingMedia(false)
-        return
+        toast.error(response?.message || "Failed to load media");
+        setMediaList([]);
+        setIsLoadingMedia(false);
+        return;
       }
 
-      const normalized = Array.isArray(response.data)
-        ? response.data.map(normalizeMedia)
-        : []
-      setMediaList(normalized)
-      setIsLoadingMedia(false)
-    }
+      const normalized = Array.isArray(response.data) ? response.data.map(normalizeMedia) : [];
+      setMediaList(normalized);
+      setIsLoadingMedia(false);
+    };
 
-    fetchMedia()
-  }, [selectedTenantId, scope, entityType, entityId, canLoadScopedMedia])
+    fetchMedia();
+  }, [selectedTenantId, scope, entityType, entityId, canLoadScopedMedia]);
 
   const filteredItems = useMemo(() => {
     return mediaList.filter((item) => {
-      const bySearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const bySearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
       const byType =
         activeTab === "all" ||
         (activeTab === "images" && item.type === "image") ||
         (activeTab === "videos" && item.type === "video") ||
-        (activeTab === "documents" && item.type === "document")
-      return bySearch && byType
-    })
-  }, [mediaList, searchQuery, activeTab])
+        (activeTab === "documents" && item.type === "document");
+      return bySearch && byType;
+    });
+  }, [mediaList, searchQuery, activeTab]);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || !selectedTenantId) return
+    const files = event.target.files;
+    if (!files || !selectedTenantId) return;
 
     if (scope !== "global" && !entityId) {
-      toast.error(scope === "page" ? "Choose a page first" : "Choose a blog first")
-      return
+      toast.error(scope === "page" ? "Choose a page first" : "Choose a blog first");
+      return;
     }
 
-    setIsUploading(true)
+    setIsUploading(true);
 
     for (const file of Array.from(files)) {
-      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const optimistic: MediaItem = {
         id: tempId,
         name: file.name,
@@ -239,11 +240,11 @@ export default function MediaLibraryPage() {
         scope,
         entityType,
         entityId: entityId || null,
-      }
+      };
 
-      setMediaList((prev) => [optimistic, ...prev])
+      setMediaList((prev) => [optimistic, ...prev]);
 
-      const previewUrl = await toDataUrlIfPreviewable(file)
+      const previewUrl = await toDataUrlIfPreviewable(file);
       const payload = {
         tenantId: selectedTenantId,
         scope,
@@ -256,59 +257,55 @@ export default function MediaLibraryPage() {
         url: previewUrl,
         folder: scope === "global" ? "global" : `${scope}/${entityId}`,
         status: "ready",
-      }
+      };
 
-      const response = await createMedia(payload)
+      const response = await createMedia(payload);
       if (!response?.ok || !response.data) {
         setMediaList((prev) =>
-          prev.map((item) =>
-            item.id === tempId ? { ...item, status: "failed" } : item,
-          ),
-        )
-        continue
+          prev.map((item) => (item.id === tempId ? { ...item, status: "failed" } : item)),
+        );
+        continue;
       }
 
-      const normalized = normalizeMedia(response.data)
-      setMediaList((prev) =>
-        prev.map((item) => (item.id === tempId ? normalized : item)),
-      )
+      const normalized = normalizeMedia(response.data);
+      setMediaList((prev) => prev.map((item) => (item.id === tempId ? normalized : item)));
     }
 
-    toast.success("Upload complete")
-    setIsUploading(false)
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
+    toast.success("Upload complete");
+    setIsUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return
+    if (!deleteTarget) return;
 
-    const previous = mediaList
-    setMediaList((prev) => prev.filter((item) => item.id !== deleteTarget.id))
+    const previous = mediaList;
+    setMediaList((prev) => prev.filter((item) => item.id !== deleteTarget.id));
 
-    const response = await deleteMediaById(deleteTarget.id)
+    const response = await deleteMediaById(deleteTarget.id);
     if (!response?.ok) {
-      setMediaList(previous)
-      toast.error(response?.message || "Delete failed")
+      setMediaList(previous);
+      toast.error(response?.message || "Delete failed");
     }
 
-    setDeleteTarget(null)
-  }
+    setDeleteTarget(null);
+  };
 
   const handleDownload = (item: MediaItem) => {
     if (!item.url) {
-      toast.error("This media has no file URL")
-      return
+      toast.error("This media has no file URL");
+      return;
     }
 
-    const anchor = document.createElement("a")
-    anchor.href = item.url
-    anchor.download = item.name
-    anchor.target = "_blank"
-    anchor.rel = "noreferrer"
-    document.body.appendChild(anchor)
-    anchor.click()
-    anchor.remove()
-  }
+    const anchor = document.createElement("a");
+    anchor.href = item.url;
+    anchor.download = item.name;
+    anchor.target = "_blank";
+    anchor.rel = "noreferrer";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  };
 
   return (
     <div className="space-y-6">
@@ -322,8 +319,8 @@ export default function MediaLibraryPage() {
           <Select
             value={selectedTenantId || ""}
             onValueChange={(tenantId) => {
-              const tenant = tenants.find((t) => t._id === tenantId)
-              if (tenant) setActiveTenant(tenant)
+              const tenant = tenants.find((t) => t._id === tenantId);
+              if (tenant) setActiveTenant(tenant);
             }}
           >
             <SelectTrigger className="w-56">
@@ -341,10 +338,10 @@ export default function MediaLibraryPage() {
           <Select
             value={scope}
             onValueChange={(value: Scope) => {
-              setScope(value)
-              setSelectedPageId("")
-              setSelectedBlogId("")
-              setMediaList([])
+              setScope(value);
+              setSelectedPageId("");
+              setSelectedBlogId("");
+              setMediaList([]);
             }}
           >
             <SelectTrigger className="w-40">
@@ -387,8 +384,15 @@ export default function MediaLibraryPage() {
             </Select>
           )}
 
-          <Button onClick={() => fileInputRef.current?.click()} disabled={!selectedTenantId || isUploading}>
-            {isUploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!selectedTenantId || isUploading}
+          >
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
             Upload
           </Button>
           <input
@@ -414,7 +418,8 @@ export default function MediaLibraryPage() {
         <CardContent className="flex items-center gap-2 text-sm text-muted-foreground">
           <Globe className="h-4 w-4" />
           <span>
-            Global media is shared. Page/blog media is tied to its content ID and filtered by system scope.
+            Global media is shared. Page/blog media is tied to its content ID and filtered by system
+            scope.
           </span>
         </CardContent>
       </Card>
@@ -477,20 +482,39 @@ export default function MediaLibraryPage() {
                   )}
                 </div>
 
-                <p className="text-xs font-medium truncate" title={item.name}>{item.name}</p>
+                <p className="text-xs font-medium truncate" title={item.name}>
+                  {item.name}
+                </p>
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                   <span>{Math.max(1, Math.round(item.size / 1024))} KB</span>
-                  <Badge variant={item.status === "failed" ? "destructive" : "outline"}>{item.status}</Badge>
+                  <Badge variant={item.status === "failed" ? "destructive" : "outline"}>
+                    {item.status}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => setPreviewMedia(item)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2"
+                    onClick={() => setPreviewMedia(item)}
+                  >
                     <Eye className="h-3 w-3" />
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => handleDownload(item)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2"
+                    onClick={() => handleDownload(item)}
+                  >
                     <Download className="h-3 w-3" />
                   </Button>
-                  <Button size="sm" variant="outline" className="h-7 px-2 text-red-600" onClick={() => setDeleteTarget(item)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-red-600"
+                    onClick={() => setDeleteTarget(item)}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -505,13 +529,18 @@ export default function MediaLibraryPage() {
           <DialogHeader>
             <DialogTitle>{previewMedia?.name}</DialogTitle>
             <DialogDescription>
-              {previewMedia?.mimeType} | {previewMedia ? Math.max(1, Math.round(previewMedia.size / 1024)) : 0} KB
+              {previewMedia?.mimeType} |{" "}
+              {previewMedia ? Math.max(1, Math.round(previewMedia.size / 1024)) : 0} KB
             </DialogDescription>
           </DialogHeader>
 
           <div className="rounded-md border bg-muted min-h-64 flex items-center justify-center overflow-hidden">
             {previewMedia?.type === "image" && previewMedia?.url ? (
-              <img src={previewMedia.url} alt={previewMedia.name} className="max-w-full max-h-[60vh] object-contain" />
+              <img
+                src={previewMedia.url}
+                alt={previewMedia.name}
+                className="max-w-full max-h-[60vh] object-contain"
+              />
             ) : previewMedia?.type === "video" && previewMedia?.url ? (
               <video src={previewMedia.url} controls className="max-w-full max-h-[60vh]" />
             ) : (
@@ -535,16 +564,18 @@ export default function MediaLibraryPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete media</DialogTitle>
-            <DialogDescription>
-              Delete "{deleteTarget?.name}" from this library?
-            </DialogDescription>
+            <DialogDescription>Delete "{deleteTarget?.name}" from this library?</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

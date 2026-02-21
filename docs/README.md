@@ -14,6 +14,8 @@ Use this index to navigate project docs quickly.
 - `docs/API_ROUTE_MAP.md`: backend mount prefixes and modules
 - `docs/ENVIRONMENT_REFERENCE.md`: env keys used by client and server
 - `docs/DEPLOYMENT_GUIDE.md`: CI/CD workflow, secrets, VPS prep, rollback
+- `docs/PRELAUNCH_CHECKLIST.md`: current production readiness status
+- `docs/QA_RUNBOOK.md`: e2e/mobile/perf/monitoring launch verification steps
 
 ## Community
 

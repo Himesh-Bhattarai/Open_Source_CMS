@@ -14,24 +14,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Calendar,
-  Clock,
-  Globe,
-  AlertTriangle,
-  CheckCircle2,
-} from "lucide-react";
+import { Calendar, Clock, Globe, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageContent } from "@/lib/types/page";
 
 export interface PublishModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPublish: (
-    type: "now" | "schedule",
-    date?: string,
-    time?: string,
-  ) => Promise<void>;
+  onPublish: (type: "now" | "schedule", date?: string, time?: string) => Promise<void>;
   content: PageContent;
   validation?: string[]; // ← ADD THIS
   isGlobal?: boolean;
@@ -62,9 +52,7 @@ export function PublishModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {content.status === "published"
-              ? "Update Published Content"
-              : "Publish Content"}
+            {content.status === "published" ? "Update Published Content" : "Publish Content"}
           </DialogTitle>
           <DialogDescription>
             {isGlobal
@@ -96,20 +84,13 @@ export function PublishModal({
             <Label>Content</Label>
             <div className="flex items-center gap-2">
               <p className="font-medium">{content.title}</p>
-              <Badge
-                variant={
-                  content.status === "published" ? "default" : "secondary"
-                }
-              >
+              <Badge variant={content.status === "published" ? "default" : "secondary"}>
                 {content.status}
               </Badge>
             </div>
           </div>
 
-          <Tabs
-            value={publishType}
-            onValueChange={(v) => setPublishType(v as typeof publishType)}
-          >
+          <Tabs value={publishType} onValueChange={(v) => setPublishType(v as typeof publishType)}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="now" className="gap-2">
                 <Globe className="h-4 w-4" />
@@ -128,8 +109,7 @@ export function PublishModal({
                   <div>
                     <p className="font-medium text-sm">Publish Immediately</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Content will be live within seconds and visible to all
-                      visitors.
+                      Content will be live within seconds and visible to all visitors.
                     </p>
                   </div>
                 </div>
@@ -161,10 +141,7 @@ export function PublishModal({
               {scheduleDate && scheduleTime && (
                 <div className="p-3 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
                   <p className="text-sm text-blue-900 dark:text-blue-100">
-                    Will publish on{" "}
-                    {new Date(
-                      `${scheduleDate}T${scheduleTime}`,
-                    ).toLocaleString()}
+                    Will publish on {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString()}
                   </p>
                 </div>
               )}
@@ -189,9 +166,7 @@ export function PublishModal({
           </Button>
           <Button
             onClick={handlePublish}
-            disabled={
-              publishType === "schedule" && (!scheduleDate || !scheduleTime)
-            }
+            disabled={publishType === "schedule" && (!scheduleDate || !scheduleTime)}
           >
             {publishType === "now" ? (
               <>

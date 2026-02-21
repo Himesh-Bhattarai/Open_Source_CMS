@@ -1,45 +1,52 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, EyeOff, Loader2, Chrome, Facebook } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { loginApi } from "@/Api/Auth/Login"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Eye, EyeOff, Loader2, Chrome, Facebook } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { loginApi } from "@/Api/Auth/Login";
 
 const getAuthBaseUrl = () => {
-  const configuredBase = String(process.env.NEXT_PUBLIC_SERVER_BASE_URL || "").trim()
-  if (configuredBase) return configuredBase.replace(/\/+$/, "")
+  const configuredBase = String(process.env.NEXT_PUBLIC_SERVER_BASE_URL || "").trim();
+  if (configuredBase) return configuredBase.replace(/\/+$/, "");
 
-  const loginUrl = String(process.env.NEXT_PUBLIC_LOGIN_URL || "").trim()
+  const loginUrl = String(process.env.NEXT_PUBLIC_LOGIN_URL || "").trim();
   if (loginUrl) {
     try {
-      return new URL(loginUrl).origin
+      return new URL(loginUrl).origin;
     } catch {
-      // Keep localhost fallback for local dev when env is malformed.
+      return null;
     }
   }
 
-  return "http://localhost:5000"
-}
+  return null;
+};
 
 export default function LoginPage() {
-
-  const router = useRouter()
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  })
-  const [error, setError] = useState("")
-  const authBaseUrl = getAuthBaseUrl()
+  });
+  const [error, setError] = useState("");
+  const authBaseUrl = getAuthBaseUrl();
+  const oauthDisabled = !authBaseUrl;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +54,6 @@ export default function LoginPage() {
     setError("");
 
     try {
-
       const response = await loginApi(formData);
 
       if (!response.ok) {
@@ -57,7 +63,7 @@ export default function LoginPage() {
       }
       setTimeout(() => {
         router.push("/cms");
-      }, 2000)
+      }, 2000);
     } catch (err) {
       setError("An error occurred");
     } finally {
@@ -65,19 +71,25 @@ export default function LoginPage() {
     }
   };
 
-
   const handleGoogleLogin = () => {
-    setIsLoading(true)
-    window.location.href = `${authBaseUrl}/api/v1/oAuth/auth/google`
-  }
+    if (!authBaseUrl) {
+      setError("OAuth login is not configured");
+      return;
+    }
+    setIsLoading(true);
+    window.location.href = `${authBaseUrl}/api/v1/oAuth/auth/google`;
+  };
 
   const handleFacebookLogin = () => {
-    setIsLoading(true)
-    window.location.href = `${authBaseUrl}/api/v1/oAuth/auth/facebook`
-  }
+    if (!authBaseUrl) {
+      setError("OAuth login is not configured");
+      return;
+    }
+    setIsLoading(true);
+    window.location.href = `${authBaseUrl}/api/v1/oAuth/auth/facebook`;
+  };
 
   return (
-
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-primary/5 via-background to-primary/5 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-2 text-center">
@@ -101,7 +113,7 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full bg-transparent"
                 onClick={handleGoogleLogin}
-                disabled={isLoading}
+                disabled={isLoading || oauthDisabled}
               >
                 <Chrome className="mr-2 h-4 w-4" />
                 Continue with Google
@@ -111,7 +123,7 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full bg-transparent"
                 onClick={handleFacebookLogin}
-                disabled={isLoading}
+                disabled={isLoading || oauthDisabled}
               >
                 <Facebook className="mr-2 h-4 w-4" />
                 Continue with Facebook
@@ -123,7 +135,9 @@ export default function LoginPage() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with email
+                </span>
               </div>
             </div>
 
@@ -196,5 +210,5 @@ export default function LoginPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

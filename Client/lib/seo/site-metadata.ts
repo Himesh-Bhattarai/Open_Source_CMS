@@ -30,7 +30,10 @@ export const siteMetadataConfig = {
 
 const resolveCanonical = (path?: string) => {
   if (!path || path === "/") return siteMetadataConfig.siteUrl;
-  return new URL(path.startsWith("/") ? path : `/${path}`, `${siteMetadataConfig.siteUrl}/`).toString();
+  return new URL(
+    path.startsWith("/") ? path : `/${path}`,
+    `${siteMetadataConfig.siteUrl}/`,
+  ).toString();
 };
 
 const resolveAbsoluteImage = (image?: string) => {
@@ -40,7 +43,10 @@ const resolveAbsoluteImage = (image?: string) => {
   try {
     return new URL(image).toString();
   } catch {
-    return new URL(image.startsWith("/") ? image : `/${image}`, `${siteMetadataConfig.siteUrl}/`).toString();
+    return new URL(
+      image.startsWith("/") ? image : `/${image}`,
+      `${siteMetadataConfig.siteUrl}/`,
+    ).toString();
   }
 };
 

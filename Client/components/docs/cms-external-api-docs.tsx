@@ -8,10 +8,7 @@ interface CmsExternalApiDocsProps {
   backLabel: string;
 }
 
-export function CmsExternalApiDocs({
-  backHref,
-  backLabel,
-}: CmsExternalApiDocsProps) {
+export function CmsExternalApiDocs({ backHref, backLabel }: CmsExternalApiDocsProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-10 space-y-6">
@@ -36,7 +33,7 @@ export function CmsExternalApiDocs({
           </CardHeader>
           <CardContent>
             <pre className="rounded-md border bg-muted/40 p-4 text-xs whitespace-pre-wrap overflow-x-auto">
-{`=== CMS External API Docs ===
+              {`=== CMS External API Docs ===
 
 Welcome to your CMS API guide. Follow these steps to fetch data for your website.
 

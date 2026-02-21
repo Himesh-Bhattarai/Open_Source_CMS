@@ -31,11 +31,9 @@ export const generateTokens = (payload) => {
     expiresIn: ACCESS_TOKEN_EXPIRES_IN || "15m",
   });
 
-  const refreshToken = jwt.sign(
-    { userId: payload.userId, type: "refresh" },
-    REFRESH_TOKEN,
-    { expiresIn: REFRESH_TOKEN_EXPIRES_IN || "7d" },
-  );
+  const refreshToken = jwt.sign({ userId: payload.userId, type: "refresh" }, REFRESH_TOKEN, {
+    expiresIn: REFRESH_TOKEN_EXPIRES_IN || "7d",
+  });
 
   return { accessToken, refreshToken };
 };

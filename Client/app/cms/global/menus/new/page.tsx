@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { createMenu } from "@/Api/Menu/Combined"
-import { useTenant } from "@/context/TenantContext"; 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { createMenu } from "@/Api/Menu/Combined";
+import { useTenant } from "@/context/TenantContext";
 import { toast } from "sonner";
 
 export default function NewMenuPage() {
-  const router = useRouter()
+  const router = useRouter();
   const { tenants, selectedTenantId, setActiveTenant } = useTenant();
-  const [menuName, setMenuName] = useState("")
-  const [menuDescription, setMenuDescription] = useState("")
-  const [menuLocation, setMenuLocation] = useState("")
+  const [menuName, setMenuName] = useState("");
+  const [menuDescription, setMenuDescription] = useState("");
+  const [menuLocation, setMenuLocation] = useState("");
   const [tenantId, setTenantId] = useState(selectedTenantId || "");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -28,9 +28,7 @@ export default function NewMenuPage() {
     }
   }, [tenantId, tenants, selectedTenantId]);
 
-
-
-  const handleCreate = async() => {
+  const handleCreate = async () => {
     if (!tenantId) {
       toast.error("Please select a tenant");
       return;
@@ -44,18 +42,16 @@ export default function NewMenuPage() {
       tenantId: tenantId,
       title: menuName.trim(),
       description: menuDescription,
-      menuLocation: menuLocation
-    }
-    try{
+      menuLocation: menuLocation,
+    };
+    try {
       setIsSaving(true);
       const response = await createMenu(data);
       const targetMenuId =
-        response?.menuId && response.menuId !== "undefined"
-          ? String(response.menuId)
-          : "";
+        response?.menuId && response.menuId !== "undefined" ? String(response.menuId) : "";
 
-      if(response?.ok && targetMenuId){
-        router.push(`/cms/global/menus/${targetMenuId}`)
+      if (response?.ok && targetMenuId) {
+        router.push(`/cms/global/menus/${targetMenuId}`);
       } else if (response?.ok && !response?.menuId) {
         toast.error("Menu created but ID missing in response.");
       } else {
@@ -64,11 +60,10 @@ export default function NewMenuPage() {
     } catch (err) {
       console.error(err);
       toast.error("Failed to create menu.");
-    }finally{
+    } finally {
       setIsSaving(false);
     }
-   
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -97,7 +92,7 @@ export default function NewMenuPage() {
               value={tenantId}
               onChange={(e) => {
                 setTenantId(e.target.value);
-                const tenant = tenants.find(t => t._id === e.target.value);
+                const tenant = tenants.find((t) => t._id === e.target.value);
                 if (tenant) setActiveTenant(tenant);
               }}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -165,11 +160,11 @@ export default function NewMenuPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            After creating the menu, you'll be able to add menu items, create sub-menus, and configure the menu
-            structure.
+            After creating the menu, you'll be able to add menu items, create sub-menus, and
+            configure the menu structure.
           </p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

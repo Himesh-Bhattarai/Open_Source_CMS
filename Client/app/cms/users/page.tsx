@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Plus, Search, MoreVertical, Mail, Shield } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Plus, Search, MoreVertical, Mail, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -21,13 +21,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function UsersPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
   const users = [
     {
@@ -66,27 +72,29 @@ export default function UsersPage() {
       lastActive: "Never",
       avatar: "JD",
     },
-  ]
+  ];
 
   const roleColors = {
     admin: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     editor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     author: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
     viewer: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-  }
+  };
 
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-balance text-3xl font-bold tracking-tight">Team Members</h1>
-          <p className="text-pretty text-muted-foreground mt-1">Manage users and their permissions</p>
+          <p className="text-pretty text-muted-foreground mt-1">
+            Manage users and their permissions
+          </p>
         </div>
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
           <DialogTrigger asChild>
@@ -98,7 +106,9 @@ export default function UsersPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Team Member</DialogTitle>
-              <DialogDescription>Send an invitation to join your team with specific permissions.</DialogDescription>
+              <DialogDescription>
+                Send an invitation to join your team with specific permissions.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -159,7 +169,10 @@ export default function UsersPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-semibold">{user.name}</h3>
-                          <Badge variant="secondary" className={roleColors[user.role as keyof typeof roleColors]}>
+                          <Badge
+                            variant="secondary"
+                            className={roleColors[user.role as keyof typeof roleColors]}
+                          >
                             {user.role}
                           </Badge>
                           {user.status === "invited" && (
@@ -192,7 +205,9 @@ export default function UsersPage() {
                         ) : (
                           <DropdownMenuItem>Suspend User</DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className="text-destructive">Remove User</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                          Remove User
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -269,5 +284,5 @@ export default function UsersPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

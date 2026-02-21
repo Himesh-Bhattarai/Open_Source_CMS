@@ -1,48 +1,48 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, RefreshCw } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { getNotification } from "@/Api/Notification/notification"
-import { toast } from "sonner"
+import { useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Activity, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getNotification } from "@/Api/Notification/notification";
+import { toast } from "sonner";
 
 type LogItem = {
-  _id?: string
-  action?: string
-  message?: string
-  createdAt?: string
-  read?: boolean
-}
+  _id?: string;
+  action?: string;
+  message?: string;
+  createdAt?: string;
+  read?: boolean;
+};
 
 export default function AdminLogsPage() {
-  const [loading, setLoading] = useState(true)
-  const [logs, setLogs] = useState<LogItem[]>([])
+  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<LogItem[]>([]);
 
   const loadLogs = async () => {
     try {
-      setLoading(true)
-      const response = await getNotification()
-      const data = response?.data
+      setLoading(true);
+      const response = await getNotification();
+      const data = response?.data;
       const normalized = Array.isArray(data?.notifications)
         ? data.notifications
         : Array.isArray(data)
           ? data
-          : []
-      setLogs(normalized)
+          : [];
+      setLogs(normalized);
     } catch (error: any) {
-      toast.error(error?.message || "Failed to load logs")
-      setLogs([])
+      toast.error(error?.message || "Failed to load logs");
+      setLogs([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadLogs()
-  }, [])
+    loadLogs();
+  }, []);
 
-  const unreadCount = useMemo(() => logs.filter((log) => !log.read).length, [logs])
+  const unreadCount = useMemo(() => logs.filter((log) => !log.read).length, [logs]);
 
   return (
     <div className="space-y-6">
@@ -92,5 +92,5 @@ export default function AdminLogsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

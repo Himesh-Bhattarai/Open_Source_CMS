@@ -1,7 +1,6 @@
 const FETCH_FOOTER_URL = process.env.NEXT_PUBLIC_FETCH_FOOTER_URL;
 const FETCH_FOOTER_BY_ID = process.env.NEXT_PUBLIC_FETCH_FOOTER_BY_ID;
 
-
 //get footer
 export const fetchFooter = async () => {
   const response = await fetch(FETCH_FOOTER_URL, {

@@ -1,6 +1,5 @@
 const DELETE_SEO_BY_ID = process.env.NEXT_PUBLIC_DELETE_SEO_BY_ID;
 
-
 //Delete Seo by id
 export const deleteSeoById = async (seoId) => {
   try {

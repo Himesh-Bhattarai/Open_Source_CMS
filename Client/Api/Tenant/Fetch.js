@@ -1,5 +1,5 @@
 const LOAD_TENANTS_URL = process.env.NEXT_PUBLIC_LOAD_TENANTS_URL;
-const LOAD_TENANTS_BY_ID =process.env.NEXT_PUBLIC_LOAD_TENANTS_BY_ID;
+const LOAD_TENANTS_BY_ID = process.env.NEXT_PUBLIC_LOAD_TENANTS_BY_ID;
 const GET_ALL_TENANTS_URL = process.env.NEXT_PUBLIC_GET_ALL_TENANTS_URL;
 
 //Get user tenants (ALL TENANTS)
@@ -59,6 +59,4 @@ export const getAllTenants = async () => {
   }
 };
 
-export const deleteTenant = async (tenantId) => {
- 
-};
+export const deleteTenant = async (tenantId) => {};

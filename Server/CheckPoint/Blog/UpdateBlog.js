@@ -1,6 +1,6 @@
 import { BlogPost } from "../../Models/Blog/Blogpost.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const updateBlog = async (req, res, next) => {
   try {
@@ -26,10 +26,14 @@ export const updateBlog = async (req, res, next) => {
     delete blogData.authorId;
 
     // Find and update the blog
-    const updatedBlog = await BlogPost.findOneAndUpdate({ _id: blogId, authorId: userId }, blogData, {
-      new: true, // return the updated document
-      runValidators: true, // enforce schema rules
-    });
+    const updatedBlog = await BlogPost.findOneAndUpdate(
+      { _id: blogId, authorId: userId },
+      blogData,
+      {
+        new: true, // return the updated document
+        runValidators: true, // enforce schema rules
+      },
+    );
 
     if (!updatedBlog) {
       const err = new Error("Blog post not found");
@@ -42,10 +46,10 @@ export const updateBlog = async (req, res, next) => {
     notif.updateBlog({
       userId: userId,
       slug: updatedBlog.slug || "",
-      title : updatedBlog.title || "",
+      title: updatedBlog.title || "",
       blogId: blogId,
-      websiteId: updatedBlog.tenantId
-    })
+      websiteId: updatedBlog.tenantId,
+    });
 
     res.status(200).json({
       ok: true,

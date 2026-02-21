@@ -1,7 +1,7 @@
 import express from "express";
 import { Page } from "../../Models/Page/Page.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 const router = express.Router();
 
 //--------------------------[USER] DELETE PAGE BY ID--------------------------//
@@ -23,7 +23,13 @@ router.delete("/user-page/:id", verificationMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Page not found or not owned" });
     }
 
-    notif.deletePage({ userId, slug: deleted.slug, title: deleted.title, pageId: deleted._id, websiteId: deleted.websiteId });
+    notif.deletePage({
+      userId,
+      slug: deleted.slug,
+      title: deleted.title,
+      pageId: deleted._id,
+      websiteId: deleted.websiteId,
+    });
 
     return res.status(200).json({ message: "Page deleted successfully" });
   } catch (err) {

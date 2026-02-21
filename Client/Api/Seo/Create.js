@@ -2,7 +2,6 @@ const UPDATE_SEO_URL = process.env.NEXT_PUBLIC_UPDATE_SEO_URL;
 
 const CREATE_SEO_URL = process.env.NEXT_PUBLIC_CREATE_SEO_URL;
 
-
 //Create Seo
 export const createSeo = async (data) => {
   const response = await fetch(CREATE_SEO_URL, {
@@ -22,7 +21,6 @@ export const createSeo = async (data) => {
       data: request,
     };
 };
-
 
 //Update Seo
 export const updateSeo = async (seoId, data) => {

@@ -1,6 +1,5 @@
 const REGISTER_URL = process.env.NEXT_PUBLIC_REGISTER_URL;
 
-
 // Register Api call
 export const registerApi = async (data) => {
   if (!data) {

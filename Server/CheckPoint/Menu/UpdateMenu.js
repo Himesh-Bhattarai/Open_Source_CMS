@@ -1,6 +1,6 @@
 import { Menu } from "../../Models/Menu/Menu.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const updateMenuCheckpoint = async (req, res, next) => {
   try {
@@ -10,6 +10,7 @@ export const updateMenuCheckpoint = async (req, res, next) => {
       title,
       description,
       menuLocation,
+      navbarType,
       status,
       publishedAt,
       publishedBy,
@@ -17,8 +18,7 @@ export const updateMenuCheckpoint = async (req, res, next) => {
     } = req.body;
 
     if (!userId) throw new Error("Unauthorized access");
-    if (!menuId)
-      return res.status(400).json({ message: "Menu ID is required" });
+    if (!menuId) return res.status(400).json({ message: "Menu ID is required" });
 
     log.info(`User ${userId} attempting to update menu ${menuId}`);
 
@@ -29,9 +29,16 @@ export const updateMenuCheckpoint = async (req, res, next) => {
     menu.title = title ?? menu.title;
     menu.description = description ?? menu.description;
     menu.menuLocation = menuLocation ?? menu.menuLocation;
-    menu.status = status ?? menu.status;
-    menu.publishedAt = publishedAt ?? menu.publishedAt;
-    menu.publishedBy = publishedBy ?? menu.publishedBy;
+    menu.navbarType = navbarType ?? menu.navbarType;
+    const nextStatus = status ?? menu.status;
+    menu.status = nextStatus;
+    if (nextStatus === "published") {
+      menu.publishedAt = publishedAt ?? menu.publishedAt ?? new Date();
+      menu.publishedBy = publishedBy ?? menu.publishedBy ?? String(userId);
+    } else {
+      menu.publishedAt = null;
+      menu.publishedBy = null;
+    }
 
     // Normalize recursive tree input so nested children are stored consistently.
     const normalizeItems = (itemsArray) => {
@@ -55,7 +62,13 @@ export const updateMenuCheckpoint = async (req, res, next) => {
 
     log.info(`Menu ${menuId} updated successfully by user ${userId}`);
 
-    notif.createMenu({ userId, menuName: menu.title, menuId, websiteId: menu.tenantId, location: menu.menuLocation });
+    notif.createMenu({
+      userId,
+      menuName: menu.title,
+      menuId,
+      websiteId: menu.tenantId,
+      location: menu.menuLocation,
+    });
 
     res.status(200).json({
       success: true,

@@ -1,7 +1,7 @@
 import { Session } from "../../../Models/Client/Session.js";
 import { logger as log } from "../../../Utils/Logger/logger.js";
 import { getCookieOptions, verifyAccessToken } from "../../../Utils/Jwt/Jwt.js";
-import {cmsEventService as notif} from "../../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../../Services/notificationServices.js";
 import crypto from "crypto";
 
 export const logoutCheckpoint = async (req, res, next) => {
@@ -22,7 +22,6 @@ export const logoutCheckpoint = async (req, res, next) => {
     const clearCookieOptions = getCookieOptions(0);
     res.clearCookie("accessToken", clearCookieOptions);
     res.clearCookie("refreshToken", clearCookieOptions);
-
 
     // Clear session tokens
     await Session.findOneAndUpdate(

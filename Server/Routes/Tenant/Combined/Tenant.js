@@ -3,7 +3,7 @@ import TenantRoute from "../Tenant.js";
 
 import { verificationMiddleware } from "../../../Utils/Jwt/Jwt.js";
 import { Tenant } from "../../../Models/Tenant/Tenant.js";
-import {cmsEventService as notif} from "../../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../../Services/notificationServices.js";
 import mongoose from "mongoose";
 
 const router = express.Router();
@@ -32,7 +32,6 @@ const normalizeDomain = (value = "") => {
 };
 
 router.use("/", TenantRoute);
-
 
 router.get("/get-tenant", verificationMiddleware, async (req, res) => {
   const userId = req.user?.userId;
@@ -168,7 +167,12 @@ router.put("/tenant/:tenantId", verificationMiddleware, async (req, res) => {
       return res.status(404).json({ error: "Tenant not found or access denied" });
     }
 
-    notif.updateWebsite({ userId, domain: tenant.domain, name: tenant.name, websiteId: tenant._id });
+    notif.updateWebsite({
+      userId,
+      domain: tenant.domain,
+      name: tenant.name,
+      websiteId: tenant._id,
+    });
 
     res.json({
       ok: true,

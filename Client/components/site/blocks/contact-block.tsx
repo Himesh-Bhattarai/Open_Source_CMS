@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface ContactBlockProps {
   data: {
-    title?: string
-    subtitle?: string
-    fields?: Array<{ name: string; label: string; type: string; required?: boolean }>
-  }
+    title?: string;
+    subtitle?: string;
+    fields?: Array<{ name: string; label: string; type: string; required?: boolean }>;
+  };
 }
 
 export function ContactBlock({ data }: ContactBlockProps) {
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState({});
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-  }
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+  };
 
   return (
     <section className="py-16 lg:py-24">
@@ -33,7 +33,9 @@ export function ContactBlock({ data }: ContactBlockProps) {
             <h2 className="text-balance text-4xl lg:text-5xl font-bold tracking-tight mb-4">
               {data.title || "Get in Touch"}
             </h2>
-            {data.subtitle && <p className="text-pretty text-xl text-muted-foreground">{data.subtitle}</p>}
+            {data.subtitle && (
+              <p className="text-pretty text-xl text-muted-foreground">{data.subtitle}</p>
+            )}
           </div>
 
           <Card>
@@ -63,5 +65,5 @@ export function ContactBlock({ data }: ContactBlockProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -9,7 +9,6 @@ const safeParseJson = async (response) => {
   }
 };
 
-
 //load form data
 export const loadFormsData = async () => {
   try {
@@ -39,7 +38,6 @@ export const loadFormsData = async () => {
     };
   }
 };
-
 
 //load particular form
 export const loadFormsDataById = async (formId) => {

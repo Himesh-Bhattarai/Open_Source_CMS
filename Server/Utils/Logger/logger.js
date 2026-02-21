@@ -10,9 +10,6 @@ export const logger = {
   info: (message) => console.log(format("INFO", message)),
   warn: (message) => console.log(format("WARN", message)),
   error: (message, err = null) => {
-    console.log(
-      format("ERROR", message),
-      err && !isprod ? err.stack || err : "",
-    );
+    console.log(format("ERROR", message), err && !isprod ? err.stack || err : "");
   },
 };

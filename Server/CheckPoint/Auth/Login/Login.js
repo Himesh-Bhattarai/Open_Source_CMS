@@ -3,7 +3,7 @@ import { User } from "../../../Models/Client/User.js";
 import { Session } from "../../../Models/Client/Session.js";
 import bcrypt from "bcrypt";
 import { generateTokens, getCookieOptions } from "../../../Utils/Jwt/Jwt.js";
-import {cmsEventService as notif} from "../../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../../Services/notificationServices.js";
 export const loginCheckpoint = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -75,16 +75,14 @@ export const loginCheckpoint = async (req, res, next) => {
     //send response with user details except password
 
     notif.loginUser({
-      userId : user._id,
-      email
-    })
+      userId: user._id,
+      email,
+    });
 
     return res.status(200).json({
       message: `Successfully logged in as ${email}`,
       redirect,
     });
-
-
   } catch (err) {
     err.statusCode = err.statusCode || 500;
     next(err);

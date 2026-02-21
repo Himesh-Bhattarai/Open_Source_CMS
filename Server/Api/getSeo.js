@@ -15,20 +15,15 @@ export const getSeo = async (req, res, next) => {
     }
 
     const requestedScope = normalizeScope(req.query?.scope);
-    const pageId =
-      typeof req.query?.pageId === "string" ? req.query.pageId.trim() : "";
+    const pageId = typeof req.query?.pageId === "string" ? req.query.pageId.trim() : "";
 
     let getSeo = null;
 
     if (requestedScope === "global") {
-      getSeo = await Seo.findOne({ tenantId, scope: "global" })
-        .sort({ updatedAt: -1 })
-        .lean();
+      getSeo = await Seo.findOne({ tenantId, scope: "global" }).sort({ updatedAt: -1 }).lean();
     } else if (requestedScope === "page") {
       if (!pageId) {
-        return res
-          .status(400)
-          .json({ error: "pageId is required when scope=page" });
+        return res.status(400).json({ error: "pageId is required when scope=page" });
       }
 
       getSeo = await Seo.findOne({ tenantId, scope: "page", pageId })
@@ -36,9 +31,7 @@ export const getSeo = async (req, res, next) => {
         .lean();
     } else {
       // Public consumers should receive global defaults first.
-      getSeo = await Seo.findOne({ tenantId, scope: "global" })
-        .sort({ updatedAt: -1 })
-        .lean();
+      getSeo = await Seo.findOne({ tenantId, scope: "global" }).sort({ updatedAt: -1 }).lean();
 
       // Fallback only when global SEO has not been created yet.
       if (!getSeo) {

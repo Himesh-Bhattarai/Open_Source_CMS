@@ -1,21 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Monitor,
-  Tablet,
-  Smartphone,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react";
+import { Monitor, Tablet, Smartphone, RefreshCw, ExternalLink } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageContent } from "@/lib/types/page";
 
@@ -36,9 +25,7 @@ export function PreviewModal({
   environment,
   seoPreview,
 }: PreviewModalProps) {
-  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">(
-    "desktop",
-  );
+  const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = () => {
@@ -59,19 +46,12 @@ export function PreviewModal({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <DialogTitle>Preview</DialogTitle>
-              <Badge
-                variant={
-                  content.status === "published" ? "default" : "secondary"
-                }
-              >
+              <Badge variant={content.status === "published" ? "default" : "secondary"}>
                 {content.status}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
-              <Tabs
-                value={device}
-                onValueChange={(v) => setDevice(v as typeof device)}
-              >
+              <Tabs value={device} onValueChange={(v) => setDevice(v as typeof device)}>
                 <TabsList>
                   <TabsTrigger value="desktop" className="gap-2">
                     <Monitor className="h-4 w-4" />
@@ -87,15 +67,8 @@ export function PreviewModal({
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-              >
-                <RefreshCw
-                  className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-                />
+              <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
               </Button>
               <Button variant="outline" size="icon" asChild>
                 <a href={previewUrl} target="_blank" rel="noopener noreferrer">
@@ -116,20 +89,14 @@ export function PreviewModal({
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">{content.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    /{content.slug}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">/{content.slug}</p>
                 </div>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  Live preview would render your actual page content here with
-                  all styles and interactions.
+                  Live preview would render your actual page content here with all styles and
+                  interactions.
                 </p>
                 <Button variant="outline" asChild>
-                  <a
-                    href={previewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer">
                     Open in New Tab
                   </a>
                 </Button>

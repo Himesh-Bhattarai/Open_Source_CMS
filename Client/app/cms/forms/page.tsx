@@ -1,49 +1,49 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { FormInput, Plus, Eye, Edit, Trash2, FileText, CheckSquare } from "lucide-react"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { loadFormsData } from "@/Api/Form/Load"
-import { deleteFormById } from "@/Api/Form/Delete"
-import { toast } from "sonner"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { FormInput, Plus, Eye, Edit, Trash2, FileText, CheckSquare } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { loadFormsData } from "@/Api/Form/Load";
+import { deleteFormById } from "@/Api/Form/Delete";
+import { toast } from "sonner";
 
 interface Form {
-  _id: string
-  name: string
-  status: string
-  type?: string
-  description?: string
-  createdAt?: string
-  updatedAt?: string
-  fields?: string[]
-  fieldsRequired?: string[]
-  fieldsOptional?: string[]
-  fieldsHidden?: string[]
-  fieldsDisabled?: string[]
-  fieldsReadonly?: string[]
-  fieldsCount: number
-  submissions: number
-  lastSubmission: string
+  _id: string;
+  name: string;
+  status: string;
+  type?: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  fields?: string[];
+  fieldsRequired?: string[];
+  fieldsOptional?: string[];
+  fieldsHidden?: string[];
+  fieldsDisabled?: string[];
+  fieldsReadonly?: string[];
+  fieldsCount: number;
+  submissions: number;
+  lastSubmission: string;
 }
 
 export default function FormsPage() {
-  const [loading, setLoading] = useState(false)
-  const [forms, setForms] = useState<Form[]>([])
+  const [loading, setLoading] = useState(false);
+  const [forms, setForms] = useState<Form[]>([]);
 
   useEffect(() => {
     const loadForms = async () => {
       try {
-        setLoading(true)
-        const response = await loadFormsData()
+        setLoading(true);
+        const response = await loadFormsData();
 
         if (!response?.ok) {
-          throw new Error(response?.message || "Failed to load forms")
+          throw new Error(response?.message || "Failed to load forms");
         }
 
-        const rawForms = Array.isArray(response.data) ? response.data : []
+        const rawForms = Array.isArray(response.data) ? response.data : [];
         const normalizedForms: Form[] = rawForms.map((form: any) => ({
           _id: form._id,
           name: form.name,
@@ -51,41 +51,41 @@ export default function FormsPage() {
           fieldsCount: form.fields?.length ?? 0,
           submissions: 0,
           lastSubmission: "Never",
-        }))
+        }));
 
-        setForms(normalizedForms)
+        setForms(normalizedForms);
       } catch (err) {
-        console.error(err)
-        toast.error("Failed to load forms")
+        console.error(err);
+        toast.error("Failed to load forms");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadForms()
-  }, [])
+    loadForms();
+  }, []);
 
   const handelDelete = async (formId: string) => {
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const response = await deleteFormById(formId)
+      const response = await deleteFormById(formId);
       if (response.ok) {
-        toast.success("Form deleted successfully")
-        setForms((prevForms) => prevForms.filter((form) => form._id !== formId))
+        toast.success("Form deleted successfully");
+        setForms((prevForms) => prevForms.filter((form) => form._id !== formId));
       } else {
-        toast.error("Failed to delete form")
+        toast.error("Failed to delete form");
       }
     } catch {
-      toast.error("Failed to delete form")
+      toast.error("Failed to delete form");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const publishedCount = forms.filter((form) => form.status === "published").length
-  const totalSubmissions = forms.reduce((acc, form) => acc + (form.submissions || 0), 0)
-  const conversionRate = forms.length > 0 ? Math.round((publishedCount / forms.length) * 100) : 0
+  const publishedCount = forms.filter((form) => form.status === "published").length;
+  const totalSubmissions = forms.reduce((acc, form) => acc + (form.submissions || 0), 0);
+  const conversionRate = forms.length > 0 ? Math.round((publishedCount / forms.length) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -116,7 +116,9 @@ export default function FormsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Submissions</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Submissions
+            </CardTitle>
             <FileText className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -127,7 +129,9 @@ export default function FormsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Conversion Rate
+            </CardTitle>
             <CheckSquare className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
@@ -166,7 +170,9 @@ export default function FormsPage() {
                       <p className="text-sm text-muted-foreground">
                         {form.fieldsCount} fields - {form.submissions} submissions
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">Last submission: {form.lastSubmission}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Last submission: {form.lastSubmission}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -193,5 +199,5 @@ export default function FormsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -9,7 +9,6 @@ const safeParseJson = async (response) => {
   }
 };
 
-
 //create Contact or any kind of form
 export const createForm = async (data) => {
   try {

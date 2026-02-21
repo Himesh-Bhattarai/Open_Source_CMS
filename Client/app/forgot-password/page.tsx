@@ -1,40 +1,38 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { ArrowLeft } from "lucide-react"
-import { toast } from "sonner"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [submitting, setSubmitting] = useState(false)
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!email.trim()) {
-      toast.error("Email is required")
-      return
+      toast.error("Email is required");
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     setTimeout(() => {
-      toast.success("Password reset instructions sent")
-      setSubmitting(false)
-    }, 800)
-  }
+      toast.success("Password reset instructions sent");
+      setSubmitting(false);
+    }, 800);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Forgot Password</CardTitle>
-          <CardDescription>
-            Enter your email and we will send reset instructions.
-          </CardDescription>
+          <CardDescription>Enter your email and we will send reset instructions.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -62,5 +60,5 @@ export default function ForgotPasswordPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -9,6 +9,7 @@ export const getFooter = async (req, res, next) => {
 
     const footer = await Footer.findOne({
       tenantId,
+      status: "published",
     }).lean();
 
     if (!footer) {

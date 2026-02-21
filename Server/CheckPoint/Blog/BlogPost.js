@@ -1,5 +1,5 @@
 import { BlogPost } from "../../Models/Blog/Blogpost.js";
-import { cmsEventService as notif } from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 export const BlogPostCheckpoint = async (req, res, next) => {
   try {
     const { blogData } = req.body;
@@ -39,9 +39,12 @@ export const BlogPostCheckpoint = async (req, res, next) => {
     });
 
     notif.createBlog({
-      userId, slug, title, blogId: blogPost._id, websiteId: tenantId
-
-    })
+      userId,
+      slug,
+      title,
+      blogId: blogPost._id,
+      websiteId: tenantId,
+    });
 
     res.status(201).json({ blogId: blogPost._id });
   } catch (err) {

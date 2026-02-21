@@ -8,11 +8,7 @@ import { useRouter } from "next/navigation";
 import { verifyMe } from "@/Api/Auth/VerifyAuth";
 import { Loader2 } from "lucide-react";
 
-export default function CMSLayoutClient({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function CMSLayoutClient({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
@@ -47,9 +43,7 @@ export default function CMSLayoutClient({
         <CMSHeader onMenuClick={() => setSidebarOpen(true)} />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
-            {children}
-          </div>
+          <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">{children}</div>
         </main>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { Theme } from "../../Models/Theme/Theme.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const themeCheckpoint = async (req, res, next) => {
   try {
@@ -23,9 +23,7 @@ export const themeCheckpoint = async (req, res, next) => {
       throw err;
     }
 
-    log.info(
-      `Theme upsert attempt | user=${userId} | tenant=${tenantId} | theme=${theme.name}`,
-    );
+    log.info(`Theme upsert attempt | user=${userId} | tenant=${tenantId} | theme=${theme.name}`);
 
     const updatedTheme = await Theme.findOneAndUpdate(
       {
@@ -52,10 +50,7 @@ export const themeCheckpoint = async (req, res, next) => {
       },
     );
 
-    log.info(
-      `Theme saved | tenant=${tenantId} | version=${updatedTheme.metadata.version}`,
-    );
-
+    log.info(`Theme saved | tenant=${tenantId} | version=${updatedTheme.metadata.version}`);
 
     res.status(200).json({
       message: "Global theme saved successfully",

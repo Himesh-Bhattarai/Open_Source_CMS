@@ -3,12 +3,7 @@ import { Page } from "../../Models/Page/Page.js";
 import { Version } from "../../Models/Version/Version.js";
 import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
-const LOCK_ONLY_KEYS = new Set([
-  "isLocked",
-  "lockedBy",
-  "lockedByName",
-  "lockedAt",
-]);
+const LOCK_ONLY_KEYS = new Set(["isLocked", "lockedBy", "lockedByName", "lockedAt"]);
 
 const ALLOWED_SETTINGS_KEYS = new Set([
   "pageType",
@@ -44,25 +39,15 @@ export const updatePagePhase2 = async (req, res) => {
 
     const existingLock = page.settings?.locked || {};
     const isPageLocked = Boolean(existingLock?.isLocked);
-    const lockedByUserId = existingLock?.byUserId
-      ? String(existingLock.byUserId)
-      : null;
-    const requestedLockMutation = Object.prototype.hasOwnProperty.call(
-      data,
-      "isLocked",
-    );
-    const isLockedByOtherUser =
-      isPageLocked && lockedByUserId && lockedByUserId !== String(userId);
+    const lockedByUserId = existingLock?.byUserId ? String(existingLock.byUserId) : null;
+    const requestedLockMutation = Object.prototype.hasOwnProperty.call(data, "isLocked");
+    const isLockedByOtherUser = isPageLocked && lockedByUserId && lockedByUserId !== String(userId);
 
     if (isLockedByOtherUser && !requestedLockMutation) {
       return res.status(423).json({ message: "Page is locked by another user" });
     }
 
-    if (
-      requestedLockMutation &&
-      data.isLocked === true &&
-      isLockedByOtherUser
-    ) {
+    if (requestedLockMutation && data.isLocked === true && isLockedByOtherUser) {
       return res.status(423).json({
         message: "Page is already locked by another user",
       });
@@ -75,20 +60,16 @@ export const updatePagePhase2 = async (req, res) => {
     }
 
     if (data.seo && typeof data.seo === "object") {
-      if (data.seo.focusKeyword !== undefined)
-        page.seo.focusKeyword = data.seo.focusKeyword;
+      if (data.seo.focusKeyword !== undefined) page.seo.focusKeyword = data.seo.focusKeyword;
 
-      if (data.seo.metaTitle !== undefined)
-        page.seo.metaTitle = data.seo.metaTitle;
+      if (data.seo.metaTitle !== undefined) page.seo.metaTitle = data.seo.metaTitle;
 
       if (data.seo.metaDescription !== undefined)
         page.seo.metaDescription = data.seo.metaDescription;
 
-      if (data.seo.canonicalUrl !== undefined)
-        page.seo.canonicalUrl = data.seo.canonicalUrl;
+      if (data.seo.canonicalUrl !== undefined) page.seo.canonicalUrl = data.seo.canonicalUrl;
 
-      if (data.seo.openGraph !== undefined)
-        page.seo.openGraph = data.seo.openGraph;
+      if (data.seo.openGraph !== undefined) page.seo.openGraph = data.seo.openGraph;
 
       if (data.seo.twitter !== undefined) page.seo.twitter = data.seo.twitter;
 
@@ -98,19 +79,11 @@ export const updatePagePhase2 = async (req, res) => {
 
       if (data.seo.robots !== undefined && data.seo.robots) {
         page.seo.robots = {
-          index:
-            typeof data.seo.robots.index === "boolean"
-              ? data.seo.robots.index
-              : true,
-          follow:
-            typeof data.seo.robots.follow === "boolean"
-              ? data.seo.robots.follow
-              : true,
+          index: typeof data.seo.robots.index === "boolean" ? data.seo.robots.index : true,
+          follow: typeof data.seo.robots.follow === "boolean" ? data.seo.robots.follow : true,
           maxImagePreview: data.seo.robots.maxImagePreview || "large",
           maxSnippet:
-            typeof data.seo.robots.maxSnippet === "number"
-              ? data.seo.robots.maxSnippet
-              : -1,
+            typeof data.seo.robots.maxSnippet === "number" ? data.seo.robots.maxSnippet : -1,
           maxVideoPreview:
             typeof data.seo.robots.maxVideoPreview === "number"
               ? data.seo.robots.maxVideoPreview
@@ -196,9 +169,7 @@ export const updatePagePhase2 = async (req, res) => {
     });
   } catch (error) {
     console.error("Phase-2 update failed:", error);
-    return res
-      .status(500)
-      .json({ message: "Phase-2 update failed", error: error.message });
+    return res.status(500).json({ message: "Phase-2 update failed", error: error.message });
   }
 };
 

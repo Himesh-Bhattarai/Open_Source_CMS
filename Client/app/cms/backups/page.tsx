@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Switch } from "@/components/ui/switch"
+import { useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -23,10 +23,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Download, Plus, RotateCcw } from "lucide-react"
-import { toast } from "sonner"
-import { useTenant } from "@/context/TenantContext"
+} from "@/components/ui/dialog";
+import { Download, Plus, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
+import { useTenant } from "@/context/TenantContext";
 import {
   createBackup,
   downloadBackup,
@@ -34,121 +34,119 @@ import {
   getBackupSettings,
   restoreBackup,
   saveBackupSettings,
-} from "@/Api/Backup/Backup"
+} from "@/Api/Backup/Backup";
 
-type Frequency = "daily" | "weekly" | "monthly" | "quarterly" | "annually"
+type Frequency = "daily" | "weekly" | "monthly" | "quarterly" | "annually";
 
 type BackupItem = {
-  _id: string
-  name: string
-  type: "manual" | "scheduled" | "automatic"
-  status: "scheduled" | "completed" | "failed" | "restored"
-  frequency?: Frequency | null
-  runAt: string
-  sizeBytes: number
-  tenantId?: string | null
+  _id: string;
+  name: string;
+  type: "manual" | "scheduled" | "automatic";
+  status: "scheduled" | "completed" | "failed" | "restored";
+  frequency?: Frequency | null;
+  runAt: string;
+  sizeBytes: number;
+  tenantId?: string | null;
   includes: {
-    pages: boolean
-    media: boolean
-    settings: boolean
-    database: boolean
-  }
+    pages: boolean;
+    media: boolean;
+    settings: boolean;
+    database: boolean;
+  };
   metadata?: {
-    description?: string
-    strategy?: "full" | "incremental"
-    validate?: boolean
-  }
+    description?: string;
+    strategy?: "full" | "incremental";
+    validate?: boolean;
+  };
   delivery?: {
-    annualEmailSentAt?: string | null
-    annualEmailTo?: string
-  }
-}
+    annualEmailSentAt?: string | null;
+    annualEmailTo?: string;
+  };
+};
 
 type BackupPolicy = {
-  _id: string
-  frequency: Frequency
-  enabled: boolean
-  retentionDays: number
-  nextRunAt: string
-  annualEmailDelivery: boolean
+  _id: string;
+  frequency: Frequency;
+  enabled: boolean;
+  retentionDays: number;
+  nextRunAt: string;
+  annualEmailDelivery: boolean;
   includes: {
-    pages: boolean
-    media: boolean
-    settings: boolean
-    database: boolean
-  }
-}
+    pages: boolean;
+    media: boolean;
+    settings: boolean;
+    database: boolean;
+  };
+};
 
-const frequencyOptions: Frequency[] = [
-  "daily",
-  "weekly",
-  "monthly",
-  "quarterly",
-  "annually",
-]
+const frequencyOptions: Frequency[] = ["daily", "weekly", "monthly", "quarterly", "annually"];
 
-const toReadable = (f: string) => `${f.charAt(0).toUpperCase()}${f.slice(1)}`
+const toReadable = (f: string) => `${f.charAt(0).toUpperCase()}${f.slice(1)}`;
 
 const bytesToSize = (bytes: number) => {
-  if (!bytes) return "0 MB"
-  const mb = bytes / (1024 * 1024)
-  if (mb < 1024) return `${mb.toFixed(1)} MB`
-  return `${(mb / 1024).toFixed(2)} GB`
-}
+  if (!bytes) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  if (mb < 1024) return `${mb.toFixed(1)} MB`;
+  return `${(mb / 1024).toFixed(2)} GB`;
+};
 
 export default function BackupsPage() {
-  const { tenants, selectedTenantId } = useTenant()
+  const { tenants, selectedTenantId } = useTenant();
 
-  const [backups, setBackups] = useState<BackupItem[]>([])
-  const [policies, setPolicies] = useState<BackupPolicy[]>([])
+  const [backups, setBackups] = useState<BackupItem[]>([]);
+  const [policies, setPolicies] = useState<BackupPolicy[]>([]);
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [scopeMode, setScopeMode] = useState<"all" | "tenant">("all")
-  const [tenantScope, setTenantScope] = useState<string>(selectedTenantId || "ALL")
+  const [scopeMode, setScopeMode] = useState<"all" | "tenant">("all");
+  const [tenantScope, setTenantScope] = useState<string>(selectedTenantId || "ALL");
 
-  const [includeFilter, setIncludeFilter] = useState<"all-data" | "pages" | "media" | "settings" | "database">("all-data")
-  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "scheduled" | "restored" | "failed">("all")
+  const [includeFilter, setIncludeFilter] = useState<
+    "all-data" | "pages" | "media" | "settings" | "database"
+  >("all-data");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "completed" | "scheduled" | "restored" | "failed"
+  >("all");
 
-  const [frequency, setFrequency] = useState<Frequency>("daily")
-  const [retention, setRetention] = useState("30")
-  const [annualEmailDelivery, setAnnualEmailDelivery] = useState(true)
+  const [frequency, setFrequency] = useState<Frequency>("daily");
+  const [retention, setRetention] = useState("30");
+  const [annualEmailDelivery, setAnnualEmailDelivery] = useState(true);
 
   const [includes, setIncludes] = useState({
     pages: true,
     media: true,
     settings: true,
     database: true,
-  })
+  });
 
-  const [backupName, setBackupName] = useState("")
-  const [backupDescription, setBackupDescription] = useState("")
-  const [backupStrategy, setBackupStrategy] = useState<"full" | "incremental">("full")
-  const [validateBackup, setValidateBackup] = useState(false)
-  const [scheduleBackup, setScheduleBackup] = useState(false)
-  const [scheduledDate, setScheduledDate] = useState("")
-  const [scheduledTime, setScheduledTime] = useState("09:00")
+  const [backupName, setBackupName] = useState("");
+  const [backupDescription, setBackupDescription] = useState("");
+  const [backupStrategy, setBackupStrategy] = useState<"full" | "incremental">("full");
+  const [validateBackup, setValidateBackup] = useState(false);
+  const [scheduleBackup, setScheduleBackup] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("09:00");
 
-  const [selectedRestoreId, setSelectedRestoreId] = useState<string | null>(null)
-  const [restoreStrategy, setRestoreStrategy] = useState<"replace" | "merge">("replace")
+  const [selectedRestoreId, setSelectedRestoreId] = useState<string | null>(null);
+  const [restoreStrategy, setRestoreStrategy] = useState<"replace" | "merge">("replace");
 
   useEffect(() => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    setScheduledDate(tomorrow.toISOString().slice(0, 10))
-  }, [])
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setScheduledDate(tomorrow.toISOString().slice(0, 10));
+  }, []);
 
   useEffect(() => {
     if (selectedTenantId && tenantScope === "ALL") {
-      setTenantScope(selectedTenantId)
+      setTenantScope(selectedTenantId);
     }
-  }, [selectedTenantId])
+  }, [selectedTenantId]);
 
-  const activeTenantId = scopeMode === "tenant" && tenantScope !== "ALL" ? tenantScope : ""
+  const activeTenantId = scopeMode === "tenant" && tenantScope !== "ALL" ? tenantScope : "";
 
   const loadData = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     const [records, settings] = await Promise.all([
       getBackups({
@@ -158,39 +156,39 @@ export default function BackupsPage() {
         status: statusFilter === "all" ? "" : statusFilter,
       }),
       getBackupSettings(activeTenantId),
-    ])
+    ]);
 
-    if (!records.ok) toast.error(records.message || "Failed to load backups")
-    if (!settings.ok) toast.error(settings.message || "Failed to load backup settings")
+    if (!records.ok) toast.error(records.message || "Failed to load backups");
+    if (!settings.ok) toast.error(settings.message || "Failed to load backup settings");
 
-    setBackups(Array.isArray(records.data) ? records.data : [])
-    setPolicies(Array.isArray(settings.data) ? settings.data : [])
-    setIsLoading(false)
-  }
+    setBackups(Array.isArray(records.data) ? records.data : []);
+    setPolicies(Array.isArray(settings.data) ? settings.data : []);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    loadData()
-  }, [scopeMode, activeTenantId, includeFilter, statusFilter])
+    loadData();
+  }, [scopeMode, activeTenantId, includeFilter, statusFilter]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      loadData()
-    }, 60000)
-    return () => clearInterval(timer)
-  }, [scopeMode, activeTenantId, includeFilter, statusFilter])
+      loadData();
+    }, 60000);
+    return () => clearInterval(timer);
+  }, [scopeMode, activeTenantId, includeFilter, statusFilter]);
 
   useEffect(() => {
-    const selectedPolicy = policies.find((p) => p.frequency === frequency)
-    if (!selectedPolicy) return
-    setRetention(String(selectedPolicy.retentionDays || 30))
-    setAnnualEmailDelivery(!!selectedPolicy.annualEmailDelivery)
-    setIncludes(selectedPolicy.includes || includes)
-  }, [frequency, policies])
+    const selectedPolicy = policies.find((p) => p.frequency === frequency);
+    if (!selectedPolicy) return;
+    setRetention(String(selectedPolicy.retentionDays || 30));
+    setAnnualEmailDelivery(!!selectedPolicy.annualEmailDelivery);
+    setIncludes(selectedPolicy.includes || includes);
+  }, [frequency, policies]);
 
   const handleSaveSettings = async () => {
     if (scopeMode === "tenant" && !activeTenantId) {
-      toast.error("Select a tenant for tenant-scoped backup settings")
-      return
+      toast.error("Select a tenant for tenant-scoped backup settings");
+      return;
     }
 
     const res = await saveBackupSettings({
@@ -201,16 +199,16 @@ export default function BackupsPage() {
       enabled: true,
       annualEmailDelivery,
       timezone: "UTC",
-    })
+    });
 
     if (!res.ok) {
-      toast.error(res.message || "Failed to save settings")
-      return
+      toast.error(res.message || "Failed to save settings");
+      return;
     }
 
-    toast.success(`${toReadable(frequency)} backup schedule saved`)
-    await loadData()
-  }
+    toast.success(`${toReadable(frequency)} backup schedule saved`);
+    await loadData();
+  };
 
   const handleCreateBackup = async () => {
     const payload: any = {
@@ -222,90 +220,92 @@ export default function BackupsPage() {
       description: backupDescription,
       validate: validateBackup,
       frequency: scheduleBackup ? frequency : null,
-    }
+    };
 
     if (scheduleBackup && scheduledDate && scheduledTime) {
-      payload.scheduledAt = new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString()
+      payload.scheduledAt = new Date(`${scheduledDate}T${scheduledTime}:00`).toISOString();
     }
 
-    const res = await createBackup(payload)
+    const res = await createBackup(payload);
     if (!res.ok) {
-      toast.error(res.message || "Failed to create backup")
-      return
+      toast.error(res.message || "Failed to create backup");
+      return;
     }
 
-    toast.success(scheduleBackup ? "Backup scheduled" : "Backup created")
-    setIsCreateOpen(false)
-    setBackupName("")
-    setBackupDescription("")
-    setScheduleBackup(false)
-    await loadData()
-  }
+    toast.success(scheduleBackup ? "Backup scheduled" : "Backup created");
+    setIsCreateOpen(false);
+    setBackupName("");
+    setBackupDescription("");
+    setScheduleBackup(false);
+    await loadData();
+  };
 
   const handleDownload = async (id: string) => {
-    const res = await downloadBackup(id)
+    const res = await downloadBackup(id);
     if (!res.ok) {
-      toast.error(res.message || "Failed to download backup")
-      return
+      toast.error(res.message || "Failed to download backup");
+      return;
     }
 
-    const blob = res.data?.blob
-    const filename = res.data?.filename || `backup_${id}.json`
+    const blob = res.data?.blob;
+    const filename = res.data?.filename || `backup_${id}.json`;
     if (!blob) {
-      toast.error("Invalid backup download response")
-      return
+      toast.error("Invalid backup download response");
+      return;
     }
 
-    const url = window.URL.createObjectURL(blob)
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = filename
-    document.body.appendChild(anchor)
-    anchor.click()
-    anchor.remove()
-    window.URL.revokeObjectURL(url)
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.URL.revokeObjectURL(url);
 
-    toast.success("Backup downloaded")
-  }
+    toast.success("Backup downloaded");
+  };
 
   const handleRestore = async () => {
-    if (!selectedRestoreId) return
+    if (!selectedRestoreId) return;
 
     const res = await restoreBackup({
       backupId: selectedRestoreId,
       strategy: restoreStrategy,
       dryRun: false,
       notify: true,
-    })
+    });
 
     if (!res.ok) {
-      toast.error(res.message || "Failed to restore backup")
-      return
+      toast.error(res.message || "Failed to restore backup");
+      return;
     }
 
-    toast.success("Backup restored")
-    setSelectedRestoreId(null)
-    await loadData()
-  }
+    toast.success("Backup restored");
+    setSelectedRestoreId(null);
+    await loadData();
+  };
 
   const stats = useMemo(() => {
-    const totalSize = backups.reduce((acc, b) => acc + (b.sizeBytes || 0), 0)
-    const latest = backups.length > 0 ? backups[0] : null
-    return { total: backups.length, totalSize, latest }
-  }, [backups])
+    const totalSize = backups.reduce((acc, b) => acc + (b.sizeBytes || 0), 0);
+    const latest = backups.length > 0 ? backups[0] : null;
+    return { total: backups.length, totalSize, latest };
+  }, [backups]);
 
   const policyMap = useMemo(() => {
-    const map = new Map<Frequency, BackupPolicy>()
-    policies.forEach((p) => map.set(p.frequency, p))
-    return map
-  }, [policies])
+    const map = new Map<Frequency, BackupPolicy>();
+    policies.forEach((p) => map.set(p.frequency, p));
+    return map;
+  }, [policies]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Backups</h1>
-          <p className="text-muted-foreground mt-2">Daily, weekly, monthly, quarterly and annual backups</p>
+          <p className="text-muted-foreground mt-2">
+            Daily, weekly, monthly, quarterly and annual backups
+          </p>
         </div>
 
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -329,8 +329,13 @@ export default function BackupsPage() {
                 </div>
                 <div>
                   <Label>Strategy</Label>
-                  <Select value={backupStrategy} onValueChange={(v: "full" | "incremental") => setBackupStrategy(v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={backupStrategy}
+                    onValueChange={(v: "full" | "incremental") => setBackupStrategy(v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="full">Full</SelectItem>
                       <SelectItem value="incremental">Incremental</SelectItem>
@@ -341,16 +346,43 @@ export default function BackupsPage() {
 
               <div>
                 <Label>Description (optional)</Label>
-                <Input value={backupDescription} onChange={(e) => setBackupDescription(e.target.value)} />
+                <Input
+                  value={backupDescription}
+                  onChange={(e) => setBackupDescription(e.target.value)}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Include Data</Label>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <label className="flex items-center gap-2"><Checkbox checked={includes.pages} onCheckedChange={(v) => setIncludes((p) => ({ ...p, pages: !!v }))} />Pages</label>
-                  <label className="flex items-center gap-2"><Checkbox checked={includes.media} onCheckedChange={(v) => setIncludes((p) => ({ ...p, media: !!v }))} />Media</label>
-                  <label className="flex items-center gap-2"><Checkbox checked={includes.settings} onCheckedChange={(v) => setIncludes((p) => ({ ...p, settings: !!v }))} />Settings</label>
-                  <label className="flex items-center gap-2"><Checkbox checked={includes.database} onCheckedChange={(v) => setIncludes((p) => ({ ...p, database: !!v }))} />Database</label>
+                  <label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={includes.pages}
+                      onCheckedChange={(v) => setIncludes((p) => ({ ...p, pages: !!v }))}
+                    />
+                    Pages
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={includes.media}
+                      onCheckedChange={(v) => setIncludes((p) => ({ ...p, media: !!v }))}
+                    />
+                    Media
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={includes.settings}
+                      onCheckedChange={(v) => setIncludes((p) => ({ ...p, settings: !!v }))}
+                    />
+                    Settings
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={includes.database}
+                      onCheckedChange={(v) => setIncludes((p) => ({ ...p, database: !!v }))}
+                    />
+                    Database
+                  </label>
                 </div>
               </div>
 
@@ -369,27 +401,45 @@ export default function BackupsPage() {
                   <div>
                     <Label>Frequency</Label>
                     <Select value={frequency} onValueChange={(v: Frequency) => setFrequency(v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {frequencyOptions.map((f) => <SelectItem key={f} value={f}>{toReadable(f)}</SelectItem>)}
+                        {frequencyOptions.map((f) => (
+                          <SelectItem key={f} value={f}>
+                            {toReadable(f)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label>Date</Label>
-                    <Input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+                    <Input
+                      type="date"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label>Time</Label>
-                    <Input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
+                    <Input
+                      type="time"
+                      value={scheduledTime}
+                      onChange={(e) => setScheduledTime(e.target.value)}
+                    />
                   </div>
                 </div>
               )}
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button onClick={handleCreateBackup}>{scheduleBackup ? "Schedule Backup" : "Create Backup"}</Button>
+              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateBackup}>
+                {scheduleBackup ? "Schedule Backup" : "Create Backup"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -397,17 +447,29 @@ export default function BackupsPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Total Backups</CardTitle></CardHeader>
-          <CardContent><div className="text-3xl font-bold">{stats.total}</div></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Storage</CardTitle></CardHeader>
-          <CardContent><div className="text-3xl font-bold">{bytesToSize(stats.totalSize)}</div></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Last Backup</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Total Backups</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{stats.latest ? new Date(stats.latest.runAt).toLocaleString() : "None"}</div>
+            <div className="text-3xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Storage</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{bytesToSize(stats.totalSize)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Last Backup</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-semibold">
+              {stats.latest ? new Date(stats.latest.runAt).toLocaleString() : "None"}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -420,14 +482,18 @@ export default function BackupsPage() {
         <CardContent>
           <div className="grid gap-3 md:grid-cols-5">
             {frequencyOptions.map((f) => {
-              const p = policyMap.get(f)
+              const p = policyMap.get(f);
               return (
                 <div key={f} className="rounded border p-3">
                   <p className="text-sm font-medium">{toReadable(f)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{p?.enabled ? "Enabled" : "Not configured"}</p>
-                  <p className="text-xs mt-2">Next: {p?.nextRunAt ? new Date(p.nextRunAt).toLocaleString() : "-"}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {p?.enabled ? "Enabled" : "Not configured"}
+                  </p>
+                  <p className="text-xs mt-2">
+                    Next: {p?.nextRunAt ? new Date(p.nextRunAt).toLocaleString() : "-"}
+                  </p>
                 </div>
-              )
+              );
             })}
           </div>
         </CardContent>
@@ -443,7 +509,9 @@ export default function BackupsPage() {
             <div>
               <Label>Scope</Label>
               <Select value={scopeMode} onValueChange={(v: "all" | "tenant") => setScopeMode(v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Data</SelectItem>
                   <SelectItem value="tenant">Single Tenant</SelectItem>
@@ -454,10 +522,16 @@ export default function BackupsPage() {
             <div>
               <Label>Tenant</Label>
               <Select value={tenantScope} onValueChange={setTenantScope}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">All Tenants</SelectItem>
-                  {tenants.map((tenant) => <SelectItem key={tenant._id} value={tenant._id}>{tenant.name}</SelectItem>)}
+                  {tenants.map((tenant) => (
+                    <SelectItem key={tenant._id} value={tenant._id}>
+                      {tenant.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -465,9 +539,15 @@ export default function BackupsPage() {
             <div>
               <Label>Frequency</Label>
               <Select value={frequency} onValueChange={(v: Frequency) => setFrequency(v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {frequencyOptions.map((f) => <SelectItem key={f} value={f}>{toReadable(f)}</SelectItem>)}
+                  {frequencyOptions.map((f) => (
+                    <SelectItem key={f} value={f}>
+                      {toReadable(f)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -475,7 +555,9 @@ export default function BackupsPage() {
             <div>
               <Label>Retention</Label>
               <Select value={retention} onValueChange={setRetention}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="7">7 days</SelectItem>
                   <SelectItem value="30">30 days</SelectItem>
@@ -488,16 +570,42 @@ export default function BackupsPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-            <label className="flex items-center gap-2"><Checkbox checked={includes.pages} onCheckedChange={(v) => setIncludes((p) => ({ ...p, pages: !!v }))} />Pages</label>
-            <label className="flex items-center gap-2"><Checkbox checked={includes.media} onCheckedChange={(v) => setIncludes((p) => ({ ...p, media: !!v }))} />Media</label>
-            <label className="flex items-center gap-2"><Checkbox checked={includes.settings} onCheckedChange={(v) => setIncludes((p) => ({ ...p, settings: !!v }))} />Settings</label>
-            <label className="flex items-center gap-2"><Checkbox checked={includes.database} onCheckedChange={(v) => setIncludes((p) => ({ ...p, database: !!v }))} />Database</label>
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={includes.pages}
+                onCheckedChange={(v) => setIncludes((p) => ({ ...p, pages: !!v }))}
+              />
+              Pages
+            </label>
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={includes.media}
+                onCheckedChange={(v) => setIncludes((p) => ({ ...p, media: !!v }))}
+              />
+              Media
+            </label>
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={includes.settings}
+                onCheckedChange={(v) => setIncludes((p) => ({ ...p, settings: !!v }))}
+              />
+              Settings
+            </label>
+            <label className="flex items-center gap-2">
+              <Checkbox
+                checked={includes.database}
+                onCheckedChange={(v) => setIncludes((p) => ({ ...p, database: !!v }))}
+              />
+              Database
+            </label>
           </div>
 
           <div className="flex items-center justify-between border rounded p-3">
             <div>
               <p className="text-sm font-medium">Annual delivery email</p>
-              <p className="text-xs text-muted-foreground">Send annual backup delivery event to user email after one year cycle</p>
+              <p className="text-xs text-muted-foreground">
+                Send annual backup delivery event to user email after one year cycle
+              </p>
             </div>
             <Switch checked={annualEmailDelivery} onCheckedChange={setAnnualEmailDelivery} />
           </div>
@@ -514,7 +622,9 @@ export default function BackupsPage() {
         <CardContent className="space-y-4">
           <div className="grid gap-3 md:grid-cols-3">
             <Select value={includeFilter} onValueChange={(v: any) => setIncludeFilter(v)}>
-              <SelectTrigger><SelectValue placeholder="Filter by data" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by data" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-data">All Data</SelectItem>
                 <SelectItem value="pages">Pages</SelectItem>
@@ -525,7 +635,9 @@ export default function BackupsPage() {
             </Select>
 
             <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-              <SelectTrigger><SelectValue placeholder="Filter by status" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
@@ -535,7 +647,9 @@ export default function BackupsPage() {
               </SelectContent>
             </Select>
 
-            <Button variant="outline" onClick={loadData}>Refresh</Button>
+            <Button variant="outline" onClick={loadData}>
+              Refresh
+            </Button>
           </div>
 
           {isLoading ? (
@@ -545,12 +659,25 @@ export default function BackupsPage() {
           ) : (
             <div className="space-y-3">
               {backups.map((backup) => (
-                <div key={backup._id} className="border rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div
+                  key={backup._id}
+                  className="border rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+                >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium">{backup.name}</p>
                       <Badge variant="outline">{backup.type}</Badge>
-                      <Badge variant={backup.status === "completed" ? "default" : backup.status === "scheduled" ? "secondary" : "outline"}>{backup.status}</Badge>
+                      <Badge
+                        variant={
+                          backup.status === "completed"
+                            ? "default"
+                            : backup.status === "scheduled"
+                              ? "secondary"
+                              : "outline"
+                        }
+                      >
+                        {backup.status}
+                      </Badge>
                       {backup.frequency && <Badge variant="secondary">{backup.frequency}</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -558,14 +685,16 @@ export default function BackupsPage() {
                     </p>
                     {backup.delivery?.annualEmailSentAt && (
                       <p className="text-xs text-green-700">
-                        Annual email sent to {backup.delivery.annualEmailTo} on {new Date(backup.delivery.annualEmailSentAt).toLocaleDateString()}
+                        Annual email sent to {backup.delivery.annualEmailTo} on{" "}
+                        {new Date(backup.delivery.annualEmailSentAt).toLocaleDateString()}
                       </p>
                     )}
                   </div>
 
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline" onClick={() => handleDownload(backup._id)}>
-                      <Download className="h-4 w-4 mr-1" />Download
+                      <Download className="h-4 w-4 mr-1" />
+                      Download
                     </Button>
                     <Button
                       size="sm"
@@ -573,7 +702,8 @@ export default function BackupsPage() {
                       onClick={() => setSelectedRestoreId(backup._id)}
                       disabled={backup.status === "scheduled"}
                     >
-                      <RotateCcw className="h-4 w-4 mr-1" />Restore
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                      Restore
                     </Button>
                   </div>
                 </div>
@@ -583,7 +713,10 @@ export default function BackupsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedRestoreId} onOpenChange={(open) => !open && setSelectedRestoreId(null)}>
+      <Dialog
+        open={!!selectedRestoreId}
+        onOpenChange={(open) => !open && setSelectedRestoreId(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Restore Backup</DialogTitle>
@@ -591,8 +724,13 @@ export default function BackupsPage() {
           </DialogHeader>
           <div>
             <Label>Strategy</Label>
-            <Select value={restoreStrategy} onValueChange={(v: "replace" | "merge") => setRestoreStrategy(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={restoreStrategy}
+              onValueChange={(v: "replace" | "merge") => setRestoreStrategy(v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="replace">Replace</SelectItem>
                 <SelectItem value="merge">Merge</SelectItem>
@@ -600,11 +738,15 @@ export default function BackupsPage() {
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedRestoreId(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleRestore}>Restore</Button>
+            <Button variant="outline" onClick={() => setSelectedRestoreId(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRestore}>
+              Restore
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
