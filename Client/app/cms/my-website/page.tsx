@@ -28,11 +28,34 @@ import {
 } from "@/Api/Tenant/Services";
 import { toast } from "sonner";
 
+interface Tenant {
+  _id: string;
+  name: string;
+  domain: string;
+  ownerEmail: string;
+}
+
+type TenantLike = Partial<Tenant> & { _id?: string | number };
+
+const normalizeTenants = (value: unknown): Tenant[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((tenant) => tenant as TenantLike)
+    .filter((tenant): tenant is TenantLike & { _id: string | number } => tenant._id != null)
+    .map((tenant) => ({
+      _id: String(tenant._id),
+      name: String(tenant.name || ""),
+      domain: String(tenant.domain || ""),
+      ownerEmail: String(tenant.ownerEmail || ""),
+    }));
+};
+
 export default function MyWebsitePage() {
   const { user } = useAuth();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tenants, setTenants] = useState<any[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
   const [createdApiKey, setCreatedApiKey] = useState("");
   const [createdTenantName, setCreatedTenantName] = useState("");
@@ -54,7 +77,7 @@ export default function MyWebsitePage() {
     const fetchData = async () => {
       try {
         const data = await getUserTenants();
-        setTenants(data.tenants);
+        setTenants(normalizeTenants(data?.tenants));
       } catch (err) {
         console.error("Failed to fetch tenants", err);
       }
@@ -76,11 +99,14 @@ export default function MyWebsitePage() {
         return;
       }
 
-      const updated = response.data;
+      const updated = normalizeTenants([response.data])[0];
+      if (!updated) {
+        toast.error("Invalid website data returned");
+        setLoading(false);
+        return;
+      }
 
-      setTenants((prev) =>
-        prev.map((t) => (t._id.toString() === tenantId.toString() ? updated : t)),
-      );
+      setTenants((prev) => prev.map((tenant) => (tenant._id === tenantId ? updated : tenant)));
 
       toast.success("Website updated successfully");
       setForm({ name: "", domain: "", ownerEmail: "" });
@@ -109,7 +135,7 @@ export default function MyWebsitePage() {
       setCreatedTenantName(response.tenant?.name || form.name || "New website");
 
       const data = await getUserTenants();
-      setTenants(data.tenants);
+      setTenants(normalizeTenants(data?.tenants));
 
       setIsCreateDialogOpen(false);
       toast.success("Website created successfully");
@@ -276,7 +302,7 @@ export default function MyWebsitePage() {
         )}
 
         {/* TENANTS */}
-        {tenants.map((tenant: any) => (
+        {tenants.map((tenant) => (
           <Card key={tenant._id}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -299,7 +325,11 @@ export default function MyWebsitePage() {
 
               <div className="flex gap-2">
                 <Button asChild>
-                  <a href={`https://${tenant.domain}.contentflow.site`} target="_blank">
+                  <a
+                    href={`https://${tenant.domain}.contentflow.site`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <Globe className="h-4 w-4 mr-2" />
                     Visit Website
                   </a>

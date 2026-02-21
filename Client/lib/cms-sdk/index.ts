@@ -36,7 +36,7 @@ export interface FooterBlock {
   type: "logo" | "menu" | "social" | "newsletter" | "text";
   column: number;
   order: number;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface FooterResponse {
@@ -56,7 +56,7 @@ export interface PageBlock {
   id: string;
   type: string;
   order: number;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface PageResponse {

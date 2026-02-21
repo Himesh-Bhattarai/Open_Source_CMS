@@ -1,12 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Bell, Mail, CheckCircle, Trash2 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import {
   deleteNotificationById,
@@ -14,6 +7,13 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "@/Api/Notification/notification";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bell, Mail, CheckCircle, Trash2 } from "lucide-react";
 
 interface Notification {
   id: string;
@@ -22,6 +22,15 @@ interface Notification {
   message: string;
   time: string;
   read: boolean;
+}
+
+interface RawNotification {
+  _id?: string;
+  type?: string;
+  title?: string;
+  message?: string;
+  createdAt?: string;
+  read?: boolean;
 }
 
 export default function NotificationsPage() {
@@ -39,37 +48,42 @@ export default function NotificationsPage() {
     soundAlerts: false,
   });
 
-  //loadNotification
+  // Load notifications.
   useEffect(() => {
     const loadNotif = async () => {
       setLoading(true);
       const notif = await getNotification();
-      const notificationsArray = notif.data?.notifications || [];
+      const notificationsArray = Array.isArray(notif.data?.notifications)
+        ? (notif.data.notifications as RawNotification[])
+        : [];
+
       if (!notif.ok) {
         console.error(notif?.message ?? "Failed to load notifications");
         setLoading(false);
         return;
       }
 
-      // map _id → id and createdAt → time
-      const formatted = notificationsArray.map((n: any) => ({
-        id: n._id,
-        type: n.type.toLowerCase(),
-        title: n.title,
-        message: n.message,
-        time: n.createdAt,
-        read: n.read,
-      }));
+      const formatted = notificationsArray.map(
+        (item): Notification => ({
+          id: String(item._id || ""),
+          type: String(item.type || "info").toLowerCase(),
+          title: String(item.title || "Notification"),
+          message: String(item.message || ""),
+          time: String(item.createdAt || new Date().toISOString()),
+          read: Boolean(item.read),
+        }),
+      );
 
       setNotifications(formatted);
       setLoading(false);
     };
+
     loadNotif();
   }, []);
 
   const markAsRead = async (id: string) => {
     const prev = notifications;
-    setNotifications(prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setNotifications(prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
     const res = await markNotificationRead(id);
     if (!res.ok) {
       setNotifications(prev);
@@ -78,7 +92,7 @@ export default function NotificationsPage() {
 
   const markAllAsRead = async () => {
     const prev = notifications;
-    setNotifications(prev.map((n) => ({ ...n, read: true })));
+    setNotifications(prev.map((item) => ({ ...item, read: true })));
     const res = await markAllNotificationsRead();
     if (!res.ok) {
       setNotifications(prev);
@@ -87,22 +101,22 @@ export default function NotificationsPage() {
 
   const deleteNotification = async (id: string) => {
     const prev = notifications;
-    setNotifications(prev.filter((n) => n.id !== id));
+    setNotifications(prev.filter((item) => item.id !== id));
     const res = await deleteNotificationById(id);
     if (!res.ok) {
       setNotifications(prev);
     }
   };
 
-  //filter notification by time show only the last 7 days
-  const filteredNotifications = notifications.filter((n) => {
-    const notificationData = new Date(n.time);
+  // Show only notifications from the last 7 days.
+  const filteredNotifications = notifications.filter((item) => {
+    const notificationDate = new Date(item.time);
     const today = new Date();
     const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return notificationData >= sevenDaysAgo;
+    return notificationDate >= sevenDaysAgo;
   });
 
-  const unreadCount = filteredNotifications.filter((n) => !n.read).length;
+  const unreadCount = filteredNotifications.filter((item) => !item.read).length;
 
   return (
     <div className="space-y-6">
@@ -201,7 +215,7 @@ export default function NotificationsPage() {
               <CardTitle>Unread Notifications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {filteredNotifications.filter((n) => !n.read).length === 0 ? (
+              {filteredNotifications.filter((item) => !item.read).length === 0 ? (
                 <div className="text-center py-12">
                   <CheckCircle className="h-12 w-12 mx-auto text-green-600 mb-4" />
                   <p className="text-lg font-medium">All caught up!</p>
@@ -209,7 +223,7 @@ export default function NotificationsPage() {
                 </div>
               ) : (
                 filteredNotifications
-                  .filter((n) => !n.read)
+                  .filter((item) => !item.read)
                   .map((notification) => (
                     <div
                       key={notification.id}

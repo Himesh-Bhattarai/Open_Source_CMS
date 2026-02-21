@@ -130,6 +130,11 @@ jobs:
           set -euo pipefail
           npm --prefix Client run typecheck
 
+      - name: Guard explicit any regressions
+        run: |
+          set -euo pipefail
+          npm run quality:any
+
       - name: Run tests
         run: |
           set -euo pipefail

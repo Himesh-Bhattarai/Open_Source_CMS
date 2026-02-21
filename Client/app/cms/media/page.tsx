@@ -63,13 +63,49 @@ type MediaItem = {
   entityId: string | null;
 };
 
+type RawMediaItem = Partial<MediaItem> & {
+  _id?: string;
+  id?: string;
+  filename?: string;
+  originalName?: string;
+  name?: string;
+  mimeType?: string;
+  size?: number | string;
+  url?: string;
+  createdAt?: string;
+  scope?: Scope;
+  entityType?: "page" | "blog" | null;
+};
+
+const normalizePageItem = (raw: unknown): PageItem | null => {
+  if (!raw || typeof raw !== "object") return null;
+  const value = raw as Partial<PageItem> & { _id?: string | number };
+  if (value._id == null) return null;
+  return {
+    _id: String(value._id),
+    title: String(value.title || "Untitled page"),
+    tenantId: value.tenantId ? String(value.tenantId) : undefined,
+  };
+};
+
+const normalizeBlogItem = (raw: unknown): BlogItem | null => {
+  if (!raw || typeof raw !== "object") return null;
+  const value = raw as Partial<BlogItem> & { _id?: string | number };
+  if (value._id == null) return null;
+  return {
+    _id: String(value._id),
+    title: String(value.title || "Untitled blog"),
+    tenantId: value.tenantId ? String(value.tenantId) : undefined,
+  };
+};
+
 const getTypeFromMime = (mimeType = ""): MediaType => {
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   return "document";
 };
 
-const normalizeMedia = (raw: any): MediaItem => ({
+const normalizeMedia = (raw: RawMediaItem): MediaItem => ({
   id: String(raw?._id || raw?.id || ""),
   name: raw?.filename || raw?.originalName || raw?.name || "Untitled",
   type: getTypeFromMime(raw?.mimeType || ""),
@@ -139,7 +175,7 @@ export default function MediaLibraryPage() {
           loadAllBlogs(),
         ]);
 
-        const allPages =
+        const allPages: unknown[] =
           pagesResponse.status === "fulfilled"
             ? Array.isArray(pagesResponse.value)
               ? pagesResponse.value
@@ -150,7 +186,7 @@ export default function MediaLibraryPage() {
                   : []
             : [];
 
-        const allBlogs =
+        const allBlogs: unknown[] =
           blogsResponse.status === "fulfilled"
             ? Array.isArray(blogsResponse.value)
               ? blogsResponse.value
@@ -161,8 +197,19 @@ export default function MediaLibraryPage() {
                   : []
             : [];
 
-        setPages(allPages.filter((p: any) => !p?.tenantId || p.tenantId === selectedTenantId));
-        setBlogs(allBlogs.filter((b: any) => !b?.tenantId || b.tenantId === selectedTenantId));
+        const normalizedPages = allPages
+          .map(normalizePageItem)
+          .filter((item): item is PageItem => item !== null);
+        const normalizedBlogs = allBlogs
+          .map(normalizeBlogItem)
+          .filter((item): item is BlogItem => item !== null);
+
+        setPages(
+          normalizedPages.filter((page) => !page.tenantId || page.tenantId === selectedTenantId),
+        );
+        setBlogs(
+          normalizedBlogs.filter((blog) => !blog.tenantId || blog.tenantId === selectedTenantId),
+        );
       } catch (error) {
         console.error(error);
       } finally {
@@ -474,7 +521,13 @@ export default function MediaLibraryPage() {
               <CardContent className="p-3 space-y-2">
                 <div className="aspect-square rounded-md border bg-muted flex items-center justify-center overflow-hidden">
                   {item.type === "image" && item.url ? (
-                    <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+                    <img
+                      src={item.url}
+                      alt={item.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   ) : item.type === "video" ? (
                     <Video className="h-8 w-8 text-muted-foreground" />
                   ) : (
@@ -539,6 +592,8 @@ export default function MediaLibraryPage() {
               <img
                 src={previewMedia.url}
                 alt={previewMedia.name}
+                loading="lazy"
+                decoding="async"
                 className="max-w-full max-h-[60vh] object-contain"
               />
             ) : previewMedia?.type === "video" && previewMedia?.url ? (

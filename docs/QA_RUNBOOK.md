@@ -75,7 +75,45 @@ If `METRICS_TOKEN` is set in `Server/.env`, requests to `/metrics` must include:
 
 - `x-metrics-token: <METRICS_TOKEN>`
 
-## 5. Launch evidence checklist
+## 5. Dashboard minimums (required)
+
+Before production cutover, confirm these dashboards exist and are shared with engineering owners:
+
+- `Availability`: uptime, `/health` success rate, failed health probes
+- `Latency`: p50/p95/p99 request duration and route-level outliers
+- `Errors`: 4xx/5xx rate by route + top error signatures (Sentry)
+- `Capacity`: CPU, memory, disk, process restarts, PM2 restart count
+- `Traffic`: request volume, tenant distribution, and burst patterns
+
+## 6. Alert policy (required)
+
+Configure alert routing to Slack/Discord and incident owner email for:
+
+- `P1`: app unavailable for 5 minutes (health check fails continuously)
+- `P1`: 5xx error rate >= 5% for 5 minutes
+- `P2`: p95 latency > 1000ms for 10 minutes
+- `P2`: memory usage > 85% for 10 minutes
+- `P2`: repeated PM2 restarts (>= 3 in 10 minutes)
+- `P3`: disk usage > 80%
+
+Alert payload should include:
+
+- environment (`production`)
+- service (`client` or `server`)
+- timestamp (UTC)
+- alert rule and threshold
+- quick links (dashboard + runbook + latest deploy SHA)
+
+## 7. Incident response drill
+
+Run one pre-launch test alert per channel and verify:
+
+- alert delivered to Slack/Discord
+- owner email received
+- acknowledgement workflow documented
+- rollback command path validated from deploy logs
+
+## 8. Launch evidence checklist
 
 Capture and attach to release PR:
 
@@ -83,4 +121,4 @@ Capture and attach to release PR:
 - Mobile screenshot set for public pages and CMS editor
 - TTFB output from `perf:ttfb`
 - `/health` and `/metrics` probe output
-- Alert routing test (Sentry/Slack/Discord)
+- Alert routing drill output (Slack/Discord/email) + dashboard links

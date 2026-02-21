@@ -29,6 +29,13 @@ interface Form {
   lastSubmission: string;
 }
 
+interface RawForm {
+  _id?: string;
+  name?: string;
+  status?: string;
+  fields?: unknown[];
+}
+
 export default function FormsPage() {
   const [loading, setLoading] = useState(false);
   const [forms, setForms] = useState<Form[]>([]);
@@ -43,11 +50,11 @@ export default function FormsPage() {
           throw new Error(response?.message || "Failed to load forms");
         }
 
-        const rawForms = Array.isArray(response.data) ? response.data : [];
-        const normalizedForms: Form[] = rawForms.map((form: any) => ({
-          _id: form._id,
-          name: form.name,
-          status: form.status,
+        const rawForms = Array.isArray(response.data) ? (response.data as RawForm[]) : [];
+        const normalizedForms: Form[] = rawForms.map((form) => ({
+          _id: String(form._id || ""),
+          name: String(form.name || "Untitled Form"),
+          status: String(form.status || "draft"),
           fieldsCount: form.fields?.length ?? 0,
           submissions: 0,
           lastSubmission: "Never",

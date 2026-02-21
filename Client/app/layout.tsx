@@ -1,10 +1,10 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/sonner";
 import { TenantProvider } from "@/context/TenantContext";
+import { LazyAnalytics } from "@/components/perf/lazy-analytics";
 import { siteMetadataConfig } from "@/lib/seo/site-metadata";
 import "./globals.css";
 
@@ -78,7 +78,7 @@ export default function RootLayout({
           <TenantProvider>{children}</TenantProvider>
           <Toaster position="bottom-right" richColors closeButton />
         </Providers>
-        <Analytics />
+        <LazyAnalytics />
       </body>
     </html>
   );

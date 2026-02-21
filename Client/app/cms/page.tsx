@@ -9,24 +9,19 @@ import {
   ImageIcon,
   Users,
   Clock,
-  AlertTriangle,
   Building2,
   HardDrive,
   Zap,
   Activity,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { fetchStats } from "@/Api/Stats/Stats";
-import { verifyMe } from "@/Api/Auth/VerifyAuth";
-import router from "next/router";
-import LoadingScreen from "@/lib/loading";
 
 export default function CMSDashboard() {
-  const router = useRouter();
-  const { user, isAdmin, isOwner } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const [mounted, setMounted] = useState(false);
 
@@ -233,8 +228,20 @@ function AdminDashboard() {
   );
 }
 
-function OwnerDashboard({ user }: { user: any }) {
-  const [stats, setStats] = useState<any[]>([]);
+interface DashboardOwnerUser {
+  name?: string;
+}
+
+interface DashboardStat {
+  label: string;
+  value: number | string;
+  icon: LucideIcon;
+  change: string;
+  color: string;
+}
+
+function OwnerDashboard({ user }: { user: DashboardOwnerUser | null }) {
+  const [stats, setStats] = useState<DashboardStat[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch stats once on mount
@@ -315,7 +322,7 @@ function OwnerDashboard({ user }: { user: any }) {
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-balance text-3xl sm:text-4xl font-bold tracking-tight">
-          Welcome back, {user?.name.split(" ")[0]}!
+          Welcome back, {user?.name?.split(" ")[0] || "there"}!
         </h1>
         <p className="text-pretty text-muted-foreground mt-2">
           Here's what's happening with your website.
@@ -323,7 +330,7 @@ function OwnerDashboard({ user }: { user: any }) {
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat: any) => (
+        {stats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">

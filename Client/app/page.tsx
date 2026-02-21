@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,13 +22,13 @@ import {
   Eye,
   Download,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { verifyMe } from "@/Api/Auth/VerifyAuth";
 import { useRouter } from "next/navigation";
-import LoadingScreen from "@/lib/loading";
 import { fetchMenu as loadNavigation } from "@/Api/ExternalCall/Navigation";
 import { fetchFooter } from "@/Api/ExternalCall/Footer";
 import Footer from "@/components/Footer";
+import type { FooterData } from "@/components/Footer";
 
 interface MenuItem {
   _id: string;
@@ -43,6 +44,7 @@ const SITE_URL = String(process.env.NEXT_PUBLIC_SITE_URL || "https://contentflow
   /\/$/,
   "",
 );
+
 const HOME_STRUCTURED_DATA = JSON.stringify([
   {
     "@context": "https://schema.org",
@@ -59,107 +61,120 @@ const HOME_STRUCTURED_DATA = JSON.stringify([
   },
 ]).replace(/</g, "\\u003c");
 
+const DEFAULT_MENU: MenuItem[] = [
+  {
+    _id: "1",
+    label: "Features",
+    link: "#features",
+    enabled: true,
+    order: 1,
+    type: "internal",
+    children: [],
+  },
+  {
+    _id: "2",
+    label: "Use Cases",
+    link: "#use-cases",
+    enabled: true,
+    order: 2,
+    type: "internal",
+    children: [],
+  },
+  {
+    _id: "3",
+    label: "Contact",
+    link: "/contact",
+    enabled: true,
+    order: 3,
+    type: "internal",
+    children: [],
+  },
+];
+
+const FOOTER_FALLBACK: FooterData = {
+  layout: "custom",
+  blocks: [
+    {
+      id: "fallback-text",
+      type: "text",
+      data: {
+        title: "ContentFlow",
+        content: "Build and manage beautiful websites without code",
+      },
+    },
+    {
+      id: "fallback-product",
+      type: "menu",
+      data: {
+        title: "Product",
+        links: [
+          { id: "features", label: "Features", slug: "#features" },
+          { id: "docs", label: "Documentation", slug: "/docs" },
+        ],
+      },
+    },
+    {
+      id: "fallback-company",
+      type: "menu",
+      data: {
+        title: "Company",
+        links: [
+          { id: "about", label: "About", slug: "/about" },
+          { id: "contact", label: "Contact", slug: "/contact" },
+        ],
+      },
+    },
+    {
+      id: "fallback-legal",
+      type: "menu",
+      data: {
+        title: "Legal",
+        links: [
+          { id: "privacy", label: "Privacy Policy", slug: "/privacy" },
+          { id: "terms", label: "Terms of Service", slug: "/terms" },
+        ],
+      },
+    },
+  ],
+  bottomBar: {
+    copyrightText: "� 2025 ContentFlow. All rights reserved.",
+    socialLinks: [],
+  },
+};
+
+const hasAuthCookie = () => {
+  if (typeof document === "undefined") return false;
+  const cookie = document.cookie || "";
+  return /(?:^|;\s*)accessToken=/.test(cookie) || /(?:^|;\s*)refreshToken=/.test(cookie);
+};
+
+const ENABLE_LANDING_AUTH_PROBE = process.env.NEXT_PUBLIC_ENABLE_LANDING_AUTH_PROBE !== "false";
+
 export default function LandingPage() {
-  const [loading, setLoading] = useState(true);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [footerData, setFooterData] = useState<any>(null);
-
-  // Fall back to default menu if API fails
-  const defaultMenu = [
-    {
-      _id: "1",
-      label: "Features",
-      link: "#features",
-      enabled: true,
-      order: 1,
-    },
-    {
-      _id: "2",
-      label: "Use Cases",
-      link: "#use-cases",
-      enabled: true,
-      order: 2,
-    },
-    {
-      _id: "3",
-      label: "Contact",
-      link: "#contact",
-      enabled: true,
-      order: 3,
-    },
-  ];
-
   const router = useRouter();
-  //falback for footer data if API fails
-  const footerFallback = {
-    layout: "custom",
-    blocks: [
-      {
-        id: "fallback-text",
-        type: "text",
-        data: {
-          title: "ContentFlow",
-          content: "Build and manage beautiful websites without code",
-        },
-      },
-      {
-        id: "fallback-product",
-        type: "menu",
-        data: {
-          title: "Product",
-          links: [
-            { id: "features", label: "Features", slug: "#features" },
-            { id: "docs", label: "Documentation", slug: "/docs" },
-          ],
-        },
-      },
-      {
-        id: "fallback-company",
-        type: "menu",
-        data: {
-          title: "Company",
-          links: [
-            { id: "about", label: "About", slug: "/about" },
-            { id: "contact", label: "Contact", slug: "/contact" },
-          ],
-        },
-      },
-      {
-        id: "fallback-legal",
-        type: "menu",
-        data: {
-          title: "Legal",
-          links: [
-            { id: "privacy", label: "Privacy Policy", slug: "/privacy" },
-            { id: "terms", label: "Terms of Service", slug: "/terms" },
-          ],
-        },
-      },
-    ],
-    bottomBar: {
-      copyrightText: "© 2025 ContentFlow. All rights reserved.",
-      socialLinks: [],
-    },
-  };
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(DEFAULT_MENU);
+  const [footerData, setFooterData] = useState<FooterData>(FOOTER_FALLBACK);
 
+  const publicContentHydratedRef = useRef(false);
+  const authCheckStartedRef = useRef(false);
+ 
   useEffect(() => {
+    if (publicContentHydratedRef.current) return;
+    publicContentHydratedRef.current = true;
+
     const loadAll = async () => {
       try {
-        const navRes = await loadNavigation();
+        const [navRes, footerRes] = await Promise.all([loadNavigation(), fetchFooter()]);
+
         if (navRes.ok && Array.isArray(navRes.data) && navRes.data[0]?.items) {
-          setMenuItems(navRes.data[0].items);
-        } else {
-          setMenuItems(defaultMenu as MenuItem[]);
+          setMenuItems(navRes.data[0].items as MenuItem[]);
         }
 
-        const footerRes = await fetchFooter();
-
-        setFooterData(footerRes?.data);
-      } catch (err) {
-        console.error(err);
-        setMenuItems(defaultMenu as MenuItem[]);
-      } finally {
-        setLoading(false);
+        if (footerRes.ok && footerRes.data) {
+          setFooterData(footerRes.data);
+        }
+      } catch (error) {
+        console.error("Failed to load public content", error);
       }
     };
 
@@ -167,17 +182,18 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
+    if (authCheckStartedRef.current) return;
+    authCheckStartedRef.current = true;
+
+    if (ENABLE_LANDING_AUTH_PROBE === false) return;
+
     const directMe = async () => {
       try {
-        const res = await verifyMe();
-        if (res.ok) {
-          router.push("/cms");
-          return;
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
+        const userData = await verifyMe(); // returns user object on success, throws on failure
+        console.log("Auth probe: authenticated, redirecting to /cms");
+        router.push("/cms");
+      } catch (error) {
+        console.error("Auth probe failed; keeping public landing page.", error);
       }
     };
 
@@ -265,17 +281,13 @@ export default function LandingPage() {
     },
   ];
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: HOME_STRUCTURED_DATA }}
       />
-      {/* Navigation */}
+
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -284,6 +296,7 @@ export default function LandingPage() {
             </div>
             <span className="font-bold text-xl">ContentFlow</span>
           </div>
+
           <div className="hidden md:flex items-center gap-6">
             {menuItems.map(
               (item) =>
@@ -298,6 +311,7 @@ export default function LandingPage() {
                 ),
             )}
           </div>
+
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
               <Link href="/login">Sign In</Link>
@@ -309,8 +323,18 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="py-20 md:py-32">
+      <section className="relative overflow-hidden py-20 md:py-32">
+        <div className="absolute inset-0 -z-10 opacity-20">
+          <Image
+            src="/placeholder.svg"
+            alt=""
+            fill
+            priority
+            fetchPriority="high"
+            className="object-cover"
+          />
+        </div>
+
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
@@ -341,7 +365,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Grid */}
       <section id="features" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -368,7 +391,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Use Cases */}
       <section id="use-cases" className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -400,7 +422,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -442,9 +463,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-
-      <Footer footer={footerData || footerFallback} />
+      <Footer footer={footerData} />
     </div>
   );
 }

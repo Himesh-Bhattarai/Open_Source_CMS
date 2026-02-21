@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+import compression from "compression";
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
@@ -103,6 +104,7 @@ app.use(
 );
 
 console.log("CORS_ORIGIN:", corsOrigins.join(","));
+app.use(compression({ threshold: 1024 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());

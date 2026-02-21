@@ -16,7 +16,6 @@ router.use("/refresh", RefreshRoute);
 router.get(
   "/profile",
   verificationMiddleware,
-
   verifyMe,
 );
 

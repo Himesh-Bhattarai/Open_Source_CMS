@@ -11,8 +11,13 @@ export async function GET(req: Request) {
 
     if (!API_BASE_URL || !API_KEY || !tenant) {
       return NextResponse.json(
-        { ok: false, message: "Public CMS API is not configured", data: [] },
-        { status: 500 },
+        {
+          ok: true,
+          data: [],
+          fallback: true,
+          message: "Public CMS API is not configured",
+        },
+        { status: 200 },
       );
     }
 
@@ -30,11 +35,14 @@ export async function GET(req: Request) {
     if (!response.ok) {
       return NextResponse.json(
         {
-          ok: false,
-          message: payload?.error || payload?.message || "Failed to load navigation",
+          ok: true,
+          fallback: true,
+          sourceStatus: response.status,
+          message:
+            payload?.error || payload?.message || "Navigation service unavailable. Using fallback.",
           data: [],
         },
-        { status: response.status },
+        { status: 200 },
       );
     }
 
@@ -45,10 +53,8 @@ export async function GET(req: Request) {
         : [];
 
     return NextResponse.json({ ok: true, data: menus });
-  } catch (error: any) {
-    return NextResponse.json(
-      { ok: false, message: error?.message || "Failed to load navigation", data: [] },
-      { status: 500 },
-    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load navigation";
+    return NextResponse.json({ ok: true, fallback: true, message, data: [] }, { status: 200 });
   }
 }

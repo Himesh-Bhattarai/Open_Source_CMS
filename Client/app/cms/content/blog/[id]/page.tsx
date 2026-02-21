@@ -580,6 +580,8 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                       <img
                         src={blogData.featuredImage}
                         alt="Featured"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
 

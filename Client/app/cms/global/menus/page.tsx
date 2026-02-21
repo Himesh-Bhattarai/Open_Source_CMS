@@ -10,9 +10,22 @@ import { loadMenus } from "@/Api/Menu/Load";
 import { deleteMenuById } from "@/Api/Menu/Delete";
 import { toast } from "sonner";
 
+interface MenuSummary {
+  _id: string;
+  title?: string;
+  description?: string;
+  items?: unknown[];
+  menuLocation?: string;
+  status?: string;
+  updatedAt?: string;
+}
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export default function MenusPage() {
   const [loading, setLoading] = useState(false);
-  const [menusData, setMenusData] = useState<any[]>([]);
+  const [menusData, setMenusData] = useState<MenuSummary[]>([]);
 
   // Keep card text compact in the grid layout.
   const truncate = (text = "", length = 50) =>
@@ -24,12 +37,15 @@ export default function MenusPage() {
         setLoading(true);
         const response = await loadMenus();
         if (!response?.ok) throw new Error("Failed to load menus");
-        const safeMenus = Array.isArray(response.menus)
-          ? response.menus.filter((menu) => menu?._id)
+        const rawMenus = Array.isArray(response.menus)
+          ? (response.menus as Array<Partial<MenuSummary>>)
           : [];
+        const safeMenus = rawMenus.filter(
+          (menu): menu is MenuSummary => typeof menu?._id === "string",
+        );
         setMenusData(safeMenus);
-      } catch (err: any) {
-        toast.error(err.message || "Failed to load menus");
+      } catch (err) {
+        toast.error(getErrorMessage(err, "Failed to load menus"));
       } finally {
         setLoading(false);
       }
@@ -48,9 +64,9 @@ export default function MenusPage() {
       const response = await deleteMenuById(menuId);
       if (!response?.ok) throw new Error("Delete failed");
       toast.success("Menu deleted");
-    } catch (err: any) {
+    } catch (err) {
       setMenusData(previous);
-      toast.error(err.message || "Failed to delete menu");
+      toast.error(getErrorMessage(err, "Failed to delete menu"));
     }
   };
 

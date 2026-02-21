@@ -1,0 +1,64 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Local CMS Frontend Probe API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3000"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "getLandingPage",
+        "responses": {
+          "200": {
+            "description": "Landing page HTML"
+          }
+        }
+      }
+    },
+    "/api/public/navigation": {
+      "get": {
+        "operationId": "getPublicNavigation",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "contentFlow.com.np"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public navigation payload"
+          }
+        }
+      }
+    },
+    "/api/public/footer": {
+      "get": {
+        "operationId": "getPublicFooter",
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "contentFlow.com.np"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public footer payload"
+          }
+        }
+      }
+    }
+  }
+}

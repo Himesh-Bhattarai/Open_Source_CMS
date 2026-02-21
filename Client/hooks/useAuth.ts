@@ -3,12 +3,43 @@
 import { useEffect, useState } from "react";
 import { verifyMe } from "@/Api/Auth/VerifyAuth";
 
-export function useAuth() {
-  const [user, setUser] = useState<any>(null);
+export type AuthUserRole = "admin" | "web-owner" | "manager" | "editor" | "viewer" | string;
+
+export interface AuthUser {
+  _id?: string;
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: AuthUserRole;
+  tenantName?: string;
+  [key: string]: unknown;
+}
+
+export interface ImpersonatedTenant {
+  _id?: string;
+  id?: string;
+  name?: string;
+  domain?: string;
+  [key: string]: unknown;
+}
+
+interface UseAuthOptions {
+  enabled?: boolean;
+}
+
+export function useAuth(options: UseAuthOptions = {}) {
+  const enabled = options.enabled ?? true;
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [impersonatedTenant, setImpersonatedTenant] = useState<any>(null);
+  const [impersonatedTenant, setImpersonatedTenant] = useState<ImpersonatedTenant | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     verifyMe()
       .then((data) => {
         setUser(data);
@@ -19,9 +50,9 @@ export function useAuth() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [enabled]);
 
-  const startImpersonation = (tenant: any) => {
+  const startImpersonation = (tenant: ImpersonatedTenant) => {
     setImpersonatedTenant(tenant);
   };
 

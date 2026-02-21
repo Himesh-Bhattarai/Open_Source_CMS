@@ -11,8 +11,13 @@ export async function GET(req: Request) {
 
     if (!API_BASE_URL || !API_KEY || !tenant) {
       return NextResponse.json(
-        { ok: false, message: "Public CMS API is not configured", data: null },
-        { status: 500 },
+        {
+          ok: true,
+          data: null,
+          fallback: true,
+          message: "Public CMS API is not configured",
+        },
+        { status: 200 },
       );
     }
 
@@ -30,11 +35,14 @@ export async function GET(req: Request) {
     if (!response.ok) {
       return NextResponse.json(
         {
-          ok: false,
-          message: payload?.error || payload?.message || "Failed to load footer",
+          ok: true,
+          fallback: true,
+          sourceStatus: response.status,
+          message:
+            payload?.error || payload?.message || "Footer service unavailable. Using fallback.",
           data: null,
         },
-        { status: response.status },
+        { status: 200 },
       );
     }
 
@@ -42,10 +50,8 @@ export async function GET(req: Request) {
       ok: true,
       data: payload?.footer || payload?.data || null,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { ok: false, message: error?.message || "Failed to load footer", data: null },
-      { status: 500 },
-    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load footer";
+    return NextResponse.json({ ok: true, fallback: true, message, data: null }, { status: 200 });
   }
 }

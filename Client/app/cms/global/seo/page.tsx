@@ -21,8 +21,24 @@ import { toast } from "sonner";
 
 import { MoreVertical, Edit, Trash2, Eye, Globe, FileText } from "lucide-react";
 
+interface SeoEntry {
+  _id: string;
+  scope?: string;
+  pageId?: string;
+  pageSEO?: {
+    title?: string;
+    metaDescription?: string;
+  };
+  globalSEO?: {
+    general?: {
+      siteTitle?: string;
+      metaDescription?: string;
+    };
+  };
+}
+
 export default function SeoOverview() {
-  const [seoList, setSeoList] = useState<any[]>([]);
+  const [seoList, setSeoList] = useState<SeoEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -30,7 +46,12 @@ export default function SeoOverview() {
     const loadSeo = async () => {
       try {
         const data = await fetchSeo();
-        setSeoList(Array.isArray(data) ? data : [data]);
+        const normalized = Array.isArray(data)
+          ? (data as SeoEntry[])
+          : data
+            ? [data as SeoEntry]
+            : [];
+        setSeoList(normalized);
       } catch (err) {
         console.error(err);
         setSeoList([]);

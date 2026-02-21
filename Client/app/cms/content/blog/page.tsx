@@ -243,6 +243,8 @@ export default function BlogPostsPage() {
                         <img
                           src={post.featuredImage || "/placeholder.svg"}
                           alt={post.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-16 h-10 object-cover rounded border"
                         />
                         <div>

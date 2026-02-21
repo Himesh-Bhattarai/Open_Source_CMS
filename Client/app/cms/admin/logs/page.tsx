@@ -15,6 +15,9 @@ type LogItem = {
   read?: boolean;
 };
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export default function AdminLogsPage() {
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -30,8 +33,8 @@ export default function AdminLogsPage() {
           ? data
           : [];
       setLogs(normalized);
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to load logs");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to load logs"));
       setLogs([]);
     } finally {
       setLoading(false);

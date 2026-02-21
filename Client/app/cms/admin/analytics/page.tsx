@@ -7,17 +7,20 @@ import { Button } from "@/components/ui/button";
 import { fetchStats } from "@/Api/Stats/Stats";
 import { toast } from "sonner";
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Record<string, any>>({});
+  const [stats, setStats] = useState<Record<string, unknown>>({});
 
   const loadStats = async () => {
     try {
       setLoading(true);
       const dashboard = await fetchStats("For-Dashboard");
       setStats(dashboard?.data || dashboard || {});
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to load analytics");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Failed to load analytics"));
       setStats({});
     } finally {
       setLoading(false);
