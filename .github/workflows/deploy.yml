@@ -149,6 +149,8 @@ jobs:
           mkdir -p _release
           # Copy repository while excluding CI-time/runtime noise.
           rsync -a ./ _release/ \
+            --exclude '_release' \
+            --exclude 'release-*.tar.gz' \
             --exclude '.git' \
             --exclude '.github' \
             --exclude 'node_modules' \
