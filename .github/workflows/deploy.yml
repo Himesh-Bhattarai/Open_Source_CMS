@@ -33,9 +33,9 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     if: >
-      github.event_name == 'push' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/deploy') ||
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'deploy')
 
     steps:
       - name: Checkout repository
