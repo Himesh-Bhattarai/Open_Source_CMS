@@ -126,11 +126,7 @@ jobs:
       - name: Run tests
         run: |
           set -euo pipefail
-          if npm --prefix Client run | grep -qE '^  test'; then
-            npm --prefix Client run test
-          else
-            echo "No client test script found; skipping client tests."
-          fi
+          npm --prefix Client run --if-present test
           npm --prefix Server run test -- --silent
       - name: Build frontend (Next.js production build)
         run: |
