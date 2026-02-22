@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client -- -H 0.0.0.0 -p 3000\"",
     "start": "concurrently \"npm run start --prefix Server\" \"npm run start --prefix Client -- -H 0.0.0.0 -p 3000\"",
+    "test": "npm --prefix Client run lint && npm --prefix Client run typecheck && npm --prefix Server run test -- --silent",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "perf:ttfb": "node scripts/perf/ttfb-check.mjs",
