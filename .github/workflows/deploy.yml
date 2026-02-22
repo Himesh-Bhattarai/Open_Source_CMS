@@ -384,22 +384,5 @@ jobs:
           MSG="Deploy result: ${RESULT} | repo: ${{ github.repository }} | branch: ${{ github.ref_name }} | sha: ${{ github.sha }} | method: pm2"
           echo "message=${MSG}" >> "$GITHUB_OUTPUT"
 
-      - name: Notify Slack (optional)
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-        continue-on-error: true
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -sS -X POST -H "Content-type: application/json" \
-            --data "{\"text\":\"${{ steps.status.outputs.message }}\"}" \
-            "${SLACK_WEBHOOK_URL}"
 
-      - name: Notify Discord (optional)
-        if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
-        continue-on-error: true
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          curl -sS -X POST -H "Content-Type: application/json" \
-            --data "{\"content\":\"${{ steps.status.outputs.message }}\"}" \
-            "${DISCORD_WEBHOOK_URL}"
+     
