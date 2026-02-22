@@ -1,24 +1,24 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Star } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card";
+import { Star } from "lucide-react";
 
 interface Testimonial {
-  quote: string
-  author: string
-  role?: string
-  company?: string
-  rating?: number
+  quote: string;
+  author: string;
+  role?: string;
+  company?: string;
+  rating?: number;
 }
 
 interface TestimonialsBlockProps {
   data: {
-    title?: string
-    subtitle?: string
-    testimonials?: Testimonial[]
-  }
+    title?: string;
+    subtitle?: string;
+    testimonials?: Testimonial[];
+  };
 }
 
 export function TestimonialsBlock({ data }: TestimonialsBlockProps) {
-  const testimonials = data.testimonials || []
+  const testimonials = data.testimonials || [];
 
   return (
     <section className="py-16 lg:py-24">
@@ -27,7 +27,9 @@ export function TestimonialsBlock({ data }: TestimonialsBlockProps) {
           <h2 className="text-balance text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             {data.title || "What Our Customers Say"}
           </h2>
-          {data.subtitle && <p className="text-pretty text-xl text-muted-foreground">{data.subtitle}</p>}
+          {data.subtitle && (
+            <p className="text-pretty text-xl text-muted-foreground">{data.subtitle}</p>
+          )}
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
@@ -42,7 +44,9 @@ export function TestimonialsBlock({ data }: TestimonialsBlockProps) {
                         ))}
                       </div>
                     )}
-                    <p className="text-muted-foreground mb-4 leading-relaxed">"{testimonial.quote}"</p>
+                    <p className="text-muted-foreground mb-4 leading-relaxed">
+                      "{testimonial.quote}"
+                    </p>
                     <div>
                       <p className="font-semibold">{testimonial.author}</p>
                       {testimonial.role && (
@@ -77,5 +81,5 @@ export function TestimonialsBlock({ data }: TestimonialsBlockProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }

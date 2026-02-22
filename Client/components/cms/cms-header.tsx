@@ -1,19 +1,10 @@
 "use client";
 
+import { logoutApi } from "@/Api/Auth/Logout";
+import { getNotification } from "@/Api/Notification/notification";
+import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Bell,
-  Search,
-  Moon,
-  Sun,
-  Menu,
-  Shield,
-  User,
-  SettingsIcon,
-  LogOut,
-} from "lucide-react";
-import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,86 +12,93 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Bell, Search, Moon, Sun, Menu, Shield, User, SettingsIcon, LogOut } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { getNotification } from "@/Api/Notification/notification";
+import { useEffect, useState } from "react";
 
-import { logoutApi } from "@/Api/Auth/Logout";
 interface CMSHeaderProps {
   onMenuClick?: () => void;
 }
 
+interface RawNotification {
+  _id?: string;
+  type?: string;
+  title?: string;
+  message?: string;
+  createdAt?: string;
+  read?: boolean;
+}
+
+interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
 export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
   const { setTheme, theme } = useTheme();
-  const {
-    user,
-    isAdmin,
-    impersonatedTenant,
-    stopImpersonation,
-    isImpersonating,
-  } = useAuth();
+  const { user, isAdmin, impersonatedTenant, stopImpersonation, isImpersonating } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const router = useRouter();
-  const [notification , setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unread, setUnread] = useState(false);
 
-  
-  const [unread, setUnread] = useState(
-    notification.some((n : any) => !n.read) 
-  );
-  
   useEffect(() => {
-    const hasUnread = notification.some((n : any) => !n.read);
-    setUnread(hasUnread);
-  }, [notification]);
+    setUnread(notifications.some((item) => !item.read));
+  }, [notifications]);
+
   const handleOpen = () => {
-    // mark the dot as gone once dropdown is opened
+    // Mark the dot as gone once dropdown is opened.
     setUnread(false);
   };
 
   const handleLogout = async () => {
-    const callLogout = await logoutApi();
+    await logoutApi();
     router.push("/");
     router.refresh();
   };
 
-
   useEffect(() => {
     const loadNotification = async () => {
-      const notif = await getNotification();
-      if (!notif.ok) return;
+      try {
+        const notif = await getNotification();
+        if (!notif?.ok) return;
 
-      const notificationsArray = notif.data?.notifications || [];
+        const notificationsArray = Array.isArray(notif.data?.notifications)
+          ? (notif.data.notifications as RawNotification[])
+          : [];
 
-      // map _id → id and createdAt → time
-      const formatted = notificationsArray.map((n: any) => ({
-        id: n._id,
-        type: n.type.toLowerCase(),
-        title: n.title,
-        message: n.message,
-        time: n.createdAt,
-        read: n.read,
-      }));
+        // Map _id to id and createdAt to time.
+        const formatted = notificationsArray.map(
+          (item): NotificationItem => ({
+            id: String(item._id || ""),
+            type: String(item.type || "info").toLowerCase(),
+            title: String(item.title || "Notification"),
+            message: String(item.message || ""),
+            time: String(item.createdAt || new Date().toISOString()),
+            read: Boolean(item.read),
+          }),
+        );
 
-      // filter to very recent notifications (last 10 days)
-      const filtered = formatted.filter((n: any) => {
-        const notificationTime = new Date(n.time).getTime();
         const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
-        return notificationTime >= tenDaysAgo;
-      });
+        const top5 = formatted
+          .filter((item) => new Date(item.time).getTime() >= tenDaysAgo)
+          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+          .slice(0, 5);
 
-      // optionally, get top 5 most recent
-      const top5 = filtered
-        .sort((a: any, b: any) => new Date(b.time).getTime() - new Date(a.time).getTime())
-        .slice(0, 5);
-
-      setNotifications(top5);
+        setNotifications(top5);
+      } catch (error) {
+        console.error("Failed to load notifications", error);
+      }
     };
 
     loadNotification();
   }, []);
-
 
   return (
     <header className="h-14 md:h-16 border-b bg-card shrink-0 flex items-center justify-between px-3 md:px-6 gap-2 md:gap-4">
@@ -121,31 +119,13 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
         </div>
       )}
 
-      <div
-        className={`flex items-center gap-2 md:gap-3 ${isImpersonating ? "mt-6" : ""}`}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden h-9 w-9"
-          onClick={onMenuClick}
-        >
+      <div className={`flex items-center gap-2 md:gap-3 ${isImpersonating ? "mt-6" : ""}`}>
+        <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
         </Button>
-
-        {/* <div className="hidden lg:flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">
-              CF
-            </span>
-          </div>
-          <span className="font-semibold text-lg">ContentFlow</span>
-        </div> */}
       </div>
 
-      <div
-        className={`flex-1 max-w-xl ${searchOpen ? "block" : "hidden md:block"}`}
-      >
+      <div className={`flex-1 max-w-xl ${searchOpen ? "block" : "hidden md:block"}`}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -175,19 +155,17 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-80 max-w-[calc(100vw-2rem)]"
-          >
+          <DropdownMenuContent align="end" className="w-80 max-w-[calc(100vw-2rem)]">
             <div className="p-3">
               <p className="font-semibold mb-3">Notifications</p>
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {notification.map((notification: any, index: number) => (
-                  <div key={index} className="p-3 rounded-md bg-muted/50 text-sm">
+                {notifications.map((notification, index) => (
+                  <div
+                    key={`${notification.id}-${index}`}
+                    className="p-3 rounded-md bg-muted/50 text-sm"
+                  >
                     <p className="font-medium">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {notification.message}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                   </div>
                 ))}
               </div>
@@ -212,9 +190,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                 <User className="h-4 w-4 text-primary" />
               </div>
               <div className="text-left hidden xl:block">
-                <p className="text-sm font-medium leading-tight">
-                  {user?.name}
-                </p>
+                <p className="text-sm font-medium leading-tight">{user?.name}</p>
                 <p className="text-xs text-muted-foreground leading-tight">
                   {user?.tenantName || "Platform"}
                 </p>
@@ -229,9 +205,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground truncate mb-2">
-                    {user?.email}
-                  </p>
+                  <p className="text-xs text-muted-foreground truncate mb-2">{user?.email}</p>
                   {isAdmin ? (
                     <Badge variant="default" className="bg-primary">
                       <Shield className="h-3 w-3 mr-1" />
@@ -239,7 +213,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
                     </Badge>
                   ) : (
                     <Badge variant="secondary">
-                        {user?.role === "web-owner" && "web-owner"}
+                      {user?.role === "web-owner" && "web-owner"}
                       {user?.role === "manager" && "Manager"}
                       {user?.role === "editor" && "Editor"}
                       {user?.role === "viewer" && "Viewer"}
@@ -254,10 +228,7 @@ export function CMSHeader({ onMenuClick }: CMSHeaderProps) {
               Account Settings
             </DropdownMenuItem>
 
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={handleLogout}
-            >
+            <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Log Out
             </DropdownMenuItem>

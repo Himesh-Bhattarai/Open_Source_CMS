@@ -36,7 +36,7 @@ export interface FooterBlock {
   type: "logo" | "menu" | "social" | "newsletter" | "text";
   column: number;
   order: number;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface FooterResponse {
@@ -56,7 +56,7 @@ export interface PageBlock {
   id: string;
   type: string;
   order: number;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 export interface PageResponse {
@@ -169,11 +169,12 @@ export class ContentFlowCMS {
   }
 
   private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const url = `${this.config.baseUrl}/api/v1/${this.config.tenant}${endpoint}`;
+    const url = `${this.config.baseUrl}/api/v1/external-request/${this.config.tenant}${endpoint}`;
 
     const response = await fetch(url, {
       ...options,
       headers: {
+        Authorization: `Bearer ${this.config.apiKey}`,
         "X-API-Key": this.config.apiKey,
         "Content-Type": "application/json",
         ...options?.headers,
@@ -185,9 +186,7 @@ export class ContentFlowCMS {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `CMS API Error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`CMS API Error: ${response.status} ${response.statusText}`);
     }
 
     return response.json();

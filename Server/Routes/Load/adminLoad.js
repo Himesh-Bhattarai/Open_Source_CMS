@@ -6,14 +6,17 @@ const router = express.Router();
 
 router.get("/get-all-users", verificationMiddleware, async (req, res, next) => {
   try {
-    const userId = req.user?.useId;
+    const userId = req.user?.userId;
     if (!userId) throw new Error("Unauthorized");
-    const user = await User.findOne({ _id: userId, role: "admin" });
-    if (!user) throw new Error("Unauthorized");
+    const actor = await User.findOne({ _id: userId, role: "admin" });
+    if (!actor) throw new Error("Unauthorized");
 
-    if (user.role !== "admin") throw new Error("Unauthorized");
+    const users = await User.find({})
+      .select("_id email name role status createdAt lastLogin")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.status(200).json({ data: user });
+    res.status(200).json({ data: users });
   } catch (err) {
     err.statusCode = err.statusCode || 400;
     next(err);

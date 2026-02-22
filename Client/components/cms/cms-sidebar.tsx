@@ -20,7 +20,6 @@ import {
   Building2,
   X,
   Crown,
-  Briefcase,
   Plug,
   Database,
   BarChart3,
@@ -36,9 +35,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { ForwardRefExoticComponent, RefAttributes } from "react";
 import type { LucideProps } from "lucide-react";
 
-type IconType = ForwardRefExoticComponent<
-  Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
->;
+type IconType = ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
 
 interface NavLinkItem {
   type: "link";
@@ -70,12 +67,6 @@ const adminNavigation: NavigationItem[] = [
     name: "System Logs",
     href: "/cms/admin/logs",
     icon: Activity,
-  },
-  {
-    type: "link",
-    name: "Platform Settings",
-    href: "/cms/admin/settings",
-    icon: Settings,
   },
 ];
 
@@ -132,12 +123,6 @@ const ownerNavigation: NavigationItem[] = [
         href: "/cms/global/seo",
         icon: Search,
       },
-      // {
-      //   type: "link",
-      //   name: "Layout & Theme",
-      //   href: "/cms/global/layout",
-      //   icon: Palette,
-      // },
     ],
   },
 
@@ -145,8 +130,6 @@ const ownerNavigation: NavigationItem[] = [
   { type: "link", name: "Forms", href: "/cms/forms", icon: FormInput },
   { type: "link", name: "Media Library", href: "/cms/media", icon: ImageIcon },
   { type: "link", name: "Backups", href: "/cms/backups", icon: Database },
-  // { type: "link", name: "Analytics", href: "/cms/analytics", icon: BarChart3 },
-  // { type: "link", name: "Activity", href: "/cms/activity", icon: Activity },
   {
     type: "link",
     name: "Notifications",
@@ -163,7 +146,7 @@ interface CMSSidebarProps {
 
 export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
   const pathname = usePathname();
-  const { user, isAdmin, isOwner } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const navigation = isAdmin ? adminNavigation : ownerNavigation;
 
@@ -198,36 +181,15 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
         <div className="h-14 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-sidebar-border shrink-0">
           <Link href="/cms" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                CF
-              </span>
+              <span className="text-primary-foreground font-bold text-sm">CF</span>
             </div>
             <span className="font-semibold text-lg">ContentFlow</span>
           </Link>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden h-8 w-8"
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </div>
-        {/* 
-        {isOwner && (
-          <div className="px-4 py-3 border-b border-sidebar-border flex-shrink-0">
-            <div className="border rounded-lg p-3 bg-primary/10 border-primary/20">
-              <div className="flex items-center gap-2 mb-1">
-                <Briefcase className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-primary">Your Website</span>
-              </div>
-              <p className="text-sm font-medium truncate">{user?.tenantName || "My Website"}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.tenantId || "website-id"}</p>
-            </div>
-          </div>
-        )} */}
-
         <ScrollArea className="flex-1 overflow-y-auto ">
           <nav className="space-y-1 p-3">
             {navigation.map((item) => (
@@ -236,8 +198,7 @@ export function CMSSidebar({ isOpen = false, onClose }: CMSSidebarProps) {
                   <div
                     className={cn(
                       "space-y-1",
-                      item.highlight &&
-                        "bg-primary/5 rounded-lg p-2 border border-primary/20",
+                      item.highlight && "bg-primary/5 rounded-lg p-2 border border-primary/20",
                     )}
                   >
                     <div className="flex items-center gap-2 px-2 py-1.5">

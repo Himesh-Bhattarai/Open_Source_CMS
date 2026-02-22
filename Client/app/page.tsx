@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Globe,
   Layout,
@@ -20,14 +21,14 @@ import {
   Layers,
   Eye,
   Download,
-} from "lucide-react"
-import { useEffect, useState } from "react"
-import { verifyMe } from "@/Api/Auth/VerifyAuth"
-import { useRouter } from "next/navigation"
-import LoadingScreen from "@/lib/loading"
-import {fetchMenu as loadNavigation } from "@/Api/ExternalCall/Navigation"
-import { fetchFooter } from "@/Api/ExternalCall/Footer"
-import Footer from "@/components/Footer"
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { verifyMe } from "@/Api/Auth/VerifyAuth";
+import { useRouter } from "next/navigation";
+import { fetchMenu as loadNavigation } from "@/Api/ExternalCall/Navigation";
+import { fetchFooter } from "@/Api/ExternalCall/Footer";
+import Footer from "@/components/Footer";
+import type { FooterData } from "@/components/Footer";
 
 interface MenuItem {
   _id: string;
@@ -39,131 +40,160 @@ interface MenuItem {
   children: MenuItem[];
 }
 
+const SITE_URL = String(process.env.NEXT_PUBLIC_SITE_URL || "https://contentflow.com").replace(
+  /\/$/,
+  "",
+);
+
+const HOME_STRUCTURED_DATA = JSON.stringify([
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "ContentFlow",
+    url: SITE_URL,
+    logo: `${SITE_URL}/fav/favicon-32x32.png`,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "ContentFlow",
+    url: SITE_URL,
+  },
+]).replace(/</g, "\\u003c");
+
+const DEFAULT_MENU: MenuItem[] = [
+  {
+    _id: "1",
+    label: "Features",
+    link: "#features",
+    enabled: true,
+    order: 1,
+    type: "internal",
+    children: [],
+  },
+  {
+    _id: "2",
+    label: "Use Cases",
+    link: "#use-cases",
+    enabled: true,
+    order: 2,
+    type: "internal",
+    children: [],
+  },
+  {
+    _id: "3",
+    label: "Contact",
+    link: "/contact",
+    enabled: true,
+    order: 3,
+    type: "internal",
+    children: [],
+  },
+];
+
+const FOOTER_FALLBACK: FooterData = {
+  layout: "custom",
+  blocks: [
+    {
+      id: "fallback-text",
+      type: "text",
+      data: {
+        title: "ContentFlow",
+        content: "Build and manage beautiful websites without code",
+      },
+    },
+    {
+      id: "fallback-product",
+      type: "menu",
+      data: {
+        title: "Product",
+        links: [
+          { id: "features", label: "Features", slug: "#features" },
+          { id: "docs", label: "Documentation", slug: "/docs" },
+        ],
+      },
+    },
+    {
+      id: "fallback-company",
+      type: "menu",
+      data: {
+        title: "Company",
+        links: [
+          { id: "about", label: "About", slug: "/about" },
+          { id: "contact", label: "Contact", slug: "/contact" },
+        ],
+      },
+    },
+    {
+      id: "fallback-legal",
+      type: "menu",
+      data: {
+        title: "Legal",
+        links: [
+          { id: "privacy", label: "Privacy Policy", slug: "/privacy" },
+          { id: "terms", label: "Terms of Service", slug: "/terms" },
+        ],
+      },
+    },
+  ],
+  bottomBar: {
+    copyrightText: "� 2025 ContentFlow. All rights reserved.",
+    socialLinks: [],
+  },
+};
+
+const hasAuthCookie = () => {
+  if (typeof document === "undefined") return false;
+  const cookie = document.cookie || "";
+  return /(?:^|;\s*)accessToken=/.test(cookie) || /(?:^|;\s*)refreshToken=/.test(cookie);
+};
+
+const ENABLE_LANDING_AUTH_PROBE = process.env.NEXT_PUBLIC_ENABLE_LANDING_AUTH_PROBE !== "false";
+
 export default function LandingPage() {
-  const [loading, setLoading] = useState(true);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
-  const [footerData, setFooterData] = useState<any >(null)
-
-
-  // Fall back to default menu if API fails
-  const defaultMenu=[
-    {
-      _id: "1",
-      label: "Features",
-      link: "#features",
-      enabled: true,
-      order: 1,
-    },
-    {
-      _id: "2",
-      label: "Use Cases",
-      link: "#use-cases",
-      enabled: true,
-      order: 2,
-    },
-    {
-      _id: "3",
-      label: "Contact",
-      link: "#contact",
-      enabled: true,
-      order: 3,
-    },
-  ]
-
   const router = useRouter();
-  //falback for footer data if API fails
-const footerFallback = {
-    layout: "custom",
-    blocks: [
-      {
-        id: "fallback-text",
-        type: "text",
-        data: {
-          title: "ContentFlow",
-          content: "Build and manage beautiful websites without code",
-        },
-      },
-      {
-        id: "fallback-product",
-        type: "menu",
-        data: {
-          title: "Product",
-          links: [
-            { id: "features", label: "Features", slug: "#features" },
-            { id: "docs", label: "Documentation", slug: "/docs" },
-          ],
-        },
-      },
-      {
-        id: "fallback-company",
-        type: "menu",
-        data: {
-          title: "Company",
-          links: [
-            { id: "about", label: "About", slug: "/about" },
-            { id: "contact", label: "Contact", slug: "/contact" },
-          ],
-        },
-      },
-      {
-        id: "fallback-legal",
-        type: "menu",
-        data: {
-          title: "Legal",
-          links: [
-            { id: "privacy", label: "Privacy Policy", slug: "/privacy" },
-            { id: "terms", label: "Terms of Service", slug: "/terms" },
-          ],
-        },
-      },
-    ],
-    bottomBar: {
-      copyrightText: "© 2025 ContentFlow. All rights reserved.",
-      socialLinks: [],
-    },
-  }
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(DEFAULT_MENU);
+  const [footerData, setFooterData] = useState<FooterData>(FOOTER_FALLBACK);
 
-  
-
+  const publicContentHydratedRef = useRef(false);
+  const authCheckStartedRef = useRef(false);
+ 
   useEffect(() => {
+    if (publicContentHydratedRef.current) return;
+    publicContentHydratedRef.current = true;
+
     const loadAll = async () => {
       try {
-        const navRes = await loadNavigation()
-        if (navRes.ok) {
-          setMenuItems(navRes.data[0].items)
-        } else {
-          setMenuItems(defaultMenu as MenuItem[])
+        const [navRes, footerRes] = await Promise.all([loadNavigation(), fetchFooter()]);
+
+        if (navRes.ok && Array.isArray(navRes.data) && navRes.data[0]?.items) {
+          setMenuItems(navRes.data[0].items as MenuItem[]);
         }
 
-        const footerRes = await fetchFooter()
-
-        setFooterData(footerRes?.data)
-        
-      } catch (err) {
-        console.error(err)
-        setMenuItems(defaultMenu as MenuItem[])
-      } finally {
-        setLoading(false)
+        if (footerRes.ok && footerRes.data) {
+          setFooterData(footerRes.data);
+        }
+      } catch (error) {
+        console.error("Failed to load public content", error);
       }
-    }
-    
-    loadAll()
-  }, [])
-  
+    };
+
+    loadAll();
+  }, []);
 
   useEffect(() => {
+    if (authCheckStartedRef.current) return;
+    authCheckStartedRef.current = true;
+
+    if (ENABLE_LANDING_AUTH_PROBE === false) return;
+
     const directMe = async () => {
       try {
-        const res = await verifyMe();
-        if (!res.ok) {
-       
-          setLoading(false);
-        } 
-       
-          router.push("/cms");
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
+        const userData = await verifyMe(); // returns user object on success, throws on failure
+        console.log("Auth probe: authenticated, redirecting to /cms");
+        router.push("/cms");
+      } catch (error) {
+        console.error("Auth probe failed; keeping public landing page.", error);
       }
     };
 
@@ -231,7 +261,7 @@ const footerFallback = {
       title: "Automated Backups",
       description: "Scheduled backups with one-click restore",
     },
-  ]
+  ];
 
   const useCases = [
     {
@@ -249,16 +279,15 @@ const footerFallback = {
       description: "Integrate CMS with existing projects via API",
       benefits: ["RESTful APIs", "Webhook support", "Custom integrations"],
     },
-  ]
-
-  if (loading) {
-    return <LoadingScreen />
-  }
-
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: HOME_STRUCTURED_DATA }}
+      />
+
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -267,31 +296,22 @@ const footerFallback = {
             </div>
             <span className="font-bold text-xl">ContentFlow</span>
           </div>
+
           <div className="hidden md:flex items-center gap-6">
-            {menuItems.map(item => (
-              item?.enabled  && (
-                <Link
-                  key={item?._id}
-                  href={item?.link}
-                  className="text-sm font-medium hover:text-primary transition-colors"
-                >
-                  {item?.label}
-                </Link>
-              )
-            ))}
-            {/* <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
-              Features
-            </Link>
-            <Link href="#use-cases" className="text-sm font-medium hover:text-primary transition-colors">
-              Use Cases
-            </Link>
-            <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-              Pricing
-            </Link>
-            <Link href="/docs" className="text-sm font-medium hover:text-primary transition-colors">
-              Docs
-            </Link> */}
+            {menuItems.map(
+              (item) =>
+                item?.enabled && (
+                  <Link
+                    key={item?._id}
+                    href={item?.link}
+                    className="text-sm font-medium hover:text-primary transition-colors"
+                  >
+                    {item?.label}
+                  </Link>
+                ),
+            )}
           </div>
+
           <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
               <Link href="/login">Sign In</Link>
@@ -303,8 +323,18 @@ const footerFallback = {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="py-20 md:py-32">
+      <section className="relative overflow-hidden py-20 md:py-32">
+        <div className="absolute inset-0 -z-10 opacity-20">
+          <Image
+            src="/placeholder.svg"
+            alt=""
+            fill
+            priority
+            fetchPriority="high"
+            className="object-cover"
+          />
+        </div>
+
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
@@ -318,8 +348,8 @@ const footerFallback = {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              ContentFlow is a powerful multi-tenant CMS that lets you create, manage, and publish professional websites
-              using our visual block-based editor. No coding required.
+              ContentFlow is a powerful multi-tenant CMS that lets you create, manage, and publish
+              professional websites using our visual block-based editor. No coding required.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild className="text-base">
@@ -331,29 +361,16 @@ const footerFallback = {
                 <Link href="#features">Explore Features</Link>
               </Button>
             </div>
-            {/* <div className="pt-8 flex items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-primary" />
-                <span>14-day free trial</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-primary" />
-                <span>No credit card required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-primary" />
-                <span>Cancel anytime</span>
-              </div>
-            </div> */}
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
       <section id="features" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Everything You Need to Build Websites</h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Everything You Need to Build Websites
+            </h2>
             <p className="text-xl text-muted-foreground">
               Powerful features designed for both beginners and professionals
             </p>
@@ -374,12 +391,13 @@ const footerFallback = {
         </div>
       </section>
 
-      {/* Use Cases */}
       <section id="use-cases" className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">Built for Everyone</h2>
-            <p className="text-xl text-muted-foreground">Whether you're a business owner, agency, or developer</p>
+            <p className="text-xl text-muted-foreground">
+              Whether you're a business owner, agency, or developer
+            </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {useCases.map((useCase, idx) => (
@@ -404,7 +422,6 @@ const footerFallback = {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-16">
@@ -413,9 +430,24 @@ const footerFallback = {
           </div>
           <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-8">
             {[
-              { step: "1", title: "Sign Up", description: "Create your account in seconds", icon: Users },
-              { step: "2", title: "Choose Template", description: "Pick from professional designs", icon: Layers },
-              { step: "3", title: "Customize Content", description: "Edit with drag-and-drop blocks", icon: Layout },
+              {
+                step: "1",
+                title: "Sign Up",
+                description: "Create your account in seconds",
+                icon: Users,
+              },
+              {
+                step: "2",
+                title: "Choose Template",
+                description: "Pick from professional designs",
+                icon: Layers,
+              },
+              {
+                step: "3",
+                title: "Customize Content",
+                description: "Edit with drag-and-drop blocks",
+                icon: Layout,
+              },
               { step: "4", title: "Publish", description: "Go live with one click", icon: Zap },
             ].map((item, idx) => (
               <div key={idx} className="text-center space-y-4">
@@ -431,135 +463,7 @@ const footerFallback = {
         </div>
       </section>
 
-      {/* <footer className="py-12 border-t"> */}
-        {/* <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-
-            {/* BRAND COLUMN */}
-            {/* {brandBlock && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      {brandBlock.data.title.slice(0, 2).toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="font-bold text-lg">
-                    {brandBlock.data.title}
-                  </span>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  {brandBlock.data.content}
-                </p>
-              </div>
-            )} */}
-
-            {/* MENU COLUMNS */}
-            {/* {menuBlocks.map(menu => (
-              <div key={menu.id}>
-                <h4 className="font-semibold mb-4">
-                  {menu.data.title}
-                </h4>
-
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {menu.data.links?.map(link => (
-                    <li key={link.id}>
-                      <Link href={link.slug} className="hover:text-primary">
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-
-          </div> */}
-
-          {/* BOTTOM BAR */}
-          {/* <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            {footer.bottomBar.copyrightText}
-          </div>
-        </div> */}
-      {/* </footer> */} 
-
-      {/* Footer */}
-
-      <Footer footer={footerData || footerFallback} />
-
-      {/* <footer className="py-12 border-t">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-primary/60 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CF</span>
-                </div>
-                <span className="font-bold text-lg">ContentFlow</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Build and manage beautiful websites without code</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="#features" className="hover:text-primary">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:text-primary">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="hover:text-primary">
-                    Documentation
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/about" className="hover:text-primary">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-primary">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/careers" className="hover:text-primary">
-                    Careers
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/privacy" className="hover:text-primary">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-primary">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            © 2025 ContentFlow. All rights reserved.
-          </div>
-        </div>
-      </footer> */}
+      <Footer footer={footerData} />
     </div>
-  )
+  );
 }

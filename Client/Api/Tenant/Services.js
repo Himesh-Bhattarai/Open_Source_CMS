@@ -1,8 +1,6 @@
 const DELETE_TENANT_BY_ID = process.env.NEXT_PUBLIC_DELETE_TENANT_BY_ID;
-const DELETE_ALL_TENANTS =
-  process.env.NEXT_PUBLIC_DELETE_ALL_TENANTS;
+const DELETE_ALL_TENANTS = process.env.NEXT_PUBLIC_DELETE_ALL_TENANTS;
 const EDIT_TENANT_BY_ID = process.env.NEXT_PUBLIC_EDIT_TENANT_BY_ID;
-
 
 //delete tenant by id
 export const deleteTenantById = async (tenantId) => {
@@ -38,17 +36,17 @@ export const deleteAllTenants = async () => {
     });
 
     const request = await response.json();
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request,
-      };
+    if (!response.ok) throw new Error(request?.message || "Delete all failed");
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request,
+    };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, data: null };
   }
 };
-
 
 //edit tenant
 export const editTenantById = async (tenantId, data) => {
@@ -64,13 +62,14 @@ export const editTenantById = async (tenantId, data) => {
 
     const request = await response.json();
 
-    if (response.ok)
-      return {
-        ok: response.ok,
-        status: response.status,
-        data: request.data,
-      };
+    if (!response.ok) throw new Error(request?.message || "Tenant update failed");
+    return {
+      ok: response.ok,
+      status: response.status,
+      data: request.data,
+    };
   } catch (err) {
     console.error(err);
+    return { ok: false, status: 500, data: null };
   }
 };

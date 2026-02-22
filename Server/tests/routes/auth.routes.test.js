@@ -34,15 +34,9 @@ const loadAuthCombinedRouter = async (verifyMeImpl) => {
     verifyMe: verifyMeImpl,
   }));
 
-  const loginStub = express.Router().post("/", (req, res) =>
-    res.status(200).json({ ok: true }),
-  );
-  const logoutStub = express.Router().post("/", (req, res) =>
-    res.status(200).json({ ok: true }),
-  );
-  const registerStub = express.Router().post("/", (req, res) =>
-    res.status(200).json({ ok: true }),
-  );
+  const loginStub = express.Router().post("/", (req, res) => res.status(200).json({ ok: true }));
+  const logoutStub = express.Router().post("/", (req, res) => res.status(200).json({ ok: true }));
+  const registerStub = express.Router().post("/", (req, res) => res.status(200).json({ ok: true }));
 
   jest.unstable_mockModule("../../Routes/Auth/Login/LoginRoute.js", () => ({
     default: loginStub,
@@ -64,7 +58,9 @@ describe("Auth route modules", () => {
     const router = await loadLoginRouter((req, res) => res.status(200).json({ token: "ok" }));
     const app = createRouteTestApp("/auth", router);
 
-    const res = await request(app).post("/auth/").send({ email: "user@example.com", password: "12345678" });
+    const res = await request(app)
+      .post("/auth/")
+      .send({ email: "user@example.com", password: "12345678" });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ token: "ok" });
@@ -84,7 +80,9 @@ describe("Auth route modules", () => {
     const router = await loadLoginRouter((req, res, next) => next(new Error("login failed")));
     const app = createRouteTestApp("/auth", router);
 
-    const res = await request(app).post("/auth/").send({ email: "user@example.com", password: "12345678" });
+    const res = await request(app)
+      .post("/auth/")
+      .send({ email: "user@example.com", password: "12345678" });
 
     expect(res.status).toBe(500);
     expect(res.body.message).toBe("login failed");
@@ -182,7 +180,9 @@ describe("Auth route modules", () => {
   });
 
   test("GET /profile edge verifyMe error returns 500", async () => {
-    const router = await loadAuthCombinedRouter((req, res, next) => next(new Error("profile failed")));
+    const router = await loadAuthCombinedRouter((req, res, next) =>
+      next(new Error("profile failed")),
+    );
     const app = createRouteTestApp("/auth", router);
 
     const res = await request(app).get("/auth/profile").set("Cookie", makeAuthCookie());

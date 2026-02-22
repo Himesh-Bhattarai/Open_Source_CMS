@@ -10,8 +10,7 @@ export const integrationsApi = async () => {
 
     const data = await response.json();
 
-    if (!data.ok)
-      throw new Error(data.message || "Failed to fetch integrations");
+    if (!data.ok) throw new Error(data.message || "Failed to fetch integrations");
 
     return {
       ok: response.ok,

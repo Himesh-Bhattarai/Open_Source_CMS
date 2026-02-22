@@ -35,7 +35,7 @@ describe("Form load routes", () => {
   test("GET form by id valid invalid edge", async () => {
     const router = await loadFormLoadRouter({
       find: jest.fn(),
-      findById: jest.fn().mockResolvedValue({ _id: "f1" }),
+      findById: jest.fn().mockResolvedValue({ _id: "f1", userId: "user-1" }),
     });
     const app = createRouteTestApp("/load", router);
 

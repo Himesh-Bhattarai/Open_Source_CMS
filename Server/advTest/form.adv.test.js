@@ -17,7 +17,14 @@ describe("Form load integration", () => {
   beforeAll(async () => {
     await setupTestDB();
     const { Form } = await import(formModelPath);
-    await Form.create({ _id: new mongoose.Types.ObjectId(), userId: "user-adv", formName: "Contact",createdBy: "user-adv", fields: [] , tenantId: "t1" });
+    await Form.create({
+      _id: new mongoose.Types.ObjectId(),
+      userId: "user-adv",
+      formName: "Contact",
+      createdBy: "user-adv",
+      fields: [],
+      tenantId: "t1",
+    });
     const router = (await import(loadFormRouterPath)).default;
     app = buildApp("/form", router);
   });
@@ -46,7 +53,6 @@ describe("Form load integration", () => {
 
     expect(normalizedBody).toMatchSnapshot();
   });
-
 
   test("fuzz query params do not crash", async () => {
     for (const extras of fuzzPayloads(randomObject(), 5)) {

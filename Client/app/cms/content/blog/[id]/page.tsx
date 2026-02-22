@@ -1,50 +1,67 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useRef } from "react"
-import { use } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { useRouter } from "next/navigation"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
-import { ArrowLeft, Save, Eye, ChevronDown, ChevronUp, Calendar, Tag, ImageIcon, X} from "lucide-react"
-import { updateBlogApi } from "@/Api/Blog/createBlog"
-import { loadBlogById } from "@/Api/Blog/Load.js"
+import { useEffect, useState, useRef } from "react";
+import { use } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Tag,
+  ImageIcon,
+  X,
+} from "lucide-react";
+import { updateBlogApi } from "@/Api/Blog/createBlog";
+import { loadBlogById } from "@/Api/Blog/Load.js";
+import { toast } from "sonner";
 
 type BlogSEO = {
-  metaTitle: string
-  metaDescription: string
-  focusKeyword: string
-}
+  metaTitle: string;
+  metaDescription: string;
+  focusKeyword: string;
+};
 
 type BlogSettings = {
-  featured: boolean
-  allowComments: boolean
-  showAuthor: boolean
-}
+  featured: boolean;
+  allowComments: boolean;
+  showAuthor: boolean;
+};
 
 type BlogPost = {
-  _id: string
-  tenantId: string
-  title: string
-  slug: string
-  excerpt: string
-  content: string
-  featuredImage: string | null
-  category: string
-  tags: string[]
-  author: string
-  publishDate: string
-  status: "draft" | "published" | "scheduled"
-  seo: BlogSEO
-  settings: BlogSettings
-}
+  _id: string;
+  tenantId: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  featuredImage: string | null;
+  category: string;
+  tags: string[];
+  author: string;
+  publishDate: string;
+  status: "draft" | "published" | "scheduled";
+  seo: BlogSEO;
+  settings: BlogSettings;
+};
 
 const emptyBlog: BlogPost = {
   _id: "",
@@ -69,23 +86,67 @@ const emptyBlog: BlogPost = {
     allowComments: true,
     showAuthor: true,
   },
-}
-
-
+};
 
 export default function BlogPostEditor({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+  const { id } = use(params);
   const router = useRouter();
 
-  const [blogData, setBlogData] = useState<BlogPost>(emptyBlog)
+  const [blogData, setBlogData] = useState<BlogPost>(emptyBlog);
 
-  
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState<string | null>(null);
 
-  const [seoOpen, setSeoOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [seoOpen, setSeoOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [tagInput, setTagInput] = useState("");
+
+  const toDateInputValue = (value: unknown) => {
+    if (!value) return "";
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
+  };
+
+  const normalizeBlogData = (raw: any): BlogPost => {
+    const seo = raw?.seo ?? {};
+    const settings = raw?.settings ?? {};
+    const status =
+      raw?.status === "published" || raw?.status === "scheduled" || raw?.status === "draft"
+        ? raw.status
+        : "draft";
+
+    return {
+      ...emptyBlog,
+      _id: String(raw?._id ?? ""),
+      tenantId: String(raw?.tenantId ?? ""),
+      title: String(raw?.title ?? ""),
+      slug: String(raw?.slug ?? ""),
+      excerpt: String(raw?.excerpt ?? ""),
+      content: String(raw?.content ?? ""),
+      featuredImage: raw?.featuredImage ? String(raw.featuredImage) : null,
+      category: String(raw?.category ?? ""),
+      tags: Array.isArray(raw?.tags)
+        ? raw.tags
+            .filter((tag: unknown) => typeof tag === "string")
+            .map((tag: string) => tag.trim())
+            .filter(Boolean)
+        : [],
+      author: String(raw?.author ?? ""),
+      publishDate: toDateInputValue(raw?.publishDate) || toDateInputValue(new Date()),
+      status,
+      seo: {
+        metaTitle: String(seo?.metaTitle ?? ""),
+        metaDescription: String(seo?.metaDescription ?? ""),
+        focusKeyword: String(seo?.focusKeyword ?? ""),
+      },
+      settings: {
+        featured: typeof settings?.featured === "boolean" ? settings.featured : false,
+        allowComments: typeof settings?.allowComments === "boolean" ? settings.allowComments : true,
+        showAuthor: typeof settings?.showAuthor === "boolean" ? settings.showAuthor : true,
+      },
+    };
+  };
 
   function addTag(tag: string) {
     if (!tag.trim()) return;
@@ -100,7 +161,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
   function removeTag(tag: string) {
     setBlogData({
       ...blogData,
-      tags: blogData.tags.filter(t => t !== tag),
+      tags: blogData.tags.filter((t) => t !== tag),
     });
   }
 
@@ -120,13 +181,13 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
     // 5MB max
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be under 5MB");
+      toast.error("Image must be under 5MB");
       return;
     }
 
     // Only images
     if (!file.type.startsWith("image/")) {
-      alert("Only image files allowed");
+      toast.error("Only image files allowed");
       return;
     }
 
@@ -141,11 +202,10 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
     reader.readAsDataURL(file);
   };
 
-
   const removeFeaturedImage = () => {
     setBlogData((prev) => ({
       ...prev,
-      featuredImage: "",
+      featuredImage: null,
     }));
 
     if (fileInputRef.current) {
@@ -153,61 +213,67 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
     }
   };
 
-
   const handleSave = async () => {
-    setMessage(null);
-
     try {
       const data = await updateBlogApi(id, blogData);
 
       if (data?.ok) {
-        setMessage("Blog post updated successfully.");
-
-        // Hide the message after 4 seconds
+        toast.success("Blog post updated successfully.");
         setTimeout(() => {
-          setMessage(null);
           router.refresh();
-          router.push('/cms/content/blog'); // optional redirect
+          router.push("/cms/content/blog");
         }, 2000);
       }
     } catch (err) {
       console.error("Error updating blog post:", err);
-      setMessage("Failed to update blog post.");
-
-      // Hide failure message after 4 seconds
-      setTimeout(() => setMessage(null), 4000);
+      toast.error("Failed to update blog post.");
     }
   };
-
-
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await loadBlogById(id)
-        setBlogData({ ...emptyBlog, ...data }) 
+        const data = await loadBlogById(id);
+        setBlogData(normalizeBlogData(data));
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    load()
-  }, [id])
+    load();
+  }, [id]);
 
+  const handlePublishNow = async () => {
+    const publishPayload: BlogPost = {
+      ...blogData,
+      status: "published",
+      publishDate: toDateInputValue(blogData.publishDate) || toDateInputValue(new Date()),
+    };
 
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage(null); // hide message after 3 seconds
-      }, 1000); // 3000ms = 3 seconds
-
-      return () => clearTimeout(timer); // cleanup if message changes before timeout
+    setBlogData(publishPayload);
+    try {
+      const data = await updateBlogApi(id, publishPayload);
+      if (data?.ok) {
+        toast.success("Blog published successfully.");
+        setTimeout(() => {
+          router.refresh();
+          router.push("/cms/content/blog");
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Error publishing blog post:", err);
+      toast.error("Failed to publish blog post.");
     }
-  }, [message]);
+  };
 
-  if (loading) return <div>Loading...</div>
+  const handlePreview = () => {
+    if (!blogData.slug.trim()) {
+      toast.error("Add a slug to preview this blog post.");
+      return;
+    }
+    window.open(`/blog/${blogData.slug}`, "_blank");
+  };
 
-
-
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
@@ -224,16 +290,11 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
             <h1 className="text-2xl font-bold">Edit Blog Post</h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge>{blogData?.status}</Badge>
-              {message && (
-                <div className="p-2 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
-                  {message}
-                </div>
-              )}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handlePreview}>
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
@@ -258,18 +319,20 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
-                  value={blogData.title}
+                  value={blogData.title ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, title: e.target.value })}
                   placeholder="Enter post title"
                 />
-                <div className="text-xs text-muted-foreground">{blogData.title.length} characters</div>
+                <div className="text-xs text-muted-foreground">
+                  {blogData.title.length} characters
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="slug">URL Slug</Label>
                 <Input
                   id="slug"
-                  value={blogData?.slug}
+                  value={blogData.slug ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, slug: e.target.value })}
                   placeholder="post-url-slug"
                 />
@@ -279,19 +342,21 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Label htmlFor="excerpt">Excerpt</Label>
                 <Textarea
                   id="excerpt"
-                  value={blogData?.excerpt}
+                  value={blogData.excerpt ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, excerpt: e.target.value })}
                   placeholder="Brief summary of your post"
                   rows={3}
                 />
-                <div className="text-xs text-muted-foreground">{blogData.excerpt.length} characters</div>
+                <div className="text-xs text-muted-foreground">
+                  {blogData.excerpt.length} characters
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="content">Content</Label>
                 <Textarea
                   id="content"
-                  value={blogData?.content}
+                  value={blogData.content ?? ""}
                   onChange={(e) => setBlogData({ ...blogData, content: e.target.value })}
                   placeholder="Write your blog post content..."
                   rows={15}
@@ -310,7 +375,11 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
               <CardHeader className="cursor-pointer" onClick={() => setSeoOpen(!seoOpen)}>
                 <div className="flex items-center justify-between">
                   <CardTitle>SEO Settings</CardTitle>
-                  {seoOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {seoOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </div>
                 <CardDescription>Optimize for search engines</CardDescription>
               </CardHeader>
@@ -320,7 +389,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                     <Label htmlFor="metaTitle">Meta Title</Label>
                     <Input
                       id="metaTitle"
-                      value={blogData.seo.metaTitle}
+                      value={blogData.seo.metaTitle ?? ""}
                       onChange={(e) =>
                         setBlogData({
                           ...blogData,
@@ -329,14 +398,16 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                       }
                       placeholder="SEO title"
                     />
-                    <div className="text-xs text-muted-foreground">{blogData.seo.metaTitle.length} / 60 characters</div>
+                    <div className="text-xs text-muted-foreground">
+                      {blogData.seo.metaTitle.length} / 60 characters
+                    </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="metaDescription">Meta Description</Label>
                     <Textarea
                       id="metaDescription"
-                      value={blogData.seo.metaDescription}
+                      value={blogData.seo.metaDescription ?? ""}
                       onChange={(e) =>
                         setBlogData({
                           ...blogData,
@@ -355,7 +426,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                     <Label htmlFor="focusKeyword">Focus Keyword</Label>
                     <Input
                       id="focusKeyword"
-                      value={blogData.seo.focusKeyword}
+                      value={blogData.seo.focusKeyword ?? ""}
                       onChange={(e) =>
                         setBlogData({
                           ...blogData,
@@ -376,7 +447,11 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
               <CardHeader className="cursor-pointer" onClick={() => setSettingsOpen(!settingsOpen)}>
                 <div className="flex items-center justify-between">
                   <CardTitle>Advanced Settings</CardTitle>
-                  {settingsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {settingsOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </div>
               </CardHeader>
               <CollapsibleContent>
@@ -447,7 +522,12 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <Select value={blogData.status as "published" | "draft" | "scheduled"} onValueChange={(value: "published" | "draft" | "scheduled") => setBlogData({ ...blogData, status: value })}>
+                <Select
+                  value={blogData.status as "published" | "draft" | "scheduled"}
+                  onValueChange={(value: "published" | "draft" | "scheduled") =>
+                    setBlogData({ ...blogData, status: value })
+                  }
+                >
                   <SelectTrigger id="status">
                     <SelectValue />
                   </SelectTrigger>
@@ -464,15 +544,12 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                 <Input
                   id="publishDate"
                   type="date"
-                  value={blogData.publishDate}
-                  onChange={(e) =>
-                    setBlogData({ ...blogData, publishDate: e.target.value })
-                  }
+                  value={blogData.publishDate ?? ""}
+                  onChange={(e) => setBlogData({ ...blogData, publishDate: e.target.value })}
                 />
               </div>
 
-
-              <Button className="w-full">
+              <Button className="w-full" onClick={handlePublishNow}>
                 <Calendar className="h-4 w-4 mr-2" />
                 Publish Now
               </Button>
@@ -487,7 +564,6 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
 
             <CardContent>
               <div className="space-y-4">
-
                 {/* Hidden file input */}
                 <input
                   type="file"
@@ -504,6 +580,8 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                       <img
                         src={blogData.featuredImage}
                         alt="Featured"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover"
                       />
 
@@ -518,9 +596,7 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                   ) : (
                     <div className="text-center">
                       <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mt-2">
-                        No image selected
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">No image selected</p>
                     </div>
                   )}
                 </div>
@@ -534,11 +610,9 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Choose Image
                 </Button>
-
               </div>
             </CardContent>
           </Card>
-
 
           {/* Category & Tags */}
           <Card>
@@ -549,11 +623,11 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Select
-                  value={blogData.category}
+                  value={blogData.category ?? ""}
                   onValueChange={(value) => setBlogData({ ...blogData, category: value })}
                 >
                   <SelectTrigger id="category">
-                    <SelectValue />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Development">Development</SelectItem>
@@ -589,13 +663,12 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
                         onClick={() => removeTag(tag)}
                         className="ml-2 text-xs hover:text-red-500"
                       >
-                        ✕
+                        x
                       </span>
                     </Badge>
                   ))}
                 </div>
               </div>
-
             </CardContent>
           </Card>
 
@@ -619,5 +692,5 @@ export default function BlogPostEditor({ params }: { params: Promise<{ id: strin
         </div>
       </div>
     </div>
-  )
+  );
 }

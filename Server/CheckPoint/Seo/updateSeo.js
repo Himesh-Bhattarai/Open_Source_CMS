@@ -1,5 +1,5 @@
 import { Seo } from "../../Models/Seo/Seo.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const updateSeoCheckpoint = async (req, res, next) => {
   try {
@@ -38,7 +38,12 @@ export const updateSeoCheckpoint = async (req, res, next) => {
       { new: true },
     );
 
-    notif.updateSEO({ userId, websiteName: payload.websiteName, seoId, websiteId: payload.websiteId });
+    notif.updateSEO({
+      userId,
+      websiteName: payload.websiteName,
+      seoId,
+      websiteId: payload.websiteId,
+    });
 
     return res.status(200).json({
       success: true,

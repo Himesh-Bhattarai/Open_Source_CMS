@@ -2,14 +2,19 @@ import { Menu } from "../Models/Menu/Menu.js";
 
 export const getMenu = async (req, res, next) => {
   try {
+    const tenantId = req.tenant?._id?.toString();
+    if (!tenantId) {
+      return res.status(400).json({ error: "Tenant context is required" });
+    }
 
     const getMenu = await Menu.find({
-      tenantId: req.tenant._id,
-    });
+      tenantId,
+      status: "published",
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (!getMenu) throw new Error("Menu not Found");
-
-    res.status(200).json({
+    return res.status(200).json({
       getMenu,
     });
   } catch (err) {

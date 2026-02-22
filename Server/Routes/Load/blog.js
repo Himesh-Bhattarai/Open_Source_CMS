@@ -11,9 +11,8 @@ router.get("/load/:blogId", verificationMiddleware, async (req, res, next) => {
     if (!userId) throw new Error("Unauthorized");
     if (!blogId) throw new Error("Blog ID is required");
 
-    const blogPost = await BlogPost.findOne({ _id: blogId });
-    if (!blogPost)
-      return res.status(404).json({ message: "Blog post not found" });
+    const blogPost = await BlogPost.findOne({ _id: blogId, authorId: userId });
+    if (!blogPost) return res.status(404).json({ message: "Blog post not found" });
     res.status(200).json(blogPost);
   } catch (err) {
     next(err);
@@ -26,8 +25,7 @@ router.get("/load-all", verificationMiddleware, async (req, res, next) => {
     if (!userId) throw new Error("Unauthorized");
 
     const userBlogs = await BlogPost.find({ authorId: userId });
-    if (!userBlogs)
-      return res.status(404).json({ message: "No blog posts found" });
+    if (!userBlogs) return res.status(404).json({ message: "No blog posts found" });
 
     res.status(200).json(userBlogs);
   } catch (err) {

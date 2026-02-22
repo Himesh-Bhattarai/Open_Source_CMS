@@ -20,5 +20,4 @@ const ContentTypeSchema = new Schema(
 
 ContentTypeSchema.index({ tenantId: 1, slug: 1 }, { unique: true });
 
-export const ContentType =
-  models.ContentType || model("ContentType", ContentTypeSchema);
+export const ContentType = models.ContentType || model("ContentType", ContentTypeSchema);

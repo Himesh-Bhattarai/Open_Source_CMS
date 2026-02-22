@@ -1,6 +1,5 @@
 const DELETE_BLOG_BY_ID = process.env.NEXT_PUBLIC_DELETE_BLOG_BY_ID;
 
-
 //delete Blog by id
 export const deleteBlogById = async (blogId) => {
   try {

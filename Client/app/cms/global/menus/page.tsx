@@ -1,81 +1,77 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
-import { loadMenus } from "@/Api/Menu/Load"
-import { deleteMenuById } from "@/Api/Menu/Delete"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { loadMenus } from "@/Api/Menu/Load";
+import { deleteMenuById } from "@/Api/Menu/Delete";
+import { toast } from "sonner";
 
-type Toast = {
-  id: number
-  message: string
-  type: "error" | "success"
+interface MenuSummary {
+  _id: string;
+  title?: string;
+  description?: string;
+  items?: unknown[];
+  menuLocation?: string;
+  status?: string;
+  updatedAt?: string;
 }
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export default function MenusPage() {
-  const [loading, setLoading] = useState(false)
-  const [menusData, setMenusData] = useState<any[]>([])
-  const [toasts, setToasts] = useState<Toast[]>([])
+  const [loading, setLoading] = useState(false);
+  const [menusData, setMenusData] = useState<MenuSummary[]>([]);
 
-  const toastCounter = useRef(0)
-
-  // Helper to truncate text to 50 chars
+  // Keep card text compact in the grid layout.
   const truncate = (text = "", length = 50) =>
-    text.length > length ? text.slice(0, length) + "…" : text
+    text.length > length ? `${text.slice(0, length)}...` : text;
 
-  /* ---------------- LOAD MENUS ---------------- */
   useEffect(() => {
     const loadMenu = async () => {
       try {
-        setLoading(true)
-        const response = await loadMenus()
-        if (!response?.ok) throw new Error("Failed to load menus")
-        setMenusData(response.menus)
-      } catch (err: any) {
-        pushToast(err.message || "Failed to load menus", "error")
+        setLoading(true);
+        const response = await loadMenus();
+        if (!response?.ok) throw new Error("Failed to load menus");
+        const rawMenus = Array.isArray(response.menus)
+          ? (response.menus as Array<Partial<MenuSummary>>)
+          : [];
+        const safeMenus = rawMenus.filter(
+          (menu): menu is MenuSummary => typeof menu?._id === "string",
+        );
+        setMenusData(safeMenus);
+      } catch (err) {
+        toast.error(getErrorMessage(err, "Failed to load menus"));
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadMenu()
-  }, [])
+    loadMenu();
+  }, []);
 
-  /* ---------------- DELETE MENU ---------------- */
   const deleteMenu = async (menuId: string) => {
-    const previous = menusData
+    const previous = menusData;
 
-    // Optimistic update
-    setMenusData((prev) => prev.filter((m) => m._id !== menuId))
+    // Optimistic UI update with rollback on failure.
+    setMenusData((prev) => prev.filter((m) => m._id !== menuId));
 
     try {
-      const response = await deleteMenuById(menuId)
-      if (!response?.ok) throw new Error("Delete failed")
-      pushToast("Menu deleted", "success")
-    } catch (err: any) {
-      // rollback
-      setMenusData(previous)
-      pushToast(err.message || "Failed to delete menu", "error")
+      const response = await deleteMenuById(menuId);
+      if (!response?.ok) throw new Error("Delete failed");
+      toast.success("Menu deleted");
+    } catch (err) {
+      setMenusData(previous);
+      toast.error(getErrorMessage(err, "Failed to delete menu"));
     }
-  }
+  };
 
-  /* ---------------- TOAST SYSTEM ---------------- */
-  const pushToast = (message: string, type: "success" | "error") => {
-    const id = ++toastCounter.current
-    setToasts((t) => [...t, { id, message, type }])
-
-    setTimeout(() => {
-      setToasts((t) => t.filter((x) => x.id !== id))
-    }, 2500)
-  }
-
-  /* ---------------- UI ---------------- */
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-balance text-3xl font-bold tracking-tight">Menus</h1>
@@ -91,21 +87,14 @@ export default function MenusPage() {
         </Button>
       </div>
 
-      {/* Loading */}
       {loading && (
-        <div className="flex justify-center py-12 text-muted-foreground">
-          Loading menus…
-        </div>
+        <div className="flex justify-center py-12 text-muted-foreground">Loading menus...</div>
       )}
 
-      {/* Empty */}
       {!loading && menusData.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          No menus found
-        </div>
+        <div className="text-center py-12 text-muted-foreground">No menus found</div>
       )}
 
-      {/* Menus Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {menusData.map((menu) => (
           <Card key={menu._id} className="hover:shadow-md transition-shadow">
@@ -113,9 +102,7 @@ export default function MenusPage() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-semibold">
-                      {menu.items?.length || 0}
-                    </span>
+                    <span className="text-primary font-semibold">{menu.items?.length || 0}</span>
                   </div>
                   <div>
                     <CardTitle className="text-lg">{menu.title}</CardTitle>
@@ -138,7 +125,7 @@ export default function MenusPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
                 <Clock className="h-3.5 w-3.5" />
-                <span>Last edited {menu.updatedAt || "—"}</span>
+                <span>Last edited {menu.updatedAt || "-"}</span>
               </div>
 
               <div className="flex gap-2">
@@ -168,20 +155,6 @@ export default function MenusPage() {
           </Card>
         ))}
       </div>
-
-      {/* Minimal Toasts */}
-      <div className="fixed bottom-6 right-6 space-y-2 z-50">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium
-              ${t.type === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white"}
-              animate-in slide-in-from-right`}
-          >
-            {t.message}
-          </div>
-        ))}
-      </div>
     </div>
-  )
+  );
 }

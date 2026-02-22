@@ -1,6 +1,6 @@
 import { Page } from "../../Models/Page/Page.js";
 import crypto from "crypto";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const pageCheckpoint = async (req, res) => {
   const { title, slug, pageTree, seo, tenantId } = req.body;
@@ -18,7 +18,6 @@ export const pageCheckpoint = async (req, res) => {
     authorId: userId,
     etag: crypto.randomUUID(),
   });
-
 
   notif.createPage({ userId, slug, title, pageId: page._id, websiteId: tenantId });
   res.json({ pageId: page._id });

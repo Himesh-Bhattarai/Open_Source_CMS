@@ -1,0 +1,159 @@
+# Environment Reference
+
+This project uses separate env files:
+
+- `Server/.env`
+- `Client/.env.local`
+
+Do not commit real secrets.
+
+## Server env keys
+
+### Required in normal runtime
+
+- `MONGO_URI`
+- `SESSION_SECRET`
+- `ACCESS_TOKEN`
+- `REFRESH_TOKEN`
+
+### Required for OAuth flows
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `FACEBOOK_CLIENT_ID`
+- `FACEBOOK_CLIENT_SECRET`
+- `RANDOM_PASSWORD`
+- `SERVER_BASE_URL` (example: `https://api.example.com`)
+- `GOOGLE_CALLBACK_URL` (optional override)
+- `FACEBOOK_CALLBACK_URL` (optional override)
+
+### Required for external API rate limiting
+
+- `REDIS_HOST`
+- `REDIS_PORT`
+
+### Common operational keys
+
+- `PORT` (default fallback: `5000`)
+- `HOST`
+- `NODE_ENV`
+- `CORS_ORIGIN`
+- `CSRF_PROTECTION` (optional, set `false` to disable same-origin CSRF guard)
+- `METRICS_TOKEN` (optional token for `/metrics` endpoint)
+- `ACCESS_TOKEN_EXPIRES_IN`
+- `REFRESH_TOKEN_EXPIRES_IN`
+- `FRONTEND_AUTH_REDIRECT`
+
+### Legacy keys currently not used by runtime code
+
+- `LOG_LEVEL`
+- `PRODUCTION_JUST_SAVE`
+
+### Optional server-side CMS public integration keys (for Next server routes)
+
+- `CMS_API_BASE_URL` (backend origin used by `Client/app/api/public/*`)
+- `CMS_DEFAULT_TENANT_DOMAIN` (default tenant slug/domain for homepage hydration)
+- `CMS_PUBLIC_API_KEY` (server-side API key for external-request fetches)
+
+## Client env keys
+
+Client API modules read many explicit `NEXT_PUBLIC_*` keys. Missing values can
+produce runtime request failures.
+
+Current keys detected from `Client/.env.local`:
+
+- `NEXT_PUBLIC_ALL_BLOG_LOAD_API`
+- `NEXT_PUBLIC_BACKUP_BASE_URL`
+- `NEXT_PUBLIC_BLOG_CREATE_URL`
+- `NEXT_PUBLIC_BLOG_LOAD_BY_ID_API`
+- `NEXT_PUBLIC_BULK_PAGES_DEL_BY_ADMIN`
+- `NEXT_PUBLIC_CHANGE_PASSWORD`
+- `NEXT_PUBLIC_CHECK_SLUG_AVAILABILITY_URL`
+- `NEXT_PUBLIC_CMS_FOOTER_API`
+- `NEXT_PUBLIC_CMS_MENU_API`
+- `NEXT_PUBLIC_CREATE_FORM_URL`
+- `NEXT_PUBLIC_CREATE_MEDIA_URL`
+- `NEXT_PUBLIC_CREATE_MENU_ITEM_URL`
+- `NEXT_PUBLIC_CREATE_MENU_URL`
+- `NEXT_PUBLIC_CREATE_PAGE_URL`
+- `NEXT_PUBLIC_CREATE_PAGE_VERSION`
+- `NEXT_PUBLIC_CREATE_SEO_URL`
+- `NEXT_PUBLIC_CREATE_TENANT_URL`
+- `NEXT_PUBLIC_CREATE_THEME_URL`
+- `NEXT_PUBLIC_DELETE_ACCOUNT_URL`
+- `NEXT_PUBLIC_DELETE_ALL_TENANTS`
+- `NEXT_PUBLIC_DELETE_BLOG_BY_ID`
+- `NEXT_PUBLIC_DELETE_FOOTER_BY_ID`
+- `NEXT_PUBLIC_DELETE_FORM_BY_ID`
+- `NEXT_PUBLIC_DELETE_MEDIA_URL`
+- `NEXT_PUBLIC_DELETE_MENU_BY_ID`
+- `NEXT_PUBLIC_DELETE_MENU_ITEM`
+- `NEXT_PUBLIC_DELETE_SEO_BY_ID`
+- `NEXT_PUBLIC_DELETE_TENANT_BY_ID`
+- `NEXT_PUBLIC_DELETE_TENANT_URL`
+- `NEXT_PUBLIC_DELETE_USER_PAGES_BY_ID`
+- `NEXT_PUBLIC_DELETE_USER_PAGES_URL`
+- `NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL`
+- `NEXT_PUBLIC_EDIT_TENANT_BY_ID`
+- `NEXT_PUBLIC_FEEDBACK_COLLECT`
+- `NEXT_PUBLIC_FETCH_ALL_BLOG`
+- `NEXT_PUBLIC_FETCH_ALL_MEDIA`
+- `NEXT_PUBLIC_FETCH_ALL_PAGE`
+- `NEXT_PUBLIC_FETCH_FOOTER_BY_ID`
+- `NEXT_PUBLIC_FETCH_FOOTER_URL`
+- `NEXT_PUBLIC_FETCH_SEO_URL`
+- `NEXT_PUBLIC_FOOTER_URL`
+- `NEXT_PUBLIC_GET_ALL_BLOG_URL`
+- `NEXT_PUBLIC_GET_ALL_PAGES_URL`
+- `NEXT_PUBLIC_GET_ALL_TENANTS_URL`
+- `NEXT_PUBLIC_GET_ALL_USER`
+- `NEXT_PUBLIC_GET_API_KEYS`
+- `NEXT_PUBLIC_GET_MEDIA_URL`
+- `NEXT_PUBLIC_GET_PAGE_BY_ID`
+- `NEXT_PUBLIC_GET_PAGE_URL`
+- `NEXT_PUBLIC_GET_PAGES_ON_WEBSITE`
+- `NEXT_PUBLIC_GET_STATS_URL`
+- `NEXT_PUBLIC_GET_TENANTS_URL`
+- `NEXT_PUBLIC_INTEGRATIONS_URL`
+- `NEXT_PUBLIC_LOAD_FORMS_DATA`
+- `NEXT_PUBLIC_LOAD_FORMS_DATA_BY_ID`
+- `NEXT_PUBLIC_LOAD_MEDIA`
+- `NEXT_PUBLIC_LOAD_MENU_BY_ID`
+- `NEXT_PUBLIC_LOAD_MENU_URL`
+- `NEXT_PUBLIC_LOAD_SEO_BY_ID`
+- `NEXT_PUBLIC_LOAD_TENANTS_BY_ID`
+- `NEXT_PUBLIC_LOAD_TENANTS_URL`
+- `NEXT_PUBLIC_LOGIN_URL`
+- `NEXT_PUBLIC_LOGOUT_URL`
+- `NEXT_PUBLIC_MENU_URL`
+- `NEXT_PUBLIC_NOTIFY_GET`
+- `NEXT_PUBLIC_REGISTER_URL`
+- `NEXT_PUBLIC_RESTORE_PAGE_VERSION_URL`
+- `NEXT_PUBLIC_UPDATA_PAGE_URL`
+- `NEXT_PUBLIC_UPDATE_BLOG_URL`
+- `NEXT_PUBLIC_UPDATE_FOOTER_URL`
+- `NEXT_PUBLIC_UPDATE_FORM_URL`
+- `NEXT_PUBLIC_UPDATE_MENU_URL`
+- `NEXT_PUBLIC_UPDATE_PAGE_URL`
+- `NEXT_PUBLIC_UPDATE_SEO_URL`
+- `NEXT_PUBLIC_VALIDATE_USER`
+- `NEXT_PUBLIC_VERIFY_ME`
+
+Notes:
+
+- `NEXT_PUBLIC_UPDATA_PAGE_URL` is still referenced as a compatibility fallback
+  in `Client/Api/Page/CreatePage.js`.
+- `NEXT_PUBLIC_CMS_FOOTER_API` and `NEXT_PUBLIC_CMS_MENU_API` are currently
+  not read by the codebase and can be removed from local env files.
+- `NEXT_PUBLIC_DEFAULT_TENANT_DOMAIN` is used by external CMS client calls in
+  `Client/Api/ExternalCall/*` and should be added when those calls are enabled.
+- `NEXT_PUBLIC_USE_MOCK_THEME_DATA` is read in `Client/app/cms/theme/page.tsx`
+  and may be added when you want mock theme mode.
+
+## QA / test-only env keys
+
+- `E2E_BASE_URL` (Playwright target base URL, defaults to `http://127.0.0.1:3000`)
+- `E2E_START_SERVER` (set `true` to let Playwright launch Next dev server)
+- `PERF_TARGET_URL` (TTFB check script target URL)
+- `PERF_TTFB_THRESHOLD_MS` (TTFB threshold override)
+- `PERF_SAMPLE_COUNT` (TTFB sample count override)

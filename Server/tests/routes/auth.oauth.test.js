@@ -7,23 +7,42 @@ const loadOAuthRouter = async ({ tokenFactory } = {}) => {
 
   jest.unstable_mockModule("passport", () => ({
     default: {
-      authenticate: (strategy, options = {}) => (req, res, next) => {
-        if (req.path.includes("callback")) {
-          if (req.query.fail === "1") {
-            return res.redirect(options.failureRedirect || "/login");
+      authenticate:
+        (strategy, options = {}) =>
+        (req, res, next) => {
+          if (req.path.includes("callback")) {
+            if (req.query.fail === "1") {
+              return res.redirect(options.failureRedirect || "/login");
+            }
+            req.user = { _id: "u1", role: "web-owner" };
+            return next();
           }
-          req.user = { _id: "u1", role: "web-owner" };
-          return next();
-        }
-        return res.redirect(302, `/mock-${strategy}`);
-      },
+          return res.redirect(302, `/mock-${strategy}`);
+        },
     },
   }));
 
   jest.unstable_mockModule("../../Utils/Jwt/Jwt.js", () => ({
-    generateTokens:
-      tokenFactory ||
-      (() => ({ accessToken: "access", refreshToken: "refresh" })),
+    generateTokens: tokenFactory || (() => ({ accessToken: "access", refreshToken: "refresh" })),
+    getCookieOptions: (maxAge) => ({
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge,
+    }),
+  }));
+
+  jest.unstable_mockModule("bcrypt", () => ({
+    default: {
+      hash: jest.fn(async () => "hashed-refresh"),
+    },
+  }));
+
+  jest.unstable_mockModule("../../Models/Client/Session.js", () => ({
+    Session: {
+      findOneAndUpdate: jest.fn().mockResolvedValue({ _id: "s1" }),
+    },
   }));
 
   return (await import("../../Routes/Auth/oAuth/oAuth.js")).default;

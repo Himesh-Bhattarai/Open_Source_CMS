@@ -20,19 +20,14 @@ router.get("/get-footer", verificationMiddleware, async (req, res, next) => {
   }
 });
 
-router.get(
-  "/get-footer/:footerId",
-  verificationMiddleware,
-  async (req, res, next) => {
-    const userId = req.user?.userId;
-    const footerId = req.params.footerId;
+router.get("/get-footer/:footerId", verificationMiddleware, async (req, res, next) => {
+  const userId = req.user?.userId;
+  const footerId = req.params.footerId;
 
-    if (!userId || !footerId)
-      return res.status(401).json({ message: "Unauthorized" });
+  if (!userId || !footerId) return res.status(401).json({ message: "Unauthorized" });
 
-    const footer = await Footer.findOne({ userId, _id: footerId }).lean();
-    return res.status(200).json(footer);
-  },
-);
+  const footer = await Footer.findOne({ userId, _id: footerId }).lean();
+  return res.status(200).json(footer);
+});
 
 export default router;

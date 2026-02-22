@@ -12,16 +12,7 @@ const IntegrationUsageSchema = new Schema(
 
     featureKey: {
       type: String,
-      enum: [
-        "menu",
-        "footer",
-        "blog",
-        "pages",
-        "seo",
-        "theme",
-        "media",
-        "form",
-      ],
+      enum: ["menu", "footer", "blog", "pages", "seo", "theme", "media", "form"],
       required: true,
     },
 
@@ -48,10 +39,7 @@ const IntegrationUsageSchema = new Schema(
 );
 
 // prevent duplicates
-IntegrationUsageSchema.index(
-  { tenantId: 1, featureKey: 1, endpointKey: 1 },
-  { unique: true },
-);
+IntegrationUsageSchema.index({ tenantId: 1, featureKey: 1, endpointKey: 1 }, { unique: true });
 
 export const IntegrationUsage =
   models.IntegrationUsage || model("IntegrationUsage", IntegrationUsageSchema);

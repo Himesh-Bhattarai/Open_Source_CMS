@@ -1,10 +1,7 @@
 import { IntegrationUsage } from "../../Models/Integration/IntegrationUsage.js";
 
 // factory to attach featureKey + endpointKey to middleware
-export const trackIntegrationUsage = ({
-  featureKey,
-  endpointKey = "external",
-}) => {
+export const trackIntegrationUsage = ({ featureKey, endpointKey = "external" }) => {
   return (req, res, next) => {
     res.on("finish", async () => {
       try {

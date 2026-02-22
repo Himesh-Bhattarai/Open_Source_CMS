@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { getUserTenants } from "@/Api/Tenant/Fetch";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -21,7 +22,9 @@ type TenantContextType = {
 const TenantContext = createContext<TenantContextType | null>(null);
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const pathname = usePathname();
+  const isCmsRoute = pathname?.startsWith("/cms") ?? false;
+  const { user } = useAuth({ enabled: isCmsRoute });
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [activeTenant, setActiveTenant] = useState<Tenant | null>(null);
 
@@ -34,8 +37,9 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (!isCmsRoute) return;
     refreshTenants();
-  }, [user]);
+  }, [user, isCmsRoute]);
 
   return (
     <TenantContext.Provider

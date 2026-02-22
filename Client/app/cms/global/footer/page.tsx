@@ -1,187 +1,163 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
-import {fetchFooter } from "@/Api/Footer/Fetch"
-import { deleteFooterById } from "@/Api/Footer/Delete"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus, Edit, Eye, Trash2, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { fetchFooter } from "@/Api/Footer/Fetch";
+import { deleteFooterById } from "@/Api/Footer/Delete";
+import { toast } from "sonner";
 
-type Toast = {
-    id: number
-    message: string
-    type: "error" | "success"
+interface FooterListItem {
+  _id: string;
+  layout?: string;
+  status?: "draft" | "published";
+  updatedAt?: string;
+  bottomBar?: {
+    copyrightText?: string;
+  };
 }
 
 export default function FooterPage() {
-    const [loading, setLoading] = useState(false)
-    const [footers, setFooters] = useState<any[]>([])
-    const [toasts, setToasts] = useState<Toast[]>([])
+  const [loading, setLoading] = useState(false);
+  const [footers, setFooters] = useState<FooterListItem[]>([]);
 
-    const toastCounter = useRef(0)
+  const truncate = (text = "", length = 50) =>
+    text.length > length ? text.slice(0, length) + "..." : text;
 
-    const truncate = (text = "", length = 50) =>
-        text.length > length ? text.slice(0, length) + "…" : text
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
 
-    /* ---------------- LOAD FOOTERS ---------------- */
-    useEffect(() => {
-        const load = async () => {
-            try {
-                setLoading(true)
+        const response = await fetchFooter();
 
-                const response = await fetchFooter()
-
-                if (!response?.ok) {
-                    throw new Error("Failed to load footers")
-                }
-                const footersArray = Array.isArray(response.data)
-                    ? response.data
-                    : [response.data]
-
-                setFooters(footersArray)
-
-            } catch (err: any) {
-                pushToast(err.message || "Failed to load footers", "error")
-            } finally {
-                setLoading(false)
-            }
+        if (!response?.ok) {
+          const serverMessage = response?.data?.message || response?.data?.error || "";
+          // Treat "not found" as an empty state instead of a hard failure.
+          if (
+            typeof serverMessage === "string" &&
+            serverMessage.toLowerCase().includes("footer not found")
+          ) {
+            setFooters([]);
+            return;
+          }
+          throw new Error(serverMessage || "Failed to load footers");
         }
+        const footersArray = Array.isArray(response.data)
+          ? response.data
+          : response.data
+            ? [response.data]
+            : [];
 
-        load()
-    }, [])
+        const normalizedFooters = footersArray.filter((item): item is FooterListItem =>
+          Boolean(item && typeof item._id === "string"),
+        );
 
+        setFooters(normalizedFooters);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("Footer load skipped:", message);
+        setFooters([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    /* ---------------- DELETE FOOTER ---------------- */
-    const deleteFooter = async (footerId: string) => {
-        const previous = footers
-        setFooters((prev) => prev.filter((f) => f._id !== footerId))
+    load();
+  }, []);
 
-        try {
-            const response = await deleteFooterById(footerId)
-            if (!response?.ok) throw new Error("Delete failed")
-            pushToast("Footer deleted", "success")
-        } catch (err: any) {
-            setFooters(previous)
-            pushToast(err.message || "Failed to delete footer", "error")
-        }
+  const deleteFooter = async (footerId: string) => {
+    const previous = footers;
+    setFooters((prev) => prev.filter((f) => f._id !== footerId));
+
+    try {
+      const response = await deleteFooterById(footerId);
+      if (!response?.ok) throw new Error("Delete failed");
+      toast.success("Footer deleted");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to delete footer";
+      setFooters(previous);
+      toast.error(message);
     }
+  };
 
-    /* ---------------- TOAST SYSTEM ---------------- */
-    const pushToast = (message: string, type: "success" | "error") => {
-        const id = ++toastCounter.current
-        setToasts((t) => [...t, { id, message, type }])
-
-        setTimeout(() => {
-            setToasts((t) => t.filter((x) => x.id !== id))
-        }, 2500)
-    }
-
-    /* ---------------- UI ---------------- */
-    return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-balance text-3xl font-bold tracking-tight">Footers</h1>
-                    <p className="text-pretty text-muted-foreground mt-1">
-                        Manage global site footers
-                    </p>
-                </div>
-                <Button asChild>
-                    <Link href="/cms/global/footer/new">
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Footer
-                    </Link>
-                </Button>
-            </div>
-
-            {/* Loading */}
-            {loading && (
-                <div className="flex justify-center py-12 text-muted-foreground">
-                    Loading footers…
-                </div>
-            )}
-
-            {/* Empty */}
-            {!loading && footers.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                    No footers found
-                </div>
-            )}
-
-            {/* Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {footers.map((footer) => (
-                    <Card key={footer._id} className="hover:shadow-md transition-shadow">
-                        <CardHeader>
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <CardTitle className="text-lg">
-                                        {footer.layout || "Footer"}
-                                    </CardTitle>
-                                    <CardDescription className="text-xs text-muted-foreground">
-                                        {truncate(footer.bottomBar?.copyrightText || "")}
-                                    </CardDescription>
-                                </div>
-
-                                <Badge
-                                    variant={footer.status === "published" ? "default" : "secondary"}
-                                >
-                                    {footer.status || "draft"}
-                                </Badge>
-                            </div>
-                        </CardHeader>
-
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                                <Clock className="h-3.5 w-3.5" />
-                                <span>Last edited {footer.updatedAt || "—"}</span>
-                            </div>
-
-                            <div className="flex gap-2">
-                                <Button asChild variant="outline" size="sm" className="flex-1">
-                                    <Link href={`/cms/global/footer/new?footerId=${footer._id}`}>
-
-                                        <Edit className="h-3.5 w-3.5 mr-1" />
-                                        Edit
-                                    </Link>
-                                </Button>
-
-                                <Button variant="outline" size="sm" className="flex-1">
-                                    <Eye className="h-3.5 w-3.5 mr-1" />
-                                    Preview
-                                </Button>
-
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 text-destructive"
-                                    onClick={() => deleteFooter(footer._id)}
-                                >
-                                    <Trash2 className="h-3.5 w-3.5 mr-1" />
-                                    Delete
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-
-            {/* Toasts */}
-            <div className="fixed bottom-6 right-6 space-y-2 z-50">
-                {toasts.map((t) => (
-                    <div
-                        key={t.id}
-                        className={`px-4 py-2 rounded-lg shadow-lg text-sm font-medium
-              ${t.type === "error" ? "bg-red-600 text-white" : "bg-green-600 text-white"}
-              animate-in slide-in-from-right`}
-                    >
-                        {t.message}
-                    </div>
-                ))}
-            </div>
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-balance text-3xl font-bold tracking-tight">Footers</h1>
+          <p className="text-pretty text-muted-foreground mt-1">Manage global site footers</p>
         </div>
-    )
+        <Button asChild>
+          <Link href="/cms/global/footer/new">
+            <Plus className="h-4 w-4 mr-2" />
+            New Footer
+          </Link>
+        </Button>
+      </div>
+
+      {loading && (
+        <div className="flex justify-center py-12 text-muted-foreground">Loading footers...</div>
+      )}
+
+      {!loading && footers.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">No footers found</div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {footers.map((footer) => (
+          <Card key={footer._id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-lg">{footer.layout || "Footer"}</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
+                    {truncate(footer.bottomBar?.copyrightText || "")}
+                  </CardDescription>
+                </div>
+
+                <Badge variant={footer.status === "published" ? "default" : "secondary"}>
+                  {footer.status || "draft"}
+                </Badge>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Clock className="h-3.5 w-3.5" />
+                <span>Last edited {footer.updatedAt || "-"}</span>
+              </div>
+
+              <div className="flex gap-2">
+                <Button asChild variant="outline" size="sm" className="flex-1">
+                  <Link href={`/cms/global/footer/new?footerId=${footer._id}`}>
+                    <Edit className="h-3.5 w-3.5 mr-1" />
+                    Edit
+                  </Link>
+                </Button>
+
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  Preview
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-destructive"
+                  onClick={() => deleteFooter(footer._id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 }

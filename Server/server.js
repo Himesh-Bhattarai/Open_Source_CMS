@@ -1,11 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
+import compression from "compression";
 import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import "./Services/notification.js";
-
 import { connectDB } from "./Database/db.js";
 import { errorHandler } from "./Utils/Logger/errorHandler.js";
 
@@ -18,6 +18,7 @@ import combinedRoutes from "./Routes/Fields/Combined.js";
 import mediaRoutes from "./Routes/Media/Media.js";
 import menuRoutes from "./Routes/Menu/Combined.js";
 import pageRoutes from "./Routes/Page/Combined.js";
+import pageVersionRoutes from "./Routes/Page/PageVersion.js";
 import footerRoutes from "./Routes/Footer/Combined.js";
 import themeRoutes from "./Routes/Theme/Theme.js";
 import versionRoutes from "./Routes/Version/Version.js";
@@ -54,36 +55,79 @@ import validateUser from "./Services/validateUser.js";
 import changePassword from "./Services/changePassword.js";
 import apiKeys from "./Routes/Load/getApi.js";
 import { rateLimiter } from "./Validation/middleware/rateLimiter.js";
+import { csrfProtection } from "./Validation/middleware/csrfProtection.js";
+import backupRoutes from "./Routes/Backup/Backup.js";
+import { startBackupScheduler } from "./Services/backupScheduler.js";
 
 const app = express();
 import passport from "./config/password.js";
+const isProd = process.env.NODE_ENV === "production";
+const corsOriginConfig = process.env.CORS_ORIGIN || (isProd ? "" : "http://localhost:3000");
+const corsOrigins = corsOriginConfig
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be configured");
+}
+if (isProd && !process.env.CORS_ORIGIN) {
+  throw new Error("CORS_ORIGIN must be configured in production");
+}
+if (corsOrigins.length === 0) {
+  throw new Error("CORS_ORIGIN must be configured in production");
+}
+if (isProd) {
+  app.set("trust proxy", 1);
+}
+
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  if (isProd) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  }
+  next();
+});
 
 // Middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (corsOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
 
-console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
-
+console.log("CORS_ORIGIN:", corsOrigins.join(","));
+app.use(compression({ threshold: 1024 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "some_secret",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
   }),
 );
+
+app.use(csrfProtection);
 
 // Passport middlewares
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 //Create Routes
 app.use("/api/v1/auth", authRoutes);
@@ -94,11 +138,14 @@ app.use("/api/v1/create-form", formRoutes);
 app.use("/api/v1/create-tenant", tenantRoutes);
 app.use("/api/v1/create-footer", footerRoutes);
 app.use("/api/v1/create-media", mediaRoutes);
+app.use("/api/v1/media", mediaRoutes);
 app.use("/api/v1/create-menu", menuRoutes);
 app.use("/api/v1/create-page", pageRoutes);
+app.use("/api/v1/create-page-version", pageVersionRoutes);
 app.use("/api/v1/create-theme", themeRoutes);
 app.use("/api/v1/create-version", versionRoutes);
 app.use("/api/v1/create-seo", seoRoutes);
+app.use("/api/v1/backup", backupRoutes);
 
 //create -- oAuth
 app.use("/api/v1/oAuth", oAuth);
@@ -117,7 +164,7 @@ app.use("/api/v1/integrations", integrationsApi);
 app.use("/api/v1/api-keys", apiKeys);
 
 //fetch routes for ADMIN
-app.use("/api/v1/admin/get-all-users", adminLoad);
+app.use("/api/v1/admin", adminLoad);
 
 //helper / services
 app.use("/api/v1/check-slug", FetchPageRoutes);
@@ -134,14 +181,13 @@ app.use("/api/v1/delete-tenant", deleteTenant);
 app.use("/api/v1/delete-seo", deleteSeo);
 app.use("/api/v1/delete-form", deleteForm);
 app.use("/api/v1/delete-footer", deleteFooter);
-// Delete-Whole Account 
+// Delete-Whole Account
 app.use("/api/v1/user/delete", deleteUser);
-app.use("/api/v1/user/validate/user-payload", validateUser);
-
-
+app.use("/api/v1/user/validate", validateUser);
 
 //Edit / modification routes
 app.use("/api/v1/update-page", pageRoutes);
+app.use("/api/v1/restore-page-version", pageVersionRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/update-menu", menuRoutes);
 app.use("/api/v1/update-tenant", updateTenant);
@@ -151,23 +197,48 @@ app.use("/api/v1/update-form", updateForm);
 //stats routes
 app.use("/api/v1/statistics", statsRoutes);
 
-
 //external request routes
 app.use("/api/v1/external-request", rateLimiter, extractDomain, externalRequest);
 
-
 app.use("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
+});
+
+app.get("/metrics", (req, res) => {
+  const metricsToken = process.env.METRICS_TOKEN;
+  const providedToken = req.headers["x-metrics-token"];
+  if (metricsToken && providedToken !== metricsToken) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const memoryUsage = process.memoryUsage();
+  const uptimeSeconds = Math.floor(process.uptime());
+
+  const body = [
+    "# HELP cms_process_uptime_seconds Process uptime in seconds",
+    "# TYPE cms_process_uptime_seconds gauge",
+    `cms_process_uptime_seconds ${uptimeSeconds}`,
+    "# HELP cms_process_memory_rss_bytes Resident set size in bytes",
+    "# TYPE cms_process_memory_rss_bytes gauge",
+    `cms_process_memory_rss_bytes ${memoryUsage.rss}`,
+    "# HELP cms_process_memory_heap_used_bytes Heap used in bytes",
+    "# TYPE cms_process_memory_heap_used_bytes gauge",
+    `cms_process_memory_heap_used_bytes ${memoryUsage.heapUsed}`,
+  ].join("\n");
+
+  res.setHeader("Content-Type", "text/plain; version=0.0.4");
+  return res.status(200).send(`${body}\n`);
 });
 // Error handler
 app.use(errorHandler);
 
 // Connect to DB
 connectDB();
+startBackupScheduler();
 
 // Start server
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST;
-app.listen(PORT,'0.0.0.0', () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT} and host ${HOST}`);
 });

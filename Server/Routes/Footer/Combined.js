@@ -3,7 +3,6 @@ import footer from "./Footer.js";
 
 import { Footer } from "../../Models/Footer/Footer.js";
 import { verificationMiddleware } from "../../Utils/Jwt/Jwt.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
 
 const router = express.Router();
 
@@ -25,10 +24,27 @@ router.put("/footer/:id", verificationMiddleware, async (req, res, next) => {
       return res.status(404).json({ message: "Footer not found" });
     }
 
+    const incomingStatus =
+      req.body?.status ??
+      (req.body?.metadata?.status === "published" ? "published" : req.body?.metadata?.status);
+
+    const payload = {
+      ...req.body,
+      status: incomingStatus ?? existingFooter.status,
+    };
+
+    if (payload.status === "published") {
+      payload.publishedAt = payload.publishedAt || new Date();
+      payload.publishedBy = payload.publishedBy || userId;
+    } else if (payload.status === "draft") {
+      payload.publishedAt = null;
+      payload.publishedBy = null;
+    }
+
     // Update footer
     const updatedFooter = await Footer.findByIdAndUpdate(
       footerId,
-      req.body,
+      payload,
       { new: true, runValidators: true }, // runValidators ensures schema is respected
     );
 

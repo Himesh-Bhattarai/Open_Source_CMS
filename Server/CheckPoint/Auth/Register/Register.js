@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
 import { User } from "../../../Models/Client/User.js";
 import { Session } from "../../../Models/Client/Session.js";
-import { generateTokens } from "../../../Utils/Jwt/Jwt.js";
+import { generateTokens, getCookieOptions } from "../../../Utils/Jwt/Jwt.js";
 import { logger as log } from "../../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../../Services/notificationServices.js";
 export const registerCheckpoint = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
@@ -43,22 +43,11 @@ export const registerCheckpoint = async (req, res, next) => {
     });
 
     // Send cookies
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
-    });
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      path: "/api/v1/auth/refresh",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
+    res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
 
     log.info(`Register success: ${email}`);
-notif.registerUser({userId : newUser._id, email, name});
+    notif.registerUser({ userId: newUser._id, email, name });
 
     return res.status(201).json({ message: "User registered successfully" });
   } catch (err) {

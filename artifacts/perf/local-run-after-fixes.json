@@ -1,0 +1,569 @@
+{
+  "url": "http://127.0.0.1:3000",
+  "generatedAt": "2026-02-21T09:27:48.672Z",
+  "outputs": {
+    "json": "C:\\React Project\\Content_Management_System\\artifacts\\perf\\local-run-after-fixes.json",
+    "har": "C:\\React Project\\Content_Management_System\\artifacts\\perf\\local-run-after-fixes.har"
+  },
+  "summary": {
+    "totalPageLoadTimeMs": 5145.94,
+    "totalPageLoadTime": "5145.94 ms",
+    "totalRequests": 28,
+    "failedRequests": 0,
+    "successfulRequests": 28,
+    "totalTransferredBytes": 881149,
+    "totalTransferred": "860.50 KB",
+    "domContentLoadedMs": 919.1,
+    "loadEventMs": 2108.6,
+    "lcpMs": 2160,
+    "firstCpuIdleMs": 2160,
+    "jsExecutionTimeMs": 479.7,
+    "totalTaskDurationMs": 1248.44
+  },
+  "countsByType": {
+    "js": 20,
+    "css": 1,
+    "img": 2,
+    "fonts": 2,
+    "other": 3
+  },
+  "slowestResources": [
+    {
+      "url": "http://127.0.0.1:3000/",
+      "type": "other",
+      "status": 200,
+      "durationMs": 895.35,
+      "transferSize": 12994,
+      "transferSizeHuman": "12.69 KB",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/api/public/navigation?tenant=contentFlow.com.np",
+      "type": "other",
+      "status": 200,
+      "durationMs": 619.14,
+      "transferSize": 511,
+      "transferSizeHuman": "511 B",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/api/public/footer?tenant=contentFlow.com.np",
+      "type": "other",
+      "status": 200,
+      "durationMs": 614.11,
+      "transferSize": 513,
+      "transferSizeHuman": "513 B",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c8c997ce._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 499.84,
+      "transferSize": 4375,
+      "transferSizeHuman": "4.27 KB",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c7192189._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 496.25,
+      "transferSize": 793,
+      "transferSizeHuman": "793 B",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_85159bef._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 307.62,
+      "transferSize": 59850,
+      "transferSizeHuman": "58.45 KB",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_f74d1dcc._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 292.82,
+      "transferSize": 22154,
+      "transferSizeHuman": "21.63 KB",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/app_layout_tsx_1cf6b850._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 292.15,
+      "transferSize": 885,
+      "transferSizeHuman": "885 B",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_a5ec89f1._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 292.12,
+      "transferSize": 10331,
+      "transferSizeHuman": "10.09 KB",
+      "fromCache": false
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/app_page_tsx_ec115d25._.js",
+      "type": "js",
+      "status": 200,
+      "durationMs": 291.38,
+      "transferSize": 791,
+      "transferSizeHuman": "791 B",
+      "fromCache": false
+    }
+  ],
+  "longestBlockingScripts": [
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c8c997ce._.js",
+      "durationMs": 499.84,
+      "transferSize": 4375,
+      "transferSizeHuman": "4.27 KB",
+      "estimatedBlockingTimeMs": 449.84
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c7192189._.js",
+      "durationMs": 496.25,
+      "transferSize": 793,
+      "transferSizeHuman": "793 B",
+      "estimatedBlockingTimeMs": 446.25
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_85159bef._.js",
+      "durationMs": 307.62,
+      "transferSize": 59850,
+      "transferSizeHuman": "58.45 KB",
+      "estimatedBlockingTimeMs": 257.62
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_f74d1dcc._.js",
+      "durationMs": 292.82,
+      "transferSize": 22154,
+      "transferSizeHuman": "21.63 KB",
+      "estimatedBlockingTimeMs": 242.82
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/app_layout_tsx_1cf6b850._.js",
+      "durationMs": 292.15,
+      "transferSize": 885,
+      "transferSizeHuman": "885 B",
+      "estimatedBlockingTimeMs": 242.15
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_a5ec89f1._.js",
+      "durationMs": 292.12,
+      "transferSize": 10331,
+      "transferSizeHuman": "10.09 KB",
+      "estimatedBlockingTimeMs": 242.12
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/app_page_tsx_ec115d25._.js",
+      "durationMs": 291.38,
+      "transferSize": 791,
+      "transferSizeHuman": "791 B",
+      "estimatedBlockingTimeMs": 241.38
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+      "durationMs": 256.9,
+      "transferSize": 182458,
+      "transferSizeHuman": "178.18 KB",
+      "estimatedBlockingTimeMs": 206.9
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js",
+      "durationMs": 256.08,
+      "transferSize": 224576,
+      "transferSizeHuman": "219.31 KB",
+      "estimatedBlockingTimeMs": 206.08
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js",
+      "durationMs": 255.93,
+      "transferSize": 122986,
+      "transferSizeHuman": "120.10 KB",
+      "estimatedBlockingTimeMs": 205.93
+    }
+  ],
+  "timingBreakdown": {
+    "domInteractiveMs": 919,
+    "responseEndMs": 898.4,
+    "firstPaintMs": 908,
+    "firstContentfulPaintMs": 2160
+  },
+  "networkRequests": [
+    {
+      "url": "http://127.0.0.1:3000/placeholder.svg",
+      "method": "GET",
+      "type": "img",
+      "resourceType": "Image",
+      "status": 200,
+      "durationMs": 55.23,
+      "transferSize": 1440,
+      "transferSizeHuman": "1.41 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/media/caa3a2e1cccd8315-s.p.853070df.woff2",
+      "method": "GET",
+      "type": "fonts",
+      "resourceType": "Font",
+      "status": 200,
+      "durationMs": 43.83,
+      "transferSize": 28856,
+      "transferSizeHuman": "28.18 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/media/797e433ab948586e-s.p.dbea232f.woff2",
+      "method": "GET",
+      "type": "fonts",
+      "resourceType": "Font",
+      "status": 200,
+      "durationMs": 45.61,
+      "transferSize": 31756,
+      "transferSizeHuman": "31.01 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Broot-of-the-server%5D__51d697a8._.css",
+      "method": "GET",
+      "type": "css",
+      "resourceType": "Stylesheet",
+      "status": 200,
+      "durationMs": 66.83,
+      "transferSize": 27143,
+      "transferSizeHuman": "26.51 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_956a0d3a._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 67.6,
+      "transferSize": 1176,
+      "transferSizeHuman": "1.15 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/",
+      "method": "GET",
+      "type": "other",
+      "resourceType": "Document",
+      "status": 200,
+      "durationMs": 895.35,
+      "transferSize": 12994,
+      "transferSizeHuman": "12.69 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-server-dom-turbopack_9212ccad._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 124.86,
+      "transferSize": 31482,
+      "transferSizeHuman": "30.74 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_a0e4c7b4._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 157.92,
+      "transferSize": 28939,
+      "transferSizeHuman": "28.26 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_%40swc_helpers_cjs_d80fb378._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 172.65,
+      "transferSize": 1294,
+      "transferSizeHuman": "1.26 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_a0ff3932._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 190.11,
+      "transferSize": 1288,
+      "transferSizeHuman": "1.26 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_f3530cac._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 190.11,
+      "transferSize": 39497,
+      "transferSizeHuman": "38.57 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_be32b49c._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 244.34,
+      "transferSize": 22768,
+      "transferSizeHuman": "22.23 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/turbopack-_23a915ee._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 252.67,
+      "transferSize": 19100,
+      "transferSizeHuman": "18.65 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_17643121._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 255.93,
+      "transferSize": 122986,
+      "transferSizeHuman": "120.10 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 256.9,
+      "transferSize": 182458,
+      "transferSizeHuman": "178.18 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_compiled_next-devtools_index_1dd7fb59.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 256.08,
+      "transferSize": 224576,
+      "transferSizeHuman": "219.31 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_next_dist_client_components_builtin_global-error_1cf6b850.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 254.24,
+      "transferSize": 767,
+      "transferSizeHuman": "767 B",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_%40vercel_analytics_dist_next_index_mjs_676b073b._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 255.01,
+      "transferSize": 1244,
+      "transferSizeHuman": "1.21 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/app_layout_tsx_1cf6b850._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 292.15,
+      "transferSize": 885,
+      "transferSizeHuman": "885 B",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/app_page_tsx_ec115d25._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 291.38,
+      "transferSize": 791,
+      "transferSizeHuman": "791 B",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_a5ec89f1._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 292.12,
+      "transferSize": 10331,
+      "transferSizeHuman": "10.09 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/_f74d1dcc._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 292.82,
+      "transferSize": 22154,
+      "transferSizeHuman": "21.63 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/node_modules_85159bef._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 307.62,
+      "transferSize": 59850,
+      "transferSizeHuman": "58.45 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c7192189._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 496.25,
+      "transferSize": 793,
+      "transferSizeHuman": "793 B",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/_next/static/chunks/%5Bturbopack%5D_browser_dev_hmr-client_hmr-client_ts_c8c997ce._.js",
+      "method": "GET",
+      "type": "js",
+      "resourceType": "Script",
+      "status": 200,
+      "durationMs": 499.84,
+      "transferSize": 4375,
+      "transferSizeHuman": "4.27 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/fav/favicon-16x16.png",
+      "method": "GET",
+      "type": "img",
+      "resourceType": "Other",
+      "status": 200,
+      "durationMs": 12.21,
+      "transferSize": 1182,
+      "transferSizeHuman": "1.15 KB",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/api/public/navigation?tenant=contentFlow.com.np",
+      "method": "GET",
+      "type": "other",
+      "resourceType": "Fetch",
+      "status": 200,
+      "durationMs": 619.14,
+      "transferSize": 511,
+      "transferSizeHuman": "511 B",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    },
+    {
+      "url": "http://127.0.0.1:3000/api/public/footer?tenant=contentFlow.com.np",
+      "method": "GET",
+      "type": "other",
+      "resourceType": "Fetch",
+      "status": 200,
+      "durationMs": 614.11,
+      "transferSize": 513,
+      "transferSizeHuman": "513 B",
+      "fromCache": false,
+      "failed": false,
+      "errorText": ""
+    }
+  ],
+  "suggestions": [
+    "Long blocking scripts detected. Split large bundles and move expensive logic to Web Workers when possible."
+  ]
+}

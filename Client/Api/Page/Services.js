@@ -3,11 +3,19 @@ const RESTORE_PAGE_VERSION_URL = process.env.NEXT_PUBLIC_RESTORE_PAGE_VERSION_UR
 // Delete User Pages for Admin by Id
 const DELETE_USER_PAGES_URL = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_URL;
 //delete User All page selected by user
-const DELETE_USER_SELECTED_PAGE_URL =process.env.NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL;
-//Delete User Specific selected Page by ID
+const DELETE_USER_SELECTED_PAGE_URL = process.env.NEXT_PUBLIC_DELETE_USER_SELECTED_PAGE_URL;
+
 const DELETE_USER_PAGES_BY_ID = process.env.NEXT_PUBLIC_DELETE_USER_PAGES_BY_ID;
 
 const BULK_PAGES_DEL_BY_ADMIN = process.env.NEXT_PUBLIC_BULK_PAGES_DEL_BY_ADMIN;
+
+const parseJsonSafe = async (response) => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
 
 //check slug
 export const checkSlugAvailability = async (slug, tenantId) => {
@@ -42,12 +50,16 @@ export const restorePageVersion = async (versionId) => {
       credentials: "include",
     });
 
-    const request = response.json();
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const request = await response.json();
+    if (!response.ok) {
+      const error = new Error(request?.message || `HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
     return request;
   } catch (err) {
     console.log(err);
-    const error = new Error(`HTTP error! status: ${response.status}`);
+    throw err;
   }
 };
 
@@ -59,16 +71,20 @@ export const deleteUserPageById = async (pageId) => {
       credentials: "include",
     });
 
-    const request = response.json();
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const request = await parseJsonSafe(response);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
     return {
       ok: response.ok,
       status: response.status,
-      message: "Page deleted successfully",
+      message: request?.message || "Page deleted successfully",
     };
   } catch (err) {
     console.log(err);
-    const error = new Error(`HTTP error! status: ${response.status}`);
+    return {
+      ok: false,
+      status: 500,
+      message: err?.message || "Delete failed",
+    };
   }
 };
 
@@ -84,15 +100,24 @@ export const deleteUserSelectedPage = async (pageIds) => {
       body: JSON.stringify({ pageIds: pageIds }),
     });
 
-    const request = response.json();
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return request;
+    const request = await parseJsonSafe(response);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    return {
+      ok: true,
+      status: response.status,
+      message: request?.message || "Pages deleted successfully",
+      data: request,
+    };
   } catch (err) {
     console.log(err);
-    const error = new Error(`HTTP error! status: ${response.status}`);
+    return {
+      ok: false,
+      status: 500,
+      message: err?.message || "Bulk delete failed",
+      data: null,
+    };
   }
 };
-
 //delete all user pages for admin by id
 export const deleteUserPages = async () => {
   try {
@@ -100,12 +125,22 @@ export const deleteUserPages = async () => {
       method: "DELETE",
       credentials: "include",
     });
-    const request = response.json();
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return request;
+    const request = await parseJsonSafe(response);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    return {
+      ok: true,
+      status: response.status,
+      message: request?.message || "All pages deleted successfully",
+      data: request,
+    };
   } catch (err) {
     console.log(err);
-    const error = new Error(`HTTP error! status: ${response.status}`);
+    return {
+      ok: false,
+      status: 500,
+      message: err?.message || "Delete all pages failed",
+      data: null,
+    };
   }
 };
 
@@ -120,11 +155,21 @@ export const bulkDeleteUserPagesByAdmin = async (userIds) => {
       },
       body: JSON.stringify({ userIds: userIds }),
     });
-    const request = response.json();
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return request;
+    const request = await parseJsonSafe(response);
+    if (!response.ok) throw new Error(request?.message || `HTTP error! status: ${response.status}`);
+    return {
+      ok: true,
+      status: response.status,
+      message: request?.message || "Pages deleted successfully",
+      data: request,
+    };
   } catch (err) {
     console.log(err);
-    const error = new Error(`HTTP error! status: ${response.status}`);
+    return {
+      ok: false,
+      status: 500,
+      message: err?.message || "Admin bulk delete failed",
+      data: null,
+    };
   }
 };

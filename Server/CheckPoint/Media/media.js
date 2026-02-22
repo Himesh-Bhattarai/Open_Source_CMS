@@ -1,9 +1,10 @@
 import { Media } from "../../Models/Media/Media.js";
 import { logger as log } from "../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const mediaCheckpoint = async (req, res, next) => {
   try {
+    const payload = req.body || {};
     const {
       tenantId,
       filename,
@@ -15,40 +16,77 @@ export const mediaCheckpoint = async (req, res, next) => {
       url,
       altText,
       folder,
-    } = req.body;
+      scope,
+      entityType,
+      entityId,
+      media: mediaInput,
+      context,
+    } = payload;
 
     const userId = req.user?.userId;
+    const normalizedScope = scope || (context?.type ? context.type : "global");
+    const normalizedEntityType =
+      normalizedScope === "page" ? "page" : normalizedScope === "blog" ? "blog" : null;
+    const normalizedEntityId =
+      normalizedScope === "global" ? null : entityId || context?.id || null;
 
-    if (!userId || !tenantId || !filename) {
+    const resolvedFilename = filename || mediaInput?.name;
+    const resolvedOriginalName = originalName || mediaInput?.originalName || mediaInput?.name;
+    const resolvedMimeType = mimeType || mediaInput?.mimeType || "";
+    const resolvedSize = size ?? mediaInput?.size ?? 0;
+    const resolvedUrl =
+      url ||
+      mediaInput?.url ||
+      (resolvedFilename ? `/uploads/${encodeURIComponent(resolvedFilename)}` : "");
+    const resolvedFolder =
+      folder ||
+      (normalizedScope === "global"
+        ? "global"
+        : `${normalizedScope}/${normalizedEntityId || "unassigned"}`);
+    const resolvedStatus = mediaInput?.status || "ready";
+
+    if (!userId || !tenantId || !resolvedFilename) {
       const err = new Error("Missing required fields");
       err.statusCode = 400;
       throw err;
     }
+    if (normalizedScope !== "global" && !normalizedEntityId) {
+      const err = new Error("Entity ID is required for page/blog media");
+      err.statusCode = 400;
+      throw err;
+    }
 
-    const media = await Media.create({
+    const createdMedia = await Media.create({
       userId,
       tenantId,
-      filename,
-      originalName,
-      mimeType,
-      size,
+      scope: normalizedScope,
+      entityType: normalizedEntityType,
+      entityId: normalizedEntityId,
+      filename: resolvedFilename,
+      originalName: resolvedOriginalName,
+      mimeType: resolvedMimeType,
+      size: resolvedSize,
       width,
       height,
-      url,
+      status: resolvedStatus,
+      url: resolvedUrl,
       altText,
-      folder,
+      folder: resolvedFolder,
       uploadedBy: userId,
     });
 
-    notif.createMedia({
-      userId,
-      mediaName: media.filename,
-      mediaId: media._id
-    })
+    if (typeof notif.createMedia === "function") {
+      notif.createMedia({
+        userId,
+        mediaName: createdMedia.filename,
+        mediaId: createdMedia._id,
+        websiteId: createdMedia.tenantId,
+      });
+    }
 
     res.status(201).json({
       ok: true,
-      data: media,
+      data: createdMedia,
     });
   } catch (err) {
     err.statusCode = err.statusCode || 400;

@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Save,
@@ -16,64 +16,63 @@ import {
   Globe,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   History,
   Check,
   AlertCircle,
   Lock,
   Unlock,
   Shield,
-  Search,
   Calendar,
-  User,
-} from "lucide-react"
-import Link from "next/link"
-import { Separator } from "@/components/ui/separator"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { PreviewModal } from "@/components/cms/preview-modal"
-import { PublishModal } from "@/components/cms/publish-modal"
-import { useTenant } from "@/context/TenantContext"
-import { Switch } from "@/components/ui/switch"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
-import { getPageById } from "@/Api/Page/Fetch"
-import {  restorePageVersion } from "@/Api/Page/Services"
-import {  updatePage } from "@/Api/Page/CreatePage"
-import type { Page, PageVersion, Visibility, PageType } from "@/lib/types/page"
+} from "lucide-react";
+import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { PreviewModal } from "@/components/cms/preview-modal";
+import { PublishModal } from "@/components/cms/publish-modal";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { getPageById } from "@/Api/Page/Fetch";
+import { restorePageVersion } from "@/Api/Page/Services";
+import { updatePage } from "@/Api/Page/CreatePage";
+import type { Page, PageVersion, Visibility, PageType } from "@/lib/types/page";
 
-interface SlugHistoryItem {
-  slug: string;
-  changedAt: Date;
-  changedBy: string;
-  redirectEnabled: boolean;
-}
+import { useAuth } from "@/hooks/useAuth";
 
-// Declare missing APIs that are required for production
-import { useAuth } from "@/hooks/useAuth"   
-
-// ====================================
-// PHASE-1 IMMUTABLE FIELDS (READ-ONLY)
-// ====================================
+// Immutable data captured in phase-1.
 interface Phase1Data {
   title: string;
   slug: string;
   tenantId: string;
   pageTree: any;
   authorId: string;
+  authorName?: string;
   content: string;
   blocks: any[];
 }
 
-// ====================================
-// PHASE-2 EDITABLE FIELDS (ONLY THESE)
-// ====================================
+// Editable data allowed in phase-2.
 interface Phase2Payload {
   seo: {
     metaTitle: string;
     metaDescription: string;
+    focusKeyword: string;
     canonicalUrl: string;
+    robots: {
+      index: boolean;
+      follow: boolean;
+      maxImagePreview: "none" | "standard" | "large";
+      maxSnippet: number;
+      maxVideoPreview: number;
+    };
     openGraph: {
       title: string;
       description: string;
@@ -88,6 +87,7 @@ interface Phase2Payload {
       site: string;
     };
     structuredData: any;
+    sitemapInclusion: boolean;
   };
   settings: {
     pageType: PageType;
@@ -102,59 +102,59 @@ interface Phase2Payload {
 }
 
 export default function PageEditor() {
-  const { user, loading } = useAuth()
+  const { user } = useAuth();
 
-  const params = useParams()
-  const router = useRouter()
-  const { selectedTenantId } = useTenant()
+  const params = useParams();
+  const router = useRouter();
 
-  // State declarations - ALL HOOKS AT TOP LEVEL
-  const [isSaving, setIsSaving] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [isDirty, setIsDirty] = useState(false)
-  const [seoOpen, setSeoOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [showVersions, setShowVersions] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
-  const [showPublish, setShowPublish] = useState(false)
-  const [slugHistory, setSlugHistory] = useState<SlugHistoryItem[]>([])
-  const [pageVersions, setPageVersions] = useState<PageVersion[]>([])
-  const [isLocked, setIsLocked] = useState(false)
-  const [lockedBy, setLockedBy] = useState<string | null>(null)
-  const [etag, setEtag] = useState("")
-  const [structuredDataError, setStructuredDataError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const [seoOpen, setSeoOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [showVersions, setShowVersions] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showPublish, setShowPublish] = useState(false);
+  const [pageVersions, setPageVersions] = useState<PageVersion[]>([]);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockedBy, setLockedBy] = useState<string | null>(null);
+  const [lockedByName, setLockedByName] = useState<string | null>(null);
+  const [etag, setEtag] = useState("");
+  const [structuredDataError, setStructuredDataError] = useState<string | null>(null);
+  const [autoSavePaused, setAutoSavePaused] = useState(false);
 
-  // Refs
-  const saveTimerRef = useRef<NodeJS.Timeout>(null)
-  const saveDataRef = useRef<any>(null)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ====================================
-  // PHASE-1 IMMUTABLE DATA STORAGE
-  // ====================================
-  const [phase1Data, setPhase1Data] = useState<Phase1Data | null>(null)
+  const [phase1Data, setPhase1Data] = useState<Phase1Data | null>(null);
 
-  // ====================================
-  // PHASE-2 EDITABLE DATA STORAGE
-  // ====================================
   const [phase2Data, setPhase2Data] = useState<Phase2Payload>({
     seo: {
       metaTitle: "",
       metaDescription: "",
+      focusKeyword: "",
       canonicalUrl: "",
+      robots: {
+        index: true,
+        follow: true,
+        maxImagePreview: "large",
+        maxSnippet: -1,
+        maxVideoPreview: -1,
+      },
       openGraph: {
         title: "",
         description: "",
         image: "",
-        type: "website"
+        type: "website",
       },
       twitter: {
         card: "summary_large_image",
         title: "",
         description: "",
         image: "",
-        site: ""
+        site: "",
       },
-      structuredData: {}
+      structuredData: {},
+      sitemapInclusion: true,
     },
     settings: {
       pageType: "default",
@@ -162,196 +162,227 @@ export default function PageEditor() {
       featured: false,
       allowComments: true,
       template: "default",
-      isHomepage: false
+      isHomepage: false,
     },
     status: "draft",
-    publishedAt: ""
-  })
+    publishedAt: "",
+  });
 
-  // Get page ID from params safely - NEVER use slug in routing
+  // Accept malformed nested params and normalize to a single id.
   const getPageId = useCallback(() => {
-    const id = params.id
-    if (!id) return ""
-    if (Array.isArray(id)) return id[0] || ""
-    return id
-  }, [params.id])
+    const id = params.id;
+    if (!id) return "";
+    if (Array.isArray(id)) {
+      const candidate = id.find((part) => part && part !== "undefined" && part !== "null");
+      return candidate || "";
+    }
+    if (typeof id === "string" && id.includes("/")) {
+      const segments = id.split("/").filter(Boolean);
+      const candidate = segments.find((part) => part !== "undefined" && part !== "null");
+      return candidate || "";
+    }
+    return id === "undefined" || id === "null" ? "" : id;
+  }, [params.id]);
 
-  const pageId = getPageId()
+  const pageId = getPageId();
+  const currentUserId = user?.id !== undefined && user?.id !== null ? String(user.id) : null;
+  const currentUserName = user?.name ? String(user.name) : null;
+  const isLockedByOtherUser = isLocked && lockedBy !== currentUserId;
 
-  // Load page data - SEPARATE Phase-1 and Phase-2
+  const markDirty = () => {
+    setAutoSavePaused(false);
+    setIsDirty(true);
+  };
+
+  const toLocalDateTimeInput = (isoDate?: string) => {
+    if (!isoDate) return "";
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return "";
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
   useEffect(() => {
-    if (!pageId) return
+    if (!pageId) return;
 
-    loadPageData(pageId)
+    loadPageData(pageId);
 
     return () => {
       if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current)
+        clearTimeout(saveTimerRef.current);
       }
-    }
-  }, [pageId])
+    };
+  }, [pageId]);
 
-  // Auto-save effect with validation
   useEffect(() => {
-    if (isDirty && !isSaving && !isLocked && !structuredDataError) {
+    if (isDirty && !isSaving && !isLockedByOtherUser && !structuredDataError && !autoSavePaused) {
       if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current)
+        clearTimeout(saveTimerRef.current);
       }
 
       saveTimerRef.current = setTimeout(() => {
-        autoSave()
-      }, 5000)
+        autoSave();
+      }, 10000);
     }
 
     return () => {
       if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current)
+        clearTimeout(saveTimerRef.current);
       }
-    }
-  }, [isDirty, isSaving, isLocked, structuredDataError])
+    };
+  }, [isDirty, isSaving, isLockedByOtherUser, structuredDataError, autoSavePaused]);
 
   const loadPageData = async (pageId: string) => {
     try {
-      const data = await getPageById(pageId)
+      const data = await getPageById(pageId);
 
       if (!data) {
-        toast.error("Page not found")
-        router.push("/cms/content/pages")
-        return
+        toast.error("Page not found");
+        router.push("/cms/content/pages");
+        return;
       }
 
-      // Validate server data structure
       if (!data._id || !data.tenantId) {
-        throw new Error("Invalid page data from server")
+        throw new Error("Invalid page data from server");
       }
 
-      // ====================================
-      // SPLIT: Phase-1 (IMMUTABLE) vs Phase-2 (EDITABLE)
-      // ====================================
-
-      // Phase-1: Store as READ-ONLY
       setPhase1Data({
         title: data.title,
         slug: data.slug,
         tenantId: data.tenantId,
         pageTree: data.pageTree || {},
         authorId: data.settings?.authorId || data.authorId || "",
+        authorName: data.author || data.settings?.authorName || "",
         content: data.content || "",
-        blocks: data.blocks || []
-      })
+        blocks: data.blocks || [],
+      });
 
-      // Phase-2: Store as EDITABLE
       setPhase2Data({
         seo: {
           metaTitle: data.seo?.metaTitle || "",
           metaDescription: data.seo?.metaDescription || "",
+          focusKeyword: data.seo?.focusKeyword || "",
           canonicalUrl: data.seo?.canonicalUrl || "",
+          robots: {
+            index: data.seo?.robots?.index ?? true,
+            follow: data.seo?.robots?.follow ?? true,
+            maxImagePreview: data.seo?.robots?.maxImagePreview || "large",
+            maxSnippet: data.seo?.robots?.maxSnippet ?? -1,
+            maxVideoPreview: data.seo?.robots?.maxVideoPreview ?? -1,
+          },
           openGraph: {
             title: data.seo?.openGraph?.title || "",
             description: data.seo?.openGraph?.description || "",
             image: data.seo?.openGraph?.image || "",
-            type: data.seo?.openGraph?.type || "website"
+            type: data.seo?.openGraph?.type || "website",
           },
           twitter: {
             card: data.seo?.twitter?.card || "summary_large_image",
             title: data.seo?.twitter?.title || "",
             description: data.seo?.twitter?.description || "",
             image: data.seo?.twitter?.image || "",
-            site: data.seo?.twitter?.site || ""
+            site: data.seo?.twitter?.site || "",
           },
-          structuredData: data.seo?.structuredData || {}
+          structuredData: data.seo?.structuredData || {},
+          sitemapInclusion: data.seo?.sitemapInclusion ?? true,
         },
         settings: {
           pageType: data.settings?.pageType || "default",
           visibility: data.settings?.visibility || "public",
           featured: data.settings?.featured || false,
-          allowComments: data.settings?.allowComments !== undefined ? data.settings.allowComments : true,
+          allowComments:
+            data.settings?.allowComments !== undefined ? data.settings.allowComments : true,
           template: data.settings?.template || "default",
-          isHomepage: data.settings?.isHomepage || false
+          isHomepage: data.settings?.isHomepage || false,
         },
         status: data.status || "draft",
-        publishedAt: data.publishedAt || ""
-      })
+        publishedAt: data.publishedAt || "",
+      });
 
-      setSlugHistory(data.slugHistory || [])
-      setPageVersions(data.versions || [])
-      const lock = data.settings?.locked
-      setIsLocked(!!lock)
-      setLockedBy(lock?.byUserId || null)
-      setEtag(data.etag || "")
-      setIsDirty(false)
-
+      setPageVersions(data.versions || []);
+      const lock = data.settings?.locked;
+      setIsLocked(Boolean(lock?.isLocked || data.isLocked));
+      setLockedBy(
+        lock?.byUserId ? String(lock.byUserId) : data.lockedBy ? String(data.lockedBy) : null,
+      );
+      setLockedByName(lock?.byUserName || data.lockedByName || null);
+      setEtag(data.etag || "");
+      setIsDirty(false);
+      setAutoSavePaused(false);
     } catch (error) {
-      console.error("Failed to load page:", error)
-      toast.error("Failed to load page data")
+      console.error("Failed to load page:", error);
+      toast.error("Failed to load page data");
     }
-  }
+  };
 
-  // Validate structured data JSON
   const validateStructuredData = (jsonString: string): boolean => {
     try {
       if (!jsonString.trim()) {
-        setStructuredDataError(null)
-        return true
+        setStructuredDataError(null);
+        return true;
       }
 
-      const parsed = JSON.parse(jsonString)
+      const parsed = JSON.parse(jsonString);
 
       if (typeof parsed !== "object" || parsed === null) {
-        setStructuredDataError("Structured data must be a JSON object")
-        return false
+        setStructuredDataError("Structured data must be a JSON object");
+        return false;
       }
 
-      // Phase-2 rule: allow empty object or partial object
-      // Only validate @context/@type if they exist
       if (
         ("@context" in parsed && !parsed["@context"]) ||
         ("@type" in parsed && !parsed["@type"])
       ) {
-        setStructuredDataError("@context and @type cannot be empty if provided")
-        return false
+        setStructuredDataError("@context and @type cannot be empty if provided");
+        return false;
       }
 
-      setStructuredDataError(null)
-      return true
+      setStructuredDataError(null);
+      return true;
     } catch {
-      setStructuredDataError("Invalid JSON format")
-      return false
+      setStructuredDataError("Invalid JSON format");
+      return false;
     }
-  }
+  };
 
-
-  // ====================================
-  // BUILD PHASE-2 ONLY PAYLOAD
-  // ====================================
   const buildPhase2Payload = useCallback((): Phase2Payload => {
-    // Normalize canonical URL
-    let canonicalUrl = phase2Data.seo.canonicalUrl || ""
-    if (canonicalUrl && !canonicalUrl.startsWith('http')) {
-      canonicalUrl = canonicalUrl.startsWith('/')
-        ? `https://example.com${canonicalUrl}`
-        : `https://${canonicalUrl}`
+    // Keep canonical URL absolute before sending to backend.
+    let canonicalUrl = phase2Data.seo.canonicalUrl || "";
+    if (canonicalUrl && !canonicalUrl.startsWith("http")) {
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      canonicalUrl = canonicalUrl.startsWith("/")
+        ? `${origin || ""}${canonicalUrl}`
+        : `https://${canonicalUrl}`;
     }
 
     return {
       seo: {
         metaTitle: phase2Data.seo.metaTitle,
         metaDescription: phase2Data.seo.metaDescription,
+        focusKeyword: phase2Data.seo.focusKeyword,
         canonicalUrl: canonicalUrl,
+        robots: {
+          index: phase2Data.seo.robots.index,
+          follow: phase2Data.seo.robots.follow,
+          maxImagePreview: phase2Data.seo.robots.maxImagePreview,
+          maxSnippet: phase2Data.seo.robots.maxSnippet,
+          maxVideoPreview: phase2Data.seo.robots.maxVideoPreview,
+        },
         openGraph: {
           title: phase2Data.seo.openGraph.title,
           description: phase2Data.seo.openGraph.description,
           image: phase2Data.seo.openGraph.image,
-          type: phase2Data.seo.openGraph.type
+          type: phase2Data.seo.openGraph.type,
         },
         twitter: {
           card: phase2Data.seo.twitter.card,
           title: phase2Data.seo.twitter.title,
           description: phase2Data.seo.twitter.description,
           image: phase2Data.seo.twitter.image,
-          site: phase2Data.seo.twitter.site
+          site: phase2Data.seo.twitter.site,
         },
-        structuredData: phase2Data.seo.structuredData
+        structuredData: phase2Data.seo.structuredData,
+        sitemapInclusion: phase2Data.seo.sitemapInclusion,
       },
       settings: {
         pageType: phase2Data.settings.pageType,
@@ -359,117 +390,147 @@ export default function PageEditor() {
         featured: phase2Data.settings.featured,
         allowComments: phase2Data.settings.allowComments,
         template: phase2Data.settings.template,
-        isHomepage: phase2Data.settings.isHomepage
+        isHomepage: phase2Data.settings.isHomepage,
       },
       status: phase2Data.status,
-      publishedAt: phase2Data.publishedAt
-    }
-  }, [phase2Data])
+      publishedAt: phase2Data.publishedAt,
+    };
+  }, [phase2Data]);
 
-  // Auto-save with PHASE-2 ONLY payload
   const autoSave = async () => {
-    if (!isDirty || isSaving || isLocked || structuredDataError) {
-      return
+    if (
+      !pageId ||
+      !isDirty ||
+      isSaving ||
+      isLockedByOtherUser ||
+      structuredDataError ||
+      autoSavePaused
+    ) {
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-      const payload = buildPhase2Payload()
+      const payload = buildPhase2Payload();
 
-      // CRITICAL: Send ONLY Phase-2 fields to backend
       const response = await updatePage(pageId, {
         data: payload,
         etag,
-        options: { autoSave: true }
-      })
+        options: { autoSave: true },
+      });
 
-
-      setLastSaved(new Date())
-      setIsDirty(false)
-      setEtag(response.etag || "")
-
+      setLastSaved(new Date());
+      setIsDirty(false);
+      setEtag(response.etag || "");
     } catch (error: any) {
       if (error.status === 409) {
-        toast.error("Conflict detected. Page was modified by someone else.")
-        await loadPageData(pageId)
+        toast.error("Conflict detected. Page was modified by someone else.");
+        await loadPageData(pageId);
       } else if (error.status === 423) {
-        toast.error("Page is locked by another user")
-        await loadPageData(pageId)
+        toast.error("Page is locked by another user");
+        await loadPageData(pageId);
       } else {
-        console.error("Auto-save failed:", error)
+        console.error("Auto-save failed:", error);
+        setAutoSavePaused(true);
+        toast.error("Auto-save paused due to an error. Save manually after fixing fields.");
       }
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
-  // Manual save with PHASE-2 ONLY payload
   const handleManualSave = async () => {
+    if (!pageId) {
+      toast.error("Invalid page id");
+      return;
+    }
+    if (structuredDataError) {
+      toast.error("Fix structured data errors before saving");
+      return;
+    }
+
     try {
-      const payload = buildPhase2Payload()
+      const payload = buildPhase2Payload();
 
       const response = await updatePage(pageId, {
         data: payload,
         etag,
-        options: { autoSave: false }
-      })
+        options: { autoSave: false },
+      });
 
-      setLastSaved(new Date())
-      setIsDirty(false)
-      setEtag(response.etag)
+      setLastSaved(new Date());
+      setIsDirty(false);
+      setEtag(response.etag);
+      setAutoSavePaused(false);
 
-      toast.success("Saved")
-      router.refresh();
-      router.push("/cms/content/pages")
-    } catch (err) {
-      toast.error("Save failed")
+      toast.success("Saved");
+      router.push("/cms/content/pages?message=Page%20saved%20successfully");
+    } catch (err: any) {
+      if (err?.status === 409) {
+        toast.error("Conflict detected. Please reload and try again.");
+        await loadPageData(pageId);
+      } else if (err?.status === 423) {
+        toast.error("Page is locked by another user");
+        await loadPageData(pageId);
+      } else {
+        toast.error(err?.message || "Save failed");
+      }
     }
-  }
+  };
 
-
-  // Real locking with server enforcement
   const handleLock = async () => {
-    if (!user) {
-      toast.error("User session required")
-      return
+    if (!pageId) {
+      toast.error("Invalid page id");
+      return;
+    }
+    if (!user || !currentUserId) {
+      toast.error("User session required");
+      return;
     }
 
     try {
       const lockData = {
         isLocked: true,
-        lockedBy: user.id,
+        lockedBy: currentUserId,
+        lockedByName: currentUserName,
         lockedAt: new Date(),
-        etag
-      }
+        etag,
+      };
 
-      const response = await updatePage({
+      const response = await updatePage(pageId, {
         data: lockData as any,
-        options: {}
-      })
+        etag,
+        options: {},
+      });
 
-      setIsLocked(true)
-      setLockedBy(user.id)
-      setEtag(response.etag)
-      toast.success("Page locked")
+      setIsLocked(true);
+      setLockedBy(currentUserId);
+      setLockedByName(currentUserName);
+      setEtag(response.etag);
+      toast.success("Page locked");
     } catch (error: any) {
       if (error.status === 409) {
-        toast.error("Page was modified while trying to lock")
-        await loadPageData(pageId)
+        toast.error("Page was modified while trying to lock");
+        await loadPageData(pageId);
       } else {
-        toast.error("Failed to lock page")
+        toast.error("Failed to lock page");
       }
     }
-  }
+  };
 
   const handleUnlock = async () => {
-    if (!user) {
-      toast.error("User session required")
-      return
+    if (!pageId) {
+      toast.error("Invalid page id");
+      return;
+    }
+    if (!user || !currentUserId) {
+      toast.error("User session required");
+      return;
     }
 
-    if (lockedBy !== user.id) {
-      toast.error(`Only ${lockedBy} can unlock this page`)
-      return
+    if (!currentUserId || lockedBy !== currentUserId) {
+      toast.error(`Only ${lockedByName || lockedBy} can unlock this page`);
+      return;
     }
 
     try {
@@ -477,176 +538,227 @@ export default function PageEditor() {
         isLocked: false,
         lockedBy: null,
         lockedAt: null,
-        etag
-      }
+        etag,
+      };
 
-      const response = await updatePage({
+      const response = await updatePage(pageId, {
         data: unlockData as any,
-        options: {}
-      })
+        etag,
+        options: {},
+      });
 
-      setIsLocked(false)
-      setLockedBy(null)
-      setEtag(response.etag)
-      toast.success("Page unlocked")
+      setIsLocked(false);
+      setLockedBy(null);
+      setLockedByName(null);
+      setEtag(response.etag);
+      toast.success("Page unlocked");
     } catch (error: any) {
       if (error.status === 409) {
-        toast.error("Page was modified while trying to unlock")
-        await loadPageData(pageId)
+        toast.error("Page was modified while trying to unlock");
+        await loadPageData(pageId);
       } else {
-        toast.error("Failed to unlock page")
+        toast.error("Failed to unlock page");
       }
     }
-  }
+  };
 
-  // Version restore
   const handleRestoreVersion = async (versionId: string) => {
-    if (isLocked && lockedBy !== user?.id) {
-      toast.error(`Page is locked by ${lockedBy}`)
-      return
+    if (!pageId) {
+      toast.error("Invalid page id");
+      return;
+    }
+    if (isLocked && lockedBy !== currentUserId) {
+      toast.error(`Page is locked by ${lockedByName || lockedBy}`);
+      return;
     }
 
     try {
-      const restoredData = await restorePageVersion(versionId)
+      const restoredData = await restorePageVersion(versionId);
 
       if (!restoredData._id || restoredData._id !== pageId) {
-        throw new Error("Invalid restored page data")
+        throw new Error("Invalid restored page data");
       }
 
-      // Re-split into Phase-1 and Phase-2
       setPhase1Data({
         title: restoredData.title,
         slug: restoredData.slug,
         tenantId: restoredData.tenantId,
         pageTree: restoredData.pageTree || {},
         authorId: restoredData.settings?.authorId || restoredData.authorId || "",
+        authorName: restoredData.author || restoredData.settings?.authorName || "",
         content: restoredData.content || "",
-        blocks: restoredData.blocks || []
-      })
+        blocks: restoredData.blocks || [],
+      });
 
       setPhase2Data({
         seo: {
           metaTitle: restoredData.seo?.metaTitle || "",
           metaDescription: restoredData.seo?.metaDescription || "",
+          focusKeyword: restoredData.seo?.focusKeyword || "",
           canonicalUrl: restoredData.seo?.canonicalUrl || "",
-          openGraph: restoredData.seo?.openGraph || { title: "", description: "", image: "", type: "website" },
-          twitter: restoredData.seo?.twitter || { card: "summary_large_image", title: "", description: "", image: "", site: "" },
-          structuredData: restoredData.seo?.structuredData || {}
+          robots: {
+            index: restoredData.seo?.robots?.index ?? true,
+            follow: restoredData.seo?.robots?.follow ?? true,
+            maxImagePreview: restoredData.seo?.robots?.maxImagePreview || "large",
+            maxSnippet: restoredData.seo?.robots?.maxSnippet ?? -1,
+            maxVideoPreview: restoredData.seo?.robots?.maxVideoPreview ?? -1,
+          },
+          openGraph: restoredData.seo?.openGraph || {
+            title: "",
+            description: "",
+            image: "",
+            type: "website",
+          },
+          twitter: restoredData.seo?.twitter || {
+            card: "summary_large_image",
+            title: "",
+            description: "",
+            image: "",
+            site: "",
+          },
+          structuredData: restoredData.seo?.structuredData || {},
+          sitemapInclusion: restoredData.seo?.sitemapInclusion ?? true,
         },
         settings: {
           pageType: restoredData.settings?.pageType || "default",
           visibility: restoredData.settings?.visibility || "public",
           featured: restoredData.settings?.featured || false,
-          allowComments: restoredData.settings?.allowComments !== undefined ? restoredData.settings.allowComments : true,
+          allowComments:
+            restoredData.settings?.allowComments !== undefined
+              ? restoredData.settings.allowComments
+              : true,
           template: restoredData.settings?.template || "default",
-          isHomepage: restoredData.settings?.isHomepage || false
+          isHomepage: restoredData.settings?.isHomepage || false,
         },
         status: restoredData.status || "draft",
-        publishedAt: restoredData.publishedAt || ""
-      })
+        publishedAt: restoredData.publishedAt || "",
+      });
 
-      setSlugHistory(restoredData.slugHistory || [])
-      setPageVersions(restoredData.versions || [])
-      setIsLocked(!!restoredData.isLocked)
-      setLockedBy(restoredData.lockedBy || null)
-      setEtag(restoredData.etag || "")
-      setIsDirty(true)
+      setPageVersions(restoredData.versions || []);
+      setIsLocked(Boolean(restoredData.settings?.locked?.isLocked || restoredData.isLocked));
+      setLockedBy(
+        restoredData.settings?.locked?.byUserId
+          ? String(restoredData.settings.locked.byUserId)
+          : restoredData.lockedBy
+            ? String(restoredData.lockedBy)
+            : null,
+      );
+      setLockedByName(
+        restoredData.settings?.locked?.byUserName || restoredData.lockedByName || null,
+      );
+      setEtag(restoredData.etag || "");
+      markDirty();
 
-      toast.success("Version restored")
+      toast.success("Version restored");
     } catch (error) {
-      console.error("Failed to restore version:", error)
-      toast.error("Failed to restore version")
+      console.error("Failed to restore version:", error);
+      toast.error("Failed to restore version");
     }
-  }
+  };
 
-  // Publish with PHASE-2 payload
   const handlePublish = async (type: "now" | "schedule", date?: string, time?: string) => {
-    if (isLocked && lockedBy !== user?.id) {
-      toast.error(`Page is locked by ${lockedBy}`)
-      return
+    if (!pageId) {
+      toast.error("Invalid page id");
+      return;
+    }
+    if (isLocked && lockedBy !== currentUserId) {
+      toast.error(`Page is locked by ${lockedByName || lockedBy}`);
+      return;
+    }
+    if (structuredDataError) {
+      toast.error("Fix structured data errors before publishing");
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-      const payload = buildPhase2Payload()
+      const payload = buildPhase2Payload();
 
       const publishPayload = {
         ...payload,
-        status: type === "now" ? "published" as const : "scheduled" as const,
-        publishedAt: type === "now"
-          ? new Date().toISOString()
-          : new Date(`${date}T${time}:00`).toISOString()
+        status: type === "now" ? ("published" as const) : ("scheduled" as const),
+        publishedAt:
+          type === "now"
+            ? new Date().toISOString()
+            : date && time
+              ? new Date(`${date}T${time}:00`).toISOString()
+              : "",
+      };
+      if (
+        type === "schedule" &&
+        (!publishPayload.publishedAt ||
+          Number.isNaN(new Date(publishPayload.publishedAt).getTime()))
+      ) {
+        throw new Error("Schedule date and time are required");
       }
 
-      const response = await updatePage({
+      const response = await updatePage(pageId, {
         data: publishPayload as any,
-        options: {}
-      })
+        etag,
+        options: {},
+      });
 
-      setPhase2Data(prev => ({
+      setPhase2Data((prev) => ({
         ...prev,
         status: publishPayload.status,
-        publishedAt: publishPayload.publishedAt
-      }))
+        publishedAt: publishPayload.publishedAt,
+      }));
 
-      setLastSaved(new Date())
-      setIsDirty(false)
-      setEtag(response.etag)
+      setLastSaved(new Date());
+      setIsDirty(false);
+      setEtag(response.etag);
+      setAutoSavePaused(false);
 
-      toast.success(type === "now" ? "Page published" : "Page scheduled")
+      toast.success(type === "now" ? "Page published" : "Page scheduled");
     } catch (error: any) {
       if (error.status === 409) {
-        toast.error("Conflict detected during publish")
-        await loadPageData(pageId)
+        toast.error("Conflict detected during publish");
+        await loadPageData(pageId);
       } else {
-        console.error("Publish failed:", error)
-        toast.error("Failed to publish page")
+        console.error("Publish failed:", error);
+        toast.error("Failed to publish page");
       }
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
-  // Structured data change handler with validation
   const handleStructuredDataChange = (value: string) => {
-    try {
-      const data = value.trim() ? JSON.parse(value) : {}
-      setPhase2Data(prev => ({
-        ...prev,
-        seo: { ...prev.seo, structuredData: data }
-      }))
-      setIsDirty(true)
-      setStructuredDataError(null)
-    } catch (error) {
-      setStructuredDataError("Invalid JSON format")
-      setIsDirty(true)
+    if (!validateStructuredData(value)) {
+      markDirty();
+      return;
     }
-  }
 
-  // Generate SEO preview
+    const data = value.trim() ? JSON.parse(value) : {};
+    setPhase2Data((prev) => ({
+      ...prev,
+      seo: { ...prev.seo, structuredData: data },
+    }));
+    markDirty();
+    setStructuredDataError(null);
+  };
+
   const generateSEOPreview = () => {
-    if (!phase1Data) return "{}"
+    if (!phase1Data) return "{}";
 
-    const title = phase2Data.seo.metaTitle || phase1Data.title
-    const description = phase2Data.seo.metaDescription || phase1Data.content.substring(0, 160)
-    const canonical = phase2Data.seo.canonicalUrl || `/${phase1Data.slug}`
+    const title = phase2Data.seo.metaTitle || phase1Data.title;
+    const description = phase2Data.seo.metaDescription || phase1Data.content.substring(0, 160);
+    const canonical = phase2Data.seo.canonicalUrl || `/${phase1Data.slug}`;
 
     const seo = {
       title,
       description,
       canonical,
+      robots: phase2Data.seo.robots,
       openGraph: phase2Data.seo.openGraph,
       twitter: phase2Data.seo.twitter,
-      structuredData: phase2Data.seo.structuredData
-    }
+      structuredData: phase2Data.seo.structuredData,
+      sitemapInclusion: phase2Data.seo.sitemapInclusion,
+    };
 
-    return JSON.stringify(seo, null, 2)
-  }
+    return JSON.stringify(seo, null, 2);
+  };
 
-  // Check if page is locked by another user
-  const isLockedByOtherUser = isLocked && lockedBy !== user?.id
-
-  // Guard: wait for Phase-1 data to load
   if (!phase1Data) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -655,12 +767,11 @@ export default function PageEditor() {
           <p className="mt-4">Loading page data...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/cms/content/pages">
@@ -678,13 +789,13 @@ export default function PageEditor() {
             {isLocked && (
               <Badge variant={isLockedByOtherUser ? "destructive" : "default"}>
                 <Lock className="h-3 w-3 mr-1" />
-                {isLockedByOtherUser ? `Locked by ${lockedBy}` : "Locked by you"}
+                {isLockedByOtherUser
+                  ? `Locked by ${lockedByName || lockedBy}`
+                  : `Locked by ${currentUserName || "you"}`}
               </Badge>
             )}
             {phase2Data.settings.pageType !== "default" && (
-              <Badge variant="outline">
-                {phase2Data.settings.pageType}
-              </Badge>
+              <Badge variant="outline">{phase2Data.settings.pageType}</Badge>
             )}
             {phase2Data.settings.visibility !== "public" && (
               <Badge variant="outline">
@@ -696,15 +807,14 @@ export default function PageEditor() {
               <Lock className="h-3 w-3" />
               <span>Phase-1 content is locked</span>
             </div>
-
           </div>
           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
             <span>/{phase1Data.slug || "untitled"}</span>
-            <span>•</span>
+            <span>|</span>
             <span>Tenant: {phase1Data.tenantId}</span>
             {lastSaved && (
               <>
-                <span>•</span>
+                <span>|</span>
                 <span className="flex items-center gap-1">
                   {isSaving ? (
                     <>
@@ -740,58 +850,45 @@ export default function PageEditor() {
             Preview
           </Button>
           {isLocked ? (
-            <Button
-              onClick={handleUnlock}
-              disabled={isLockedByOtherUser || !user}
-            >
+            <Button onClick={handleUnlock} disabled={isLockedByOtherUser || !user}>
               <Unlock className="h-4 w-4 mr-2" />
               Unlock
             </Button>
           ) : (
-            <Button
-              variant="outline"
-              onClick={handleLock}
-              disabled={isLockedByOtherUser || !user}
-            >
+            <Button variant="outline" onClick={handleLock} disabled={isLockedByOtherUser || !user}>
               <Lock className="h-4 w-4 mr-2" />
               Lock
             </Button>
           )}
-          {phase2Data.status === "draft" ? (
-            <Button
-              onClick={() => setShowPublish(true)}
-              disabled={isSaving || isLockedByOtherUser}
-            >
+          <Button
+            variant="outline"
+            onClick={handleManualSave}
+            disabled={isSaving || isLockedByOtherUser || !!structuredDataError}
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Save
+          </Button>
+          {phase2Data.status === "draft" && (
+            <Button onClick={() => setShowPublish(true)} disabled={isSaving || isLockedByOtherUser}>
               <Globe className="h-4 w-4 mr-2" />
               Publish
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              onClick={handleManualSave}
-              disabled={isSaving || isLockedByOtherUser}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save
             </Button>
           )}
         </div>
       </div>
 
-      {/* Phase-1 Immutability Warning */}
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Phase-1 fields are locked:</strong> Title, Slug, Content, Tenant ID, and Page Tree cannot be edited in Phase-2. Only SEO and publishing settings are editable.
+          <strong>Phase-1 fields are locked:</strong> Title, Slug, Content, Tenant ID, and Page Tree
+          cannot be edited in Phase-2. Only SEO and publishing settings are editable.
         </AlertDescription>
       </Alert>
 
       {structuredDataError && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Structured data error: {structuredDataError}
-          </AlertDescription>
+          <AlertDescription>Structured data error: {structuredDataError}</AlertDescription>
         </Alert>
       )}
 
@@ -799,16 +896,14 @@ export default function PageEditor() {
         <Alert variant="destructive">
           <Lock className="h-4 w-4" />
           <AlertDescription>
-            This page is locked by {lockedBy}. You cannot make changes until they unlock it.
+            This page is locked by {lockedByName || lockedBy}. You cannot make changes until they
+            unlock it.
           </AlertDescription>
         </Alert>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-
-          {/* PHASE-1 READONLY DISPLAY */}
           <Card className="border border-muted bg-background shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -827,21 +922,16 @@ export default function PageEditor() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Title */}
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Title</p>
                 <p className="text-lg font-semibold">{phase1Data.title}</p>
               </div>
 
-              {/* Slug */}
               <div>
                 <p className="text-xs text-muted-foreground mb-1">URL Slug</p>
-                <code className="text-sm bg-muted px-2 py-1 rounded">
-                  /{phase1Data.slug}
-                </code>
+                <code className="text-sm bg-muted px-2 py-1 rounded">/{phase1Data.slug}</code>
               </div>
 
-              {/* Content Preview */}
               {phase1Data.content && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Text Content</p>
@@ -851,7 +941,6 @@ export default function PageEditor() {
                 </div>
               )}
 
-              {/* Page Tree Preview */}
               {phase1Data.pageTree && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Page Structure</p>
@@ -863,8 +952,6 @@ export default function PageEditor() {
             </CardContent>
           </Card>
 
-
-          {/* SEO Section - PHASE-2 EDITABLE */}
           <Card>
             <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
               <CardHeader className="cursor-pointer">
@@ -883,7 +970,11 @@ export default function PageEditor() {
                       </Badge>
                     )}
                   </div>
-                  {seoOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {seoOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </CollapsibleTrigger>
                 <CardDescription>Optimize your page for search engines</CardDescription>
               </CardHeader>
@@ -904,11 +995,11 @@ export default function PageEditor() {
                           id="metaTitle"
                           value={phase2Data.seo.metaTitle}
                           onChange={(e) => {
-                            setPhase2Data(prev => ({
+                            setPhase2Data((prev) => ({
                               ...prev,
-                              seo: { ...prev.seo, metaTitle: e.target.value }
-                            }))
-                            setIsDirty(true)
+                              seo: { ...prev.seo, metaTitle: e.target.value },
+                            }));
+                            markDirty();
                           }}
                           placeholder="Enter meta title"
                           disabled={isLockedByOtherUser}
@@ -924,11 +1015,11 @@ export default function PageEditor() {
                           id="metaDescription"
                           value={phase2Data.seo.metaDescription}
                           onChange={(e) => {
-                            setPhase2Data(prev => ({
+                            setPhase2Data((prev) => ({
                               ...prev,
-                              seo: { ...prev.seo, metaDescription: e.target.value }
-                            }))
-                            setIsDirty(true)
+                              seo: { ...prev.seo, metaDescription: e.target.value },
+                            }));
+                            markDirty();
                           }}
                           placeholder="Enter meta description"
                           rows={3}
@@ -937,6 +1028,23 @@ export default function PageEditor() {
                         <p className="text-xs text-muted-foreground">
                           {phase2Data.seo.metaDescription.length}/160 characters (optimal: 150-160)
                         </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="focusKeyword">Focus Keyword</Label>
+                        <Input
+                          id="focusKeyword"
+                          value={phase2Data.seo.focusKeyword}
+                          onChange={(e) => {
+                            setPhase2Data((prev) => ({
+                              ...prev,
+                              seo: { ...prev.seo, focusKeyword: e.target.value },
+                            }));
+                            markDirty();
+                          }}
+                          placeholder="Primary keyword for this page"
+                          disabled={isLockedByOtherUser}
+                        />
                       </div>
 
                       <Separator />
@@ -957,6 +1065,76 @@ export default function PageEditor() {
                       </div>
                     </TabsContent>
 
+                    <TabsContent value="robots" className="space-y-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">Allow Search Indexing</p>
+                            <p className="text-xs text-muted-foreground">
+                              When off, page is marked noindex
+                            </p>
+                          </div>
+                          <Switch
+                            checked={phase2Data.seo.robots.index}
+                            onCheckedChange={(checked) => {
+                              setPhase2Data((prev) => ({
+                                ...prev,
+                                seo: {
+                                  ...prev.seo,
+                                  robots: { ...prev.seo.robots, index: checked },
+                                },
+                              }));
+                              markDirty();
+                            }}
+                            disabled={isLockedByOtherUser}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">Allow Link Following</p>
+                            <p className="text-xs text-muted-foreground">
+                              When off, links are marked nofollow
+                            </p>
+                          </div>
+                          <Switch
+                            checked={phase2Data.seo.robots.follow}
+                            onCheckedChange={(checked) => {
+                              setPhase2Data((prev) => ({
+                                ...prev,
+                                seo: {
+                                  ...prev.seo,
+                                  robots: { ...prev.seo.robots, follow: checked },
+                                },
+                              }));
+                              markDirty();
+                            }}
+                            disabled={isLockedByOtherUser}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">Include in Sitemap</p>
+                            <p className="text-xs text-muted-foreground">
+                              Controls sitemap generation visibility
+                            </p>
+                          </div>
+                          <Switch
+                            checked={phase2Data.seo.sitemapInclusion}
+                            onCheckedChange={(checked) => {
+                              setPhase2Data((prev) => ({
+                                ...prev,
+                                seo: { ...prev.seo, sitemapInclusion: checked },
+                              }));
+                              markDirty();
+                            }}
+                            disabled={isLockedByOtherUser}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+
                     <TabsContent value="social" className="space-y-4">
                       <div className="space-y-4">
                         <h4 className="font-medium">Open Graph</h4>
@@ -965,14 +1143,14 @@ export default function PageEditor() {
                           <Input
                             value={phase2Data.seo.openGraph.title}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
-                                  openGraph: { ...prev.seo.openGraph, title: e.target.value }
-                                }
-                              }))
-                              setIsDirty(true)
+                                  openGraph: { ...prev.seo.openGraph, title: e.target.value },
+                                },
+                              }));
+                              markDirty();
                             }}
                             placeholder="Open Graph title"
                             disabled={isLockedByOtherUser}
@@ -983,14 +1161,14 @@ export default function PageEditor() {
                           <Textarea
                             value={phase2Data.seo.openGraph.description}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
-                                  openGraph: { ...prev.seo.openGraph, description: e.target.value }
-                                }
-                              }))
-                              setIsDirty(true)
+                                  openGraph: { ...prev.seo.openGraph, description: e.target.value },
+                                },
+                              }));
+                              markDirty();
                             }}
                             placeholder="Open Graph description"
                             rows={2}
@@ -1002,14 +1180,14 @@ export default function PageEditor() {
                           <Input
                             value={phase2Data.seo.openGraph.image}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
-                                  openGraph: { ...prev.seo.openGraph, image: e.target.value }
-                                }
-                              }))
-                              setIsDirty(true)
+                                  openGraph: { ...prev.seo.openGraph, image: e.target.value },
+                                },
+                              }));
+                              markDirty();
                             }}
                             placeholder="https://example.com/image.jpg"
                             disabled={isLockedByOtherUser}
@@ -1024,14 +1202,14 @@ export default function PageEditor() {
                           <Input
                             value={phase2Data.seo.twitter.title}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
-                                  twitter: { ...prev.seo.twitter, title: e.target.value }
-                                }
-                              }))
-                              setIsDirty(true)
+                                  twitter: { ...prev.seo.twitter, title: e.target.value },
+                                },
+                              }));
+                              markDirty();
                             }}
                             placeholder="Twitter title"
                             disabled={isLockedByOtherUser}
@@ -1042,14 +1220,14 @@ export default function PageEditor() {
                           <Textarea
                             value={phase2Data.seo.twitter.description}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
-                                  twitter: { ...prev.seo.twitter, description: e.target.value }
-                                }
-                              }))
-                              setIsDirty(true)
+                                  twitter: { ...prev.seo.twitter, description: e.target.value },
+                                },
+                              }));
+                              markDirty();
                             }}
                             placeholder="Twitter description"
                             rows={2}
@@ -1061,14 +1239,14 @@ export default function PageEditor() {
                           <Input
                             value={phase2Data.seo.twitter.image}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
                                 seo: {
                                   ...prev.seo,
-                                  twitter: { ...prev.seo.twitter, image: e.target.value }
-                                }
-                              }))
-                              setIsDirty(true)
+                                  twitter: { ...prev.seo.twitter, image: e.target.value },
+                                },
+                              }));
+                              markDirty();
                             }}
                             placeholder="https://example.com/image.jpg"
                             disabled={isLockedByOtherUser}
@@ -1085,11 +1263,11 @@ export default function PageEditor() {
                             id="canonicalUrl"
                             value={phase2Data.seo.canonicalUrl}
                             onChange={(e) => {
-                              setPhase2Data(prev => ({
+                              setPhase2Data((prev) => ({
                                 ...prev,
-                                seo: { ...prev.seo, canonicalUrl: e.target.value }
-                              }))
-                              setIsDirty(true)
+                                seo: { ...prev.seo, canonicalUrl: e.target.value },
+                              }));
+                              markDirty();
                             }}
                             placeholder="https://example.com/canonical-path"
                             disabled={isLockedByOtherUser}
@@ -1122,13 +1300,16 @@ export default function PageEditor() {
             </Collapsible>
           </Card>
 
-          {/* Advanced Settings - PHASE-2 EDITABLE */}
           <Card>
             <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
               <CardHeader className="cursor-pointer">
                 <CollapsibleTrigger className="flex items-center justify-between w-full">
                   <CardTitle>Advanced Settings (Phase-2 Editable)</CardTitle>
-                  {settingsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {settingsOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </CollapsibleTrigger>
               </CardHeader>
               <CollapsibleContent>
@@ -1139,11 +1320,11 @@ export default function PageEditor() {
                       <Select
                         value={phase2Data.settings.pageType}
                         onValueChange={(value: PageType) => {
-                          setPhase2Data(prev => ({
+                          setPhase2Data((prev) => ({
                             ...prev,
-                            settings: { ...prev.settings, pageType: value }
-                          }))
-                          setIsDirty(true)
+                            settings: { ...prev.settings, pageType: value },
+                          }));
+                          markDirty();
                         }}
                         disabled={isLockedByOtherUser}
                       >
@@ -1164,11 +1345,11 @@ export default function PageEditor() {
                       <Select
                         value={phase2Data.settings.visibility}
                         onValueChange={(value: Visibility) => {
-                          setPhase2Data(prev => ({
+                          setPhase2Data((prev) => ({
                             ...prev,
-                            settings: { ...prev.settings, visibility: value }
-                          }))
-                          setIsDirty(true)
+                            settings: { ...prev.settings, visibility: value },
+                          }));
+                          markDirty();
                         }}
                         disabled={isLockedByOtherUser}
                       >
@@ -1194,11 +1375,11 @@ export default function PageEditor() {
                     <Switch
                       checked={phase2Data.settings.featured}
                       onCheckedChange={(checked) => {
-                        setPhase2Data(prev => ({
+                        setPhase2Data((prev) => ({
                           ...prev,
-                          settings: { ...prev.settings, featured: checked }
-                        }))
-                        setIsDirty(true)
+                          settings: { ...prev.settings, featured: checked },
+                        }));
+                        markDirty();
                       }}
                       disabled={isLockedByOtherUser}
                     />
@@ -1212,11 +1393,11 @@ export default function PageEditor() {
                     <Switch
                       checked={phase2Data.settings.allowComments}
                       onCheckedChange={(checked) => {
-                        setPhase2Data(prev => ({
+                        setPhase2Data((prev) => ({
                           ...prev,
-                          settings: { ...prev.settings, allowComments: checked }
-                        }))
-                        setIsDirty(true)
+                          settings: { ...prev.settings, allowComments: checked },
+                        }));
+                        markDirty();
                       }}
                       disabled={isLockedByOtherUser}
                     />
@@ -1227,11 +1408,11 @@ export default function PageEditor() {
                     <Select
                       value={phase2Data.settings.template}
                       onValueChange={(value: string) => {
-                        setPhase2Data(prev => ({
+                        setPhase2Data((prev) => ({
                           ...prev,
-                          settings: { ...prev.settings, template: value }
-                        }))
-                        setIsDirty(true)
+                          settings: { ...prev.settings, template: value },
+                        }));
+                        markDirty();
                       }}
                       disabled={isLockedByOtherUser}
                     >
@@ -1255,11 +1436,11 @@ export default function PageEditor() {
                     <Switch
                       checked={phase2Data.settings.isHomepage}
                       onCheckedChange={(checked) => {
-                        setPhase2Data(prev => ({
+                        setPhase2Data((prev) => ({
                           ...prev,
-                          settings: { ...prev.settings, isHomepage: checked }
-                        }))
-                        setIsDirty(true)
+                          settings: { ...prev.settings, isHomepage: checked },
+                        }));
+                        markDirty();
                       }}
                       disabled={isLockedByOtherUser}
                     />
@@ -1270,7 +1451,6 @@ export default function PageEditor() {
           </Card>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -1280,7 +1460,10 @@ export default function PageEditor() {
               <div className="space-y-2">
                 <Label>Status</Label>
                 <div className="flex items-center gap-2">
-                  <Badge variant={phase2Data.status === "published" ? "default" : "secondary"} className="capitalize">
+                  <Badge
+                    variant={phase2Data.status === "published" ? "default" : "secondary"}
+                    className="capitalize"
+                  >
                     {phase2Data.status}
                   </Badge>
                   {phase2Data.status === "scheduled" && phase2Data.publishedAt && (
@@ -1290,6 +1473,26 @@ export default function PageEditor() {
                     </Badge>
                   )}
                 </div>
+                <Select
+                  value={phase2Data.status}
+                  onValueChange={(value: Page["status"]) => {
+                    setPhase2Data((prev) => ({
+                      ...prev,
+                      status: value,
+                    }));
+                    markDirty();
+                  }}
+                  disabled={isLockedByOtherUser}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Set status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <Separator />
@@ -1299,10 +1502,13 @@ export default function PageEditor() {
                 <Input
                   id="publishDate"
                   type="datetime-local"
-                  value={phase2Data.publishedAt ? new Date(phase2Data.publishedAt).toISOString().slice(0, 16) : ""}
+                  value={toLocalDateTimeInput(phase2Data.publishedAt)}
                   onChange={(e) => {
-                    setPhase2Data(prev => ({ ...prev, publishedAt: e.target.value }))
-                    setIsDirty(true)
+                    const nextPublishedAt = e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : "";
+                    setPhase2Data((prev) => ({ ...prev, publishedAt: nextPublishedAt }));
+                    markDirty();
                   }}
                   disabled={isLockedByOtherUser}
                 />
@@ -1318,10 +1524,9 @@ export default function PageEditor() {
                 </div>
 
                 <div className="mt-1 text-sm font-medium truncate">
-                  {phase1Data.authorId}
+                  {phase1Data.authorName || phase1Data.authorId}
                 </div>
               </div>
-
             </CardContent>
           </Card>
 
@@ -1334,12 +1539,16 @@ export default function PageEditor() {
               <CardContent>
                 <div className="space-y-3">
                   {pageVersions.map((version) => (
-                    <div key={version.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <div
+                      key={version.id}
+                      className="p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                    >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-sm">
-                              v{version.versionNumber} • {new Date(version.createdAt).toLocaleDateString()}
+                              v{version.versionNumber} |{" "}
+                              {new Date(version.createdAt).toLocaleDateString()}
                             </p>
                             <Badge variant="secondary" className="text-xs">
                               {version.autoSave ? "Auto-save" : "Manual"}
@@ -1347,11 +1556,13 @@ export default function PageEditor() {
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">{version.createdBy}</p>
                           <div className="mt-1">
-                            {version.changes.map((change, idx) => (
-                              <span key={idx} className="text-xs text-muted-foreground mr-2">
-                                • {change}
-                              </span>
-                            ))}
+                            {(Array.isArray(version.changes) ? version.changes : []).map(
+                              (change, idx) => (
+                                <span key={idx} className="text-xs text-muted-foreground mr-2">
+                                  | {change}
+                                </span>
+                              ),
+                            )}
                           </div>
                         </div>
                         <Button
@@ -1370,38 +1581,6 @@ export default function PageEditor() {
               </CardContent>
             </Card>
           )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href={`/${phase1Data.slug}`} target="_blank">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Live Page
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => setShowPreview(true)}
-                disabled={isLockedByOtherUser}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Preview Changes
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
-                onClick={handleManualSave}
-                disabled={isSaving || isLockedByOtherUser || !!structuredDataError}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save Now
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
@@ -1422,5 +1601,5 @@ export default function PageEditor() {
         validation={[]}
       />
     </div>
-  )
+  );
 }

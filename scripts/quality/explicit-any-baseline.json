@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "generatedAt": "2026-02-21T08:29:09.035Z",
+  "allowed": [
+    {
+      "file": "Client/app/cms/backups/page.tsx",
+      "line": 214,
+      "text": "const payload: any = {"
+    },
+    {
+      "file": "Client/app/cms/backups/page.tsx",
+      "line": 624,
+      "text": "<Select value={includeFilter} onValueChange={(v: any) => setIncludeFilter(v)}>"
+    },
+    {
+      "file": "Client/app/cms/backups/page.tsx",
+      "line": 637,
+      "text": "<Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>"
+    },
+    {
+      "file": "Client/app/cms/content/blog/[id]/page.tsx",
+      "line": 111,
+      "text": "const normalizeBlogData = (raw: any): BlogPost => {"
+    },
+    {
+      "file": "Client/app/cms/content/blog/page.tsx",
+      "line": 107,
+      "text": "<Badge variant={variants[status as keyof typeof variants] as any}>"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 55,
+      "text": "pageTree: any;"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 59,
+      "text": "blocks: any[];"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 89,
+      "text": "structuredData: any;"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 425,
+      "text": "} catch (error: any) {"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 468,
+      "text": "} catch (err: any) {"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 501,
+      "text": "data: lockData as any,"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 511,
+      "text": "} catch (error: any) {"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 545,
+      "text": "data: unlockData as any,"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 555,
+      "text": "} catch (error: any) {"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 696,
+      "text": "data: publishPayload as any,"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 713,
+      "text": "} catch (error: any) {"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 1590,
+      "text": "content={{ ...phase1Data, ...phase2Data } as any}"
+    },
+    {
+      "file": "Client/app/cms/content/pages/[id]/page.tsx",
+      "line": 1600,
+      "text": "content={{ ...phase1Data, ...phase2Data } as any}"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 43,
+      "text": "props: Record<string, any>;"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 70,
+      "text": "props: Record<string, any>;"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 80,
+      "text": "props: Record<string, any>;"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 91,
+      "text": "props: Record<string, any> = {},"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 101,
+      "text": "props: Record<string, any> = {},"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 223,
+      "text": "structuredData: Record<string, any>;"
+    },
+    {
+      "file": "Client/app/cms/content/pages/new/page.tsx",
+      "line": 349,
+      "text": "updates: Record<string, any>,"
+    },
+    {
+      "file": "Client/app/cms/content/pages/page.tsx",
+      "line": 82,
+      "text": ".map((p: any) => ({"
+    },
+    {
+      "file": "Client/app/cms/forms/new/[[...slug]]/page.tsx",
+      "line": 206,
+      "text": "existingForm.fields?.map((field: any, index: number) => ({"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 65,
+      "text": "content?: any;"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 94,
+      "text": "schemaData?: Record<string, any>;"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 156,
+      "text": "globalRobots: any,"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 398,
+      "text": "const [seoData, setSeoData] = useState<any>(null);"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 589,
+      "text": "const payload: any = {"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 1151,
+      "text": "onValueChange={(value: any) => handlePageSEOChange({ schemaType: value })}"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 1527,
+      "text": "onValueChange={(value: any) => handlePageSEOChange({ twitterCard: value })}"
+    },
+    {
+      "file": "Client/app/cms/global/seo/new/[[...id]]/page.tsx",
+      "line": 1830,
+      "text": "onValueChange={(value: any) =>"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 58,
+      "text": "const createThemeSetting = async (payload: any) => {"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 67,
+      "text": "const normalizeLayoutForBackend = (layout: any) => {"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 108,
+      "text": "const [lastSavedSnapshot, setLastSavedSnapshot] = useState<any>(null);"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 115,
+      "text": "const [selectedWebsite, setSelectedWebsite] = useState<any>(null);"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 240,
+      "text": "const applyCSSVariables = useCallback((theme: any) => {"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 326,
+      "text": "if (tenant) setActiveTenant(tenant as any);"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 350,
+      "text": "if (tenant) setActiveTenant(tenant as any);"
+    },
+    {
+      "file": "Client/app/cms/theme/page.tsx",
+      "line": 460,
+      "text": "const hydrateStateFromTheme = useCallback((theme: any) => {"
+    }
+  ]
+}

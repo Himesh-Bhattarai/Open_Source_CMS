@@ -1,36 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Mail, MapPin, Phone, Loader2 } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Mail, MapPin, Phone, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ContactPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
-  })
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     // Simulate form submission
     setTimeout(() => {
-      alert("Message sent successfully! We'll get back to you soon.")
-      setFormData({ name: "", email: "", subject: "", message: "" })
-      setIsSubmitting(false)
-    }, 1500)
-  }
+      toast.success("Message sent successfully! We'll get back to you soon.");
+      setFormData({ name: "", email: "", subject: "", message: "" });
+      setIsSubmitting(false);
+    }, 1500);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,7 +57,8 @@ export default function ContactPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Get in Touch</h1>
             <p className="text-xl text-muted-foreground">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+              Have questions? We'd love to hear from you. Send us a message and we'll respond as
+              soon as possible.
             </p>
           </div>
 
@@ -65,7 +67,9 @@ export default function ContactPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Send us a message</CardTitle>
-                  <CardDescription>Fill out the form below and we'll get back to you within 24 hours</CardDescription>
+                  <CardDescription>
+                    Fill out the form below and we'll get back to you within 24 hours
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -160,5 +164,5 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

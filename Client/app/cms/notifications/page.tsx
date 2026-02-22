@@ -1,93 +1,122 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Bell, Mail, CheckCircle, Trash2 } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useEffect, useState } from "react"
-import { getNotification } from "@/Api/Notification/notification"
+import { useEffect, useState } from "react";
+import {
+  deleteNotificationById,
+  getNotification,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/Api/Notification/notification";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bell, Mail, CheckCircle, Trash2 } from "lucide-react";
 
 interface Notification {
-  id: number
-  type: string
-  title: string
-  message: string
-  time: string
-  read: boolean
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+interface RawNotification {
+  _id?: string;
+  type?: string;
+  title?: string;
+  message?: string;
+  createdAt?: string;
+  read?: boolean;
 }
 
 export default function NotificationsPage() {
- const [notifications, setNotifications] = useState<Notification[]>([]);
- const [loading, setLoading] = useState(false);
- const [message, setMessage] = useState("");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [emailSettings, setEmailSettings] = useState({
     contentPublished: true,
     teamActivity: true,
     systemUpdates: true,
-  })
+  });
 
   const [appSettings, setAppSettings] = useState({
     desktopNotifications: false,
     soundAlerts: false,
-  })
-  
+  });
 
-  //loadNotification
+  // Load notifications.
   useEffect(() => {
     const loadNotif = async () => {
       setLoading(true);
       const notif = await getNotification();
-      const notificationsArray = notif.data?.notifications || [];
+      const notificationsArray = Array.isArray(notif.data?.notifications)
+        ? (notif.data.notifications as RawNotification[])
+        : [];
+
       if (!notif.ok) {
-        setMessage(notif?.message ?? "Failed to load notifications");
+        console.error(notif?.message ?? "Failed to load notifications");
         setLoading(false);
         return;
       }
 
-      // map _id → id and createdAt → time
-      const formatted = notificationsArray.map((n: any) => ({
-        id: n._id,
-        type: n.type.toLowerCase(), 
-        title: n.title,
-        message: n.message,
-        time: n.createdAt,
-        read: n.read,
-      }));
+      const formatted = notificationsArray.map(
+        (item): Notification => ({
+          id: String(item._id || ""),
+          type: String(item.type || "info").toLowerCase(),
+          title: String(item.title || "Notification"),
+          message: String(item.message || ""),
+          time: String(item.createdAt || new Date().toISOString()),
+          read: Boolean(item.read),
+        }),
+      );
 
       setNotifications(formatted);
       setLoading(false);
     };
+
     loadNotif();
   }, []);
 
-  const markAsRead = (id: number) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
+  const markAsRead = async (id: string) => {
+    const prev = notifications;
+    setNotifications(prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
+    const res = await markNotificationRead(id);
+    if (!res.ok) {
+      setNotifications(prev);
+    }
+  };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })))
-  }
+  const markAllAsRead = async () => {
+    const prev = notifications;
+    setNotifications(prev.map((item) => ({ ...item, read: true })));
+    const res = await markAllNotificationsRead();
+    if (!res.ok) {
+      setNotifications(prev);
+    }
+  };
 
-  const deleteNotification = (id: number) => {
-    setNotifications(notifications.filter((n) => n.id !== id))
-  }
+  const deleteNotification = async (id: string) => {
+    const prev = notifications;
+    setNotifications(prev.filter((item) => item.id !== id));
+    const res = await deleteNotificationById(id);
+    if (!res.ok) {
+      setNotifications(prev);
+    }
+  };
 
-  
-  
-  //filter notification by time show only the last 7 days
-  const filteredNotifications = notifications.filter((n)=>{
-    const notificationData = new Date(n.time);
+  // Show only notifications from the last 7 days.
+  const filteredNotifications = notifications.filter((item) => {
+    const notificationDate = new Date(item.time);
     const today = new Date();
     const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return notificationData >= sevenDaysAgo
-  })
-  
-  const unreadCount = filteredNotifications.filter((n) => !n.read).length
+    return notificationDate >= sevenDaysAgo;
+  });
 
+  const unreadCount = filteredNotifications.filter((item) => !item.read).length;
 
   return (
     <div className="space-y-6">
@@ -123,7 +152,7 @@ export default function NotificationsPage() {
                   <p className="text-sm text-muted-foreground mt-1">You're all caught up!</p>
                 </div>
               ) : (
-                  filteredNotifications.map((notification) => (
+                filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`flex items-start gap-4 p-4 rounded-lg border ${!notification.read ? "bg-accent/50" : ""}`}
@@ -157,11 +186,19 @@ export default function NotificationsPage() {
                     </div>
                     <div className="flex gap-1">
                       {!notification.read && (
-                        <Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markAsRead(notification.id)}
+                        >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" onClick={() => deleteNotification(notification.id)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteNotification(notification.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -178,7 +215,7 @@ export default function NotificationsPage() {
               <CardTitle>Unread Notifications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {filteredNotifications.filter((n) => !n.read).length === 0 ? (
+              {filteredNotifications.filter((item) => !item.read).length === 0 ? (
                 <div className="text-center py-12">
                   <CheckCircle className="h-12 w-12 mx-auto text-green-600 mb-4" />
                   <p className="text-lg font-medium">All caught up!</p>
@@ -186,9 +223,12 @@ export default function NotificationsPage() {
                 </div>
               ) : (
                 filteredNotifications
-                  .filter((n) => !n.read)
+                  .filter((item) => !item.read)
                   .map((notification) => (
-                    <div key={notification.id} className="flex items-start gap-4 p-4 rounded-lg border bg-accent/50">
+                    <div
+                      key={notification.id}
+                      className="flex items-start gap-4 p-4 rounded-lg border bg-accent/50"
+                    >
                       <div
                         className={`p-2 rounded-lg ${
                           notification.type === "success"
@@ -234,7 +274,9 @@ export default function NotificationsPage() {
                 </div>
                 <Switch
                   checked={emailSettings.contentPublished}
-                  onCheckedChange={(checked) => setEmailSettings({ ...emailSettings, contentPublished: checked })}
+                  onCheckedChange={(checked) =>
+                    setEmailSettings({ ...emailSettings, contentPublished: checked })
+                  }
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -244,7 +286,9 @@ export default function NotificationsPage() {
                 </div>
                 <Switch
                   checked={emailSettings.teamActivity}
-                  onCheckedChange={(checked) => setEmailSettings({ ...emailSettings, teamActivity: checked })}
+                  onCheckedChange={(checked) =>
+                    setEmailSettings({ ...emailSettings, teamActivity: checked })
+                  }
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -254,7 +298,9 @@ export default function NotificationsPage() {
                 </div>
                 <Switch
                   checked={emailSettings.systemUpdates}
-                  onCheckedChange={(checked) => setEmailSettings({ ...emailSettings, systemUpdates: checked })}
+                  onCheckedChange={(checked) =>
+                    setEmailSettings({ ...emailSettings, systemUpdates: checked })
+                  }
                 />
               </div>
             </CardContent>
@@ -276,7 +322,9 @@ export default function NotificationsPage() {
                 </div>
                 <Switch
                   checked={appSettings.desktopNotifications}
-                  onCheckedChange={(checked) => setAppSettings({ ...appSettings, desktopNotifications: checked })}
+                  onCheckedChange={(checked) =>
+                    setAppSettings({ ...appSettings, desktopNotifications: checked })
+                  }
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -286,7 +334,9 @@ export default function NotificationsPage() {
                 </div>
                 <Switch
                   checked={appSettings.soundAlerts}
-                  onCheckedChange={(checked) => setAppSettings({ ...appSettings, soundAlerts: checked })}
+                  onCheckedChange={(checked) =>
+                    setAppSettings({ ...appSettings, soundAlerts: checked })
+                  }
                 />
               </div>
             </CardContent>
@@ -294,5 +344,5 @@ export default function NotificationsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

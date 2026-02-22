@@ -1,14 +1,14 @@
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface HeroBlockProps {
   data: {
-    title?: string
-    subtitle?: string
-    buttonText?: string
-    buttonLink?: string
-    backgroundImage?: string
-  }
+    title?: string;
+    subtitle?: string;
+    buttonText?: string;
+    buttonLink?: string;
+    backgroundImage?: string;
+  };
 }
 
 export function HeroBlock({ data }: HeroBlockProps) {
@@ -32,5 +32,5 @@ export function HeroBlock({ data }: HeroBlockProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }

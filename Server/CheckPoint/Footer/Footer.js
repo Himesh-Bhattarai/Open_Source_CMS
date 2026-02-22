@@ -1,5 +1,5 @@
 import { Footer } from "../../Models/Footer/Footer.js";
-import {cmsEventService as notif} from "../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../Services/notificationServices.js";
 
 export const footerCheckpoint = async (req, res, next) => {
   try {
@@ -12,18 +12,23 @@ export const footerCheckpoint = async (req, res, next) => {
       });
     }
 
+    const nextStatus = metadata?.status === "published" ? "published" : "draft";
+
     const footer = await Footer.create({
       ...payload,
       tenantId,
       userId: userId,
-      status: metadata?.status ?? "draft",
-      publishedBy: userId,
-      publishedAt: new Date(),
+      status: nextStatus,
+      publishedBy: nextStatus === "published" ? userId : null,
+      publishedAt: nextStatus === "published" ? new Date() : null,
     });
 
     notif.createFooter({
-      userId,footerName : payload.name, footerId : footer._id, websiteId : tenantId
-    })
+      userId,
+      footerName: payload.name,
+      footerId: footer._id,
+      websiteId: tenantId,
+    });
 
     res.status(201).json({
       success: true,

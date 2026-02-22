@@ -3,12 +3,13 @@ import { jest } from "@jest/globals";
 import { createRouteTestApp } from "../helpers/createRouteTestApp.js";
 import { makeAuthCookie } from "../helpers/auth.js";
 
-const loadFooterCombinedRouter = async (footerModel, footerCheckpoint, footerBlockCheckpoint) => {
+const loadFooterCombinedRouter = async (footerModel, footerCheckpoint) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Models/Footer/Footer.js", () => ({ Footer: footerModel }));
   jest.unstable_mockModule("../../CheckPoint/Footer/Footer.js", () => ({ footerCheckpoint }));
-  jest.unstable_mockModule("../../CheckPoint/Footer/FooterBlock.js", () => ({ footerBlockCheckpoint }));
-  jest.unstable_mockModule("../../Services/notificationServices.js", () => ({ cmsEventService: { updateFooter: jest.fn() } }));
+  jest.unstable_mockModule("../../Services/notificationServices.js", () => ({
+    cmsEventService: { updateFooter: jest.fn() },
+  }));
   return (await import("../../Routes/Footer/Combined.js")).default;
 };
 
@@ -30,9 +31,15 @@ const loadFooterDeleteRouter = async (footerModel) => {
 const loadExternalFooterRouter = async ({ getFooterImpl, tenantImpl, apiKeyImpl, trackImpl }) => {
   jest.resetModules();
   jest.unstable_mockModule("../../Api/getFooter.js", () => ({ getFooter: getFooterImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({ tenantVerification: tenantImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({ apiKeyVerification: apiKeyImpl }));
-  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({ trackIntegrationUsage: () => trackImpl }));
+  jest.unstable_mockModule("../../Validation/middleware/tenantVerification.js", () => ({
+    tenantVerification: tenantImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/apiKeyVerification.js", () => ({
+    apiKeyVerification: apiKeyImpl,
+  }));
+  jest.unstable_mockModule("../../Validation/middleware/trackIntegrationUsage.js", () => ({
+    trackIntegrationUsage: () => trackImpl,
+  }));
   return (await import("../../Routes/Api/getFooter.js")).default;
 };
 
@@ -44,11 +51,13 @@ describe("Footer routes", () => {
         findByIdAndUpdate: jest.fn(),
       },
       (req, res) => res.status(201).json({ ok: true }),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const app = createRouteTestApp("/footer", router);
 
-    const valid = await request(app).post("/footer/footer/").set("Cookie", makeAuthCookie()).send({ footerName: "Main" });
+    const valid = await request(app)
+      .post("/footer/footer/")
+      .set("Cookie", makeAuthCookie())
+      .send({ footerName: "Main" });
     expect(valid.status).toBe(201);
 
     const invalid = await request(app).post("/footer/footer/").send({ footerName: "Main" });
@@ -60,41 +69,27 @@ describe("Footer routes", () => {
         findByIdAndUpdate: jest.fn(),
       },
       (req, res, next) => next(new Error("footer fail")),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const edgeApp = createRouteTestApp("/footer", edgeRouter);
-    const edge = await request(edgeApp).post("/footer/footer/").set("Cookie", makeAuthCookie()).send({ footerName: "Main" });
+    const edge = await request(edgeApp)
+      .post("/footer/footer/")
+      .set("Cookie", makeAuthCookie())
+      .send({ footerName: "Main" });
     expect(edge.status).toBe(500);
   });
 
-  test("POST /footer-block valid invalid edge", async () => {
+  test("POST /footer-block route is no longer available", async () => {
     const router = await loadFooterCombinedRouter(
       {
         findOne: jest.fn(),
         findByIdAndUpdate: jest.fn(),
       },
       (req, res) => res.status(201).json({ ok: true }),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const app = createRouteTestApp("/footer", router);
 
-    const valid = await request(app).post("/footer/footer-block/").send({ label: "About" });
-    expect(valid.status).toBe(201);
-
-    const invalid = await request(app).get("/footer/footer-block/");
+    const invalid = await request(app).post("/footer/footer-block/").send({ label: "About" });
     expect(invalid.status).toBe(404);
-
-    const edgeRouter = await loadFooterCombinedRouter(
-      {
-        findOne: jest.fn(),
-        findByIdAndUpdate: jest.fn(),
-      },
-      (req, res) => res.status(201).json({ ok: true }),
-      (req, res, next) => next(new Error("footer block fail")),
-    );
-    const edgeApp = createRouteTestApp("/footer", edgeRouter);
-    const edge = await request(edgeApp).post("/footer/footer-block/").send({ label: "About" });
-    expect(edge.status).toBe(500);
   });
 
   test("PUT /footer/:id valid invalid edge", async () => {
@@ -104,11 +99,13 @@ describe("Footer routes", () => {
         findByIdAndUpdate: jest.fn().mockResolvedValue({ _id: "f1", footerName: "Updated" }),
       },
       (req, res) => res.status(201).json({ ok: true }),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const app = createRouteTestApp("/footer", router);
 
-    const valid = await request(app).put("/footer/footer/f1").set("Cookie", makeAuthCookie()).send({ footerName: "Updated" });
+    const valid = await request(app)
+      .put("/footer/footer/f1")
+      .set("Cookie", makeAuthCookie())
+      .send({ footerName: "Updated" });
     expect(valid.status).toBe(200);
 
     const invalid = await request(app).put("/footer/footer/f1").send({ footerName: "Updated" });
@@ -120,10 +117,12 @@ describe("Footer routes", () => {
         findByIdAndUpdate: jest.fn(),
       },
       (req, res) => res.status(201).json({ ok: true }),
-      (req, res) => res.status(201).json({ ok: true }),
     );
     const edgeApp = createRouteTestApp("/footer", edgeRouter);
-    const edge = await request(edgeApp).put("/footer/footer/f1").set("Cookie", makeAuthCookie()).send({ footerName: "Updated" });
+    const edge = await request(edgeApp)
+      .put("/footer/footer/f1")
+      .set("Cookie", makeAuthCookie())
+      .send({ footerName: "Updated" });
     expect(edge.status).toBe(404);
   });
 

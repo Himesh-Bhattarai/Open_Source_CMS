@@ -1,39 +1,33 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Save } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Save } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
-import { blogPostApi } from "@/Api/Blog/createBlog"
-import { useTenant } from "@/context/TenantContext"
-import { checkSlugAvailability } from "@/Api/Services/listServices.js"
+import { blogPostApi } from "@/Api/Blog/createBlog";
+import { useTenant } from "@/context/TenantContext";
+import { checkSlugAvailability } from "@/Api/Services/listServices.js";
+import { toast } from "sonner";
 
 export default function NewBlogPost() {
-  const router = useRouter()
-  const { tenants, activeTenant, setActiveTenant, selectedTenantId } =
-    useTenant()
+  const router = useRouter();
+  const { tenants, activeTenant, setActiveTenant, selectedTenantId } = useTenant();
 
-  const isTenantSelected = !!selectedTenantId
+  const isTenantSelected = !!selectedTenantId;
 
   const [blogData, setBlogData] = useState({
     title: "",
@@ -41,58 +35,53 @@ export default function NewBlogPost() {
     excerpt: "",
     category: "Development",
     status: "draft",
-  })
+  });
 
-  const [slugStatus, setSlugStatus] = useState<
-    "idle" | "checking" | "available" | "taken"
-  >("idle")
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
 
   // Live slug check
   useEffect(() => {
-    if (!blogData.slug || !selectedTenantId) return
-    const value = "BlogCreation"
+    if (!blogData.slug || !selectedTenantId) return;
+    const value = "BlogCreation";
 
     const delay = setTimeout(async () => {
-      setSlugStatus("checking")
-      const ok = await checkSlugAvailability(
-        blogData.slug,
-        selectedTenantId,
-        value
-      )
-      setSlugStatus(ok ? "available" : "taken")
-    }, 500)
+      setSlugStatus("checking");
+      const ok = await checkSlugAvailability(blogData.slug, selectedTenantId, value);
+      setSlugStatus(ok ? "available" : "taken");
+    }, 500);
 
-    return () => clearTimeout(delay)
-  }, [blogData.slug, selectedTenantId])
+    return () => clearTimeout(delay);
+  }, [blogData.slug, selectedTenantId]);
 
   const handleCreate = async () => {
     if (!selectedTenantId) {
-      alert("Select a website first")
-      return
+      toast.error("Select a website first");
+      return;
     }
 
     if (slugStatus !== "available") {
-      alert("Slug is not available")
-      return
+      toast.error("Slug is not available");
+      return;
     }
 
     try {
       const blogPost = await blogPostApi({
         ...blogData,
         tenantId: selectedTenantId,
-      })
+      });
 
       if (blogPost?.blogId) {
-        router.push(`/cms/content/blog/${blogPost.blogId}`)
+        toast.success("Blog post created");
+        router.push(`/cms/content/blog/${blogPost.blogId}`);
       }
     } catch (err) {
-      console.error(err)
+      console.error(err);
+      toast.error("Failed to create blog post");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -104,16 +93,11 @@ export default function NewBlogPost() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold">New Blog Post</h1>
-            <p className="text-sm text-muted-foreground">
-              Create a new blog post
-            </p>
+            <p className="text-sm text-muted-foreground">Create a new blog post</p>
           </div>
         </div>
 
-        <Button
-          onClick={handleCreate}
-          disabled={!isTenantSelected || slugStatus !== "available"}
-        >
+        <Button onClick={handleCreate} disabled={!isTenantSelected || slugStatus !== "available"}>
           <Save className="h-4 w-4 mr-2" />
           Create Post
         </Button>
@@ -127,9 +111,7 @@ export default function NewBlogPost() {
         <CardContent>
           <Select
             value={selectedTenantId || ""}
-            onValueChange={(id) =>
-              setActiveTenant(tenants.find(t => t._id === id)!)
-            }
+            onValueChange={(id) => setActiveTenant(tenants.find((t) => t._id === id)!)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select website" />
@@ -148,15 +130,12 @@ export default function NewBlogPost() {
       {/* Lock everything until tenant chosen */}
       <div className={!isTenantSelected ? "opacity-50 pointer-events-none" : ""}>
         <div className="grid gap-6 lg:grid-cols-3">
-
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Post Details</CardTitle>
-                <CardDescription>
-                  Enter the basic information for your blog post
-                </CardDescription>
+                <CardDescription>Enter the basic information for your blog post</CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4">
@@ -181,23 +160,17 @@ export default function NewBlogPost() {
                   <Label>Slug *</Label>
                   <Input
                     value={blogData.slug}
-                    onChange={(e) =>
-                      setBlogData({ ...blogData, slug: e.target.value })
-                    }
+                    onChange={(e) => setBlogData({ ...blogData, slug: e.target.value })}
                   />
 
                   {slugStatus === "checking" && (
                     <p className="text-sm text-muted-foreground">Checking…</p>
                   )}
                   {slugStatus === "available" && (
-                    <p className="text-sm text-green-600">
-                      Slug available ✓
-                    </p>
+                    <p className="text-sm text-green-600">Slug available ✓</p>
                   )}
                   {slugStatus === "taken" && (
-                    <p className="text-sm text-red-600">
-                      Slug already in use
-                    </p>
+                    <p className="text-sm text-red-600">Slug already in use</p>
                   )}
                 </div>
 
@@ -226,9 +199,7 @@ export default function NewBlogPost() {
               <CardContent className="space-y-4">
                 <Select
                   value={blogData.status}
-                  onValueChange={(v) =>
-                    setBlogData({ ...blogData, status: v })
-                  }
+                  onValueChange={(v) => setBlogData({ ...blogData, status: v })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -241,9 +212,7 @@ export default function NewBlogPost() {
 
                 <Select
                   value={blogData.category}
-                  onValueChange={(v) =>
-                    setBlogData({ ...blogData, category: v })
-                  }
+                  onValueChange={(v) => setBlogData({ ...blogData, category: v })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -261,5 +230,5 @@ export default function NewBlogPost() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,9 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Settings } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function AdminSettingsPage() {
   return (
@@ -17,12 +19,28 @@ export default function AdminSettingsPage() {
             <Settings className="h-5 w-5" />
             Configuration
           </CardTitle>
-          <CardDescription>Platform settings and configuration</CardDescription>
+          <CardDescription>Central controls for platform administration</CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-12">Settings panel under development</p>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Use the links below to manage core platform modules:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/cms/settings">User Settings</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/cms/backups">Backup Policies</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/cms/integrations">Integrations</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/cms/theme">Theme Engine</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

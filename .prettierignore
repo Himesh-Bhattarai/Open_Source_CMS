@@ -1,0 +1,12 @@
+node_modules
+Client/node_modules
+Server/node_modules
+Client/.next
+_release
+coverage
+dist
+build
+*.log
+release-*.tar.gz
+Client/test-results
+Client/playwright-report

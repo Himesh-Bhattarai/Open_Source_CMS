@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { createFooter } from "@/Api/Footer/Create";
 import { useTenant } from "@/context/TenantContext";
 import { useRouter } from "next/navigation";
@@ -79,11 +73,7 @@ interface NewsletterBlockData {
   redirectUrl?: string;
 }
 
-type BlockData =
-  | LogoBlockData
-  | MenuBlockData
-  | TextBlockData
-  | NewsletterBlockData;
+type BlockData = LogoBlockData | MenuBlockData | TextBlockData | NewsletterBlockData;
 
 interface FooterBlock {
   id: string;
@@ -100,6 +90,8 @@ interface SocialLink {
   slug?: string;
 }
 
+type FooterStatus = "draft" | "published";
+
 interface FooterCMSData {
   tenantId: string;
   layout: "4-column" | "3-column" | "custom";
@@ -108,19 +100,20 @@ interface FooterCMSData {
     copyrightText: string;
     socialLinks: SocialLink[];
   };
+  status?: FooterStatus;
+  publishedAt?: string | null;
   metadata?: {
     createdAt?: string;
     updatedAt?: string;
-    status?: "draft" | "published";
+    status?: FooterStatus;
   };
 }
 
 export default function FooterBuilder() {
   const router = useRouter();
   const [blocks, setBlocks] = useState<FooterBlock[]>([]);
-  const [layout, setLayout] = useState<"4-column" | "3-column" | "custom">(
-    "4-column",
-  );
+  const [layout, setLayout] = useState<"4-column" | "3-column" | "custom">("4-column");
+  const [footerStatus, setFooterStatus] = useState<FooterStatus>("draft");
   const [editOpen, setEditOpen] = useState(false);
   const [socialLinksOpen, setSocialLinksOpen] = useState(false);
   const [activeBlock, setActiveBlock] = useState<FooterBlock | null>(null);
@@ -156,10 +149,24 @@ export default function FooterBuilder() {
       slug: "instagram",
     },
   ]);
-  const { toast } = useToast();
+  const toast = ({
+    title,
+    description,
+    variant,
+  }: {
+    title: string;
+    description?: string;
+    variant?: "destructive";
+  }) => {
+    const message = description || title;
+    if (variant === "destructive") {
+      sonnerToast.error(message);
+      return;
+    }
+    sonnerToast.success(message);
+  };
 
-  const { tenants, activeTenant, selectedTenantId, setActiveTenant } =
-    useTenant();
+  const { tenants, activeTenant, setActiveTenant } = useTenant();
 
   const blockTypes = [
     { type: "text", label: "Text Block", icon: Type },
@@ -229,13 +236,11 @@ export default function FooterBuilder() {
 
   function saveEdit() {
     if (!activeBlock) return;
-    setBlocks((prev) =>
-      prev.map((b) => (b.id === activeBlock.id ? activeBlock : b)),
-    );
+    setBlocks((prev) => prev.map((b) => (b.id === activeBlock.id ? activeBlock : b)));
     setEditOpen(false);
   }
 
-  function updateBlockData(field: string, value: any) {
+  function updateBlockData(field: string, value: unknown) {
     if (!activeBlock) return;
     setActiveBlock({
       ...activeBlock,
@@ -263,11 +268,7 @@ export default function FooterBuilder() {
     });
   }
 
-  function updateMenuLink(
-    linkId: string,
-    field: "label" | "slug",
-    value: string,
-  ) {
+  function updateMenuLink(linkId: string, field: "label" | "slug", value: string) {
     if (!activeBlock || activeBlock.type !== "menu") return;
     const menuData = activeBlock.data as MenuBlockData;
     setActiveBlock({
@@ -294,11 +295,7 @@ export default function FooterBuilder() {
   }
 
   // Social Links Functions
-  function updateSocialLink(
-    id: string,
-    field: keyof SocialLink,
-    value: string,
-  ) {
+  function updateSocialLink(id: string, field: keyof SocialLink, value: string) {
     setSocialLinks((prev) =>
       prev.map((link) => (link.id === id ? { ...link, [field]: value } : link)),
     );
@@ -348,10 +345,7 @@ export default function FooterBuilder() {
         return `${menuData.links.length} link${menuData.links.length !== 1 ? "s" : ""}`;
       case "text":
         const textData = block.data as TextBlockData;
-        return (
-          textData.content.substring(0, 20) +
-          (textData.content.length > 20 ? "..." : "")
-        );
+        return textData.content.substring(0, 20) + (textData.content.length > 20 ? "..." : "");
       case "newsletter":
         const newsletterData = block.data as NewsletterBlockData;
         return (
@@ -364,7 +358,8 @@ export default function FooterBuilder() {
   }
 
   // Function to gather all data for backend
-  function gatherFooterData(): FooterCMSData {
+  function gatherFooterData(statusOverride?: FooterStatus): FooterCMSData {
+    const nextStatus = statusOverride ?? footerStatus;
     return {
       tenantId: activeTenant?._id ?? "",
       layout,
@@ -377,10 +372,12 @@ export default function FooterBuilder() {
         copyrightText,
         socialLinks: socialLinks.filter((link) => link.url.trim() !== ""), // Only include links with URLs
       },
+      status: nextStatus,
+      publishedAt: nextStatus === "published" ? new Date().toISOString() : null,
       metadata: {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        status: "draft",
+        status: nextStatus,
       },
     };
   }
@@ -453,23 +450,15 @@ export default function FooterBuilder() {
           break;
         case "newsletter":
           const newsletterData = block.data as NewsletterBlockData;
-          if (
-            !newsletterData.title ||
-            !newsletterData.description ||
-            !newsletterData.buttonText
-          ) {
+          if (!newsletterData.title || !newsletterData.description || !newsletterData.buttonText) {
             toast({
               title: "Invalid Newsletter Block",
-              description:
-                "Newsletter blocks require title, description, and button text",
+              description: "Newsletter blocks require title, description, and button text",
               variant: "destructive",
             });
             return false;
           }
-          if (
-            newsletterData.buttonAction === "redirect" &&
-            !newsletterData.redirectUrl
-          ) {
+          if (newsletterData.buttonAction === "redirect" && !newsletterData.redirectUrl) {
             toast({
               title: "Invalid Newsletter Block",
               description: "Redirect action requires a redirect URL",
@@ -485,8 +474,8 @@ export default function FooterBuilder() {
   }
 
   // Function to handle save draft
-  async function handleSaveDraft() {
-    const footerData = gatherFooterData();
+  async function handleSave(status: FooterStatus) {
+    const footerData = gatherFooterData(status);
 
     if (!validateFooterData(footerData)) return;
 
@@ -495,16 +484,19 @@ export default function FooterBuilder() {
         ? await updateFooter(footerId!, footerData)
         : await createFooter(footerData);
 
+      setFooterStatus(status);
       toast({
         title: "Success",
-        description: response?.message || "Footer saved",
+        description:
+          response?.message || (status === "published" ? "Footer published" : "Footer saved"),
       });
 
       router.push("/cms/global/footer");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to save footer";
       toast({
         title: "Error",
-        description: error.message || "Save failed",
+        description: message,
         variant: "destructive",
       });
     }
@@ -512,7 +504,6 @@ export default function FooterBuilder() {
 
   // Function to handle preview
   function handlePreview() {
-    const footerData = gatherFooterData();
     toast({
       title: "Preview Mode",
       description: "Check console for footer data",
@@ -522,6 +513,7 @@ export default function FooterBuilder() {
   // Function to handle discard changes
   function handleDiscardChanges() {
     setBlocks([]);
+    setFooterStatus("draft");
     setCopyrightText("");
     setSocialLinks([
       {
@@ -557,11 +549,7 @@ export default function FooterBuilder() {
   }
 
   const gridCols =
-    layout === "3-column"
-      ? "grid-cols-3"
-      : layout === "custom"
-        ? "grid-cols-2"
-        : "grid-cols-4";
+    layout === "3-column" ? "grid-cols-3" : layout === "custom" ? "grid-cols-2" : "grid-cols-4";
 
   const visibleBlocks = blocks;
 
@@ -577,6 +565,7 @@ export default function FooterBuilder() {
 
         setLayout(footer.layout);
         setBlocks(footer.blocks);
+        setFooterStatus(footer?.status === "published" ? "published" : "draft");
         setCopyrightText(footer.bottomBar?.copyrightText || "");
         setSocialLinks(footer.bottomBar?.socialLinks || []);
       } catch (err) {
@@ -595,12 +584,13 @@ export default function FooterBuilder() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">
-            {isEditMode ? "Edit Footer" : "Create Footer"}
-          </h1>
+          <h1 className="text-3xl font-bold">{isEditMode ? "Edit Footer" : "Create Footer"}</h1>
 
           <p className="text-pretty text-muted-foreground mt-1">
             Design your site footer with flexible blocks
+          </p>
+          <p className="text-xs mt-2 text-muted-foreground">
+            Current status: <span className="font-medium">{footerStatus}</span>
           </p>
         </div>
         <div className="flex gap-2">
@@ -610,9 +600,13 @@ export default function FooterBuilder() {
           <Button variant="outline" onClick={handlePreview}>
             Preview
           </Button>
-          <Button onClick={handleSaveDraft}>
+          <Button variant="outline" onClick={() => handleSave("draft")}>
             <Save className="h-4 w-4 mr-2" />
             Save Draft
+          </Button>
+          <Button onClick={() => handleSave("published")}>
+            <Save className="h-4 w-4 mr-2" />
+            Publish
           </Button>
         </div>
       </div>
@@ -620,9 +614,7 @@ export default function FooterBuilder() {
       <Card>
         <CardHeader>
           <CardTitle>Website Footer Settings</CardTitle>
-          <CardDescription>
-            Create or edit footer for a specific website
-          </CardDescription>
+          <CardDescription>Create or edit footer for a specific website</CardDescription>
         </CardHeader>
 
         <CardContent className="grid grid-cols-2 gap-4">
@@ -646,13 +638,19 @@ export default function FooterBuilder() {
               ))}
             </select>
 
-            {isEditMode && (
-              <input
-                type="hidden"
-                name="tenantId"
-                value={activeTenant?._id ?? ""}
-              />
-            )}
+            {isEditMode && <input type="hidden" name="tenantId" value={activeTenant?._id ?? ""} />}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="footer-status">Status</Label>
+            <select
+              id="footer-status"
+              className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+              value={footerStatus}
+              onChange={(event) => setFooterStatus(event.target.value as FooterStatus)}
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
           </div>
         </CardContent>
       </Card>
@@ -663,14 +661,13 @@ export default function FooterBuilder() {
           <CardDescription>Choose your footer column structure</CardDescription>
         </CardHeader>
         <CardContent>
-          <RadioGroup value={layout} onValueChange={(v) => setLayout(v as any)}>
+          <RadioGroup
+            value={layout}
+            onValueChange={(value) => setLayout(value as "4-column" | "3-column" | "custom")}
+          >
             <div className="grid grid-cols-3 gap-4">
               <div className="relative">
-                <RadioGroupItem
-                  value="4-column"
-                  id="4-col"
-                  className="peer sr-only"
-                />
+                <RadioGroupItem value="4-column" id="4-col" className="peer sr-only" />
                 <Label
                   htmlFor="4-col"
                   className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
@@ -685,11 +682,7 @@ export default function FooterBuilder() {
               </div>
 
               <div className="relative">
-                <RadioGroupItem
-                  value="3-column"
-                  id="3-col"
-                  className="peer sr-only"
-                />
+                <RadioGroupItem value="3-column" id="3-col" className="peer sr-only" />
                 <Label
                   htmlFor="3-col"
                   className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
@@ -704,11 +697,7 @@ export default function FooterBuilder() {
               </div>
 
               <div className="relative">
-                <RadioGroupItem
-                  value="custom"
-                  id="custom"
-                  className="peer sr-only"
-                />
+                <RadioGroupItem value="custom" id="custom" className="peer sr-only" />
                 <Label
                   htmlFor="custom"
                   className="flex flex-col items-center gap-3 rounded-lg border-2 border-muted bg-background p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
@@ -742,17 +731,13 @@ export default function FooterBuilder() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Footer Block</DialogTitle>
-                  <DialogDescription>
-                    Choose a block type to add
-                  </DialogDescription>
+                  <DialogDescription>Choose a block type to add</DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   {blockTypes.map((blockType) => (
                     <button
                       key={blockType.type}
-                      onClick={() =>
-                        addBlock(blockType.type as FooterBlock["type"])
-                      }
+                      onClick={() => addBlock(blockType.type as FooterBlock["type"])}
                       className="flex flex-col items-center gap-3 p-4 border-2 rounded-lg hover:border-primary hover:bg-accent transition-colors"
                     >
                       <blockType.icon className="h-8 w-8" />
@@ -768,10 +753,7 @@ export default function FooterBuilder() {
         <CardContent>
           <div className={`grid ${gridCols} gap-4`}>
             {visibleBlocks.map((block) => (
-              <Card
-                key={block.id}
-                className="group hover:shadow-md transition-shadow"
-              >
+              <Card key={block.id} className="group hover:shadow-md transition-shadow">
                 <CardHeader className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
@@ -810,9 +792,7 @@ export default function FooterBuilder() {
                               </div>
                             ))
                           ) : (
-                            <div className="text-muted-foreground italic">
-                              No links added
-                            </div>
+                            <div className="text-muted-foreground italic">No links added</div>
                           )}
                         </div>
                       </div>
@@ -837,8 +817,7 @@ export default function FooterBuilder() {
                           </div>
                         )}
                         <div className="text-muted-foreground text-[10px] leading-tight line-clamp-3">
-                          {(block.data as TextBlockData).content ||
-                            "No content"}
+                          {(block.data as TextBlockData).content || "No content"}
                         </div>
                       </div>
                     )}
@@ -846,20 +825,17 @@ export default function FooterBuilder() {
                     {block.type === "newsletter" && (
                       <div className="h-full flex flex-col">
                         <div className="font-medium text-foreground mb-1 truncate">
-                          {(block.data as NewsletterBlockData).title ||
-                            "Newsletter"}
+                          {(block.data as NewsletterBlockData).title || "Newsletter"}
                         </div>
                         <div className="text-[10px] text-muted-foreground mb-1 line-clamp-2 flex-1">
-                          {(block.data as NewsletterBlockData).description ||
-                            "Stay updated"}
+                          {(block.data as NewsletterBlockData).description || "Stay updated"}
                         </div>
                         <div className="flex items-center gap-1">
                           <div className="flex-1 h-5 bg-background border rounded px-2 flex items-center text-[10px]">
                             email@example.com
                           </div>
                           <div className="h-5 px-2 bg-primary text-primary-foreground rounded text-[10px] flex items-center">
-                            {(block.data as NewsletterBlockData).buttonText ||
-                              "Subscribe"}
+                            {(block.data as NewsletterBlockData).buttonText || "Subscribe"}
                           </div>
                         </div>
                       </div>
@@ -878,11 +854,7 @@ export default function FooterBuilder() {
                       <Edit className="h-3 w-3 mr-1" />
                       Edit
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => deleteBlock(block.id)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => deleteBlock(block.id)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
@@ -928,8 +900,7 @@ export default function FooterBuilder() {
                   <div className="space-y-4">
                     <div className="space-y-3">
                       {socialLinks.map((link) => {
-                        const IconComponent =
-                          platformIcons[link.icon] || Settings;
+                        const IconComponent = platformIcons[link.icon] || Settings;
                         return (
                           <div
                             key={link.id}
@@ -944,11 +915,7 @@ export default function FooterBuilder() {
                                 <Input
                                   value={link.platform}
                                   onChange={(e) =>
-                                    updateSocialLink(
-                                      link.id,
-                                      "platform",
-                                      e.target.value,
-                                    )
+                                    updateSocialLink(link.id, "platform", e.target.value)
                                   }
                                   placeholder="Platform name"
                                   className="h-8 text-sm"
@@ -959,11 +926,7 @@ export default function FooterBuilder() {
                                 <Input
                                   value={link.icon}
                                   onChange={(e) =>
-                                    updateSocialLink(
-                                      link.id,
-                                      "icon",
-                                      e.target.value,
-                                    )
+                                    updateSocialLink(link.id, "icon", e.target.value)
                                   }
                                   placeholder="Icon name"
                                   className="h-8 text-sm"
@@ -973,46 +936,28 @@ export default function FooterBuilder() {
                                 <Label className="text-xs">URL</Label>
                                 <Input
                                   value={link.url}
-                                  onChange={(e) =>
-                                    updateSocialLink(
-                                      link.id,
-                                      "url",
-                                      e.target.value,
-                                    )
-                                  }
+                                  onChange={(e) => updateSocialLink(link.id, "url", e.target.value)}
                                   placeholder="https://example.com/username"
                                   className="h-8 text-sm"
                                 />
                               </div>
                               <div>
-                                <Label className="text-xs">
-                                  Label (Optional)
-                                </Label>
+                                <Label className="text-xs">Label (Optional)</Label>
                                 <Input
                                   value={link.label || ""}
                                   onChange={(e) =>
-                                    updateSocialLink(
-                                      link.id,
-                                      "label",
-                                      e.target.value,
-                                    )
+                                    updateSocialLink(link.id, "label", e.target.value)
                                   }
                                   placeholder="Display label"
                                   className="h-8 text-sm"
                                 />
                               </div>
                               <div>
-                                <Label className="text-xs">
-                                  Slug (Optional)
-                                </Label>
+                                <Label className="text-xs">Slug (Optional)</Label>
                                 <Input
                                   value={link.slug || ""}
                                   onChange={(e) =>
-                                    updateSocialLink(
-                                      link.id,
-                                      "slug",
-                                      e.target.value,
-                                    )
+                                    updateSocialLink(link.id, "slug", e.target.value)
                                   }
                                   placeholder="URL slug"
                                   className="h-8 text-sm"
@@ -1030,24 +975,15 @@ export default function FooterBuilder() {
                         );
                       })}
                     </div>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={addNewSocialLink}
-                    >
+                    <Button variant="outline" className="w-full" onClick={addNewSocialLink}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add New Social Link
                     </Button>
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setSocialLinksOpen(false)}
-                      >
+                      <Button variant="outline" onClick={() => setSocialLinksOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={() => setSocialLinksOpen(false)}>
-                        Save Changes
-                      </Button>
+                      <Button onClick={() => setSocialLinksOpen(false)}>Save Changes</Button>
                     </div>
                   </div>
                 </DialogContent>
@@ -1070,9 +1006,7 @@ export default function FooterBuilder() {
                     <Label>Image URL</Label>
                     <Input
                       value={(activeBlock.data as LogoBlockData).imageUrl || ""}
-                      onChange={(e) =>
-                        updateBlockData("imageUrl", e.target.value)
-                      }
+                      onChange={(e) => updateBlockData("imageUrl", e.target.value)}
                       placeholder="https://example.com/logo.png"
                     />
                   </div>
@@ -1080,9 +1014,7 @@ export default function FooterBuilder() {
                     <Label>Alt Text</Label>
                     <Input
                       value={(activeBlock.data as LogoBlockData).altText || ""}
-                      onChange={(e) =>
-                        updateBlockData("altText", e.target.value)
-                      }
+                      onChange={(e) => updateBlockData("altText", e.target.value)}
                       placeholder="Company Logo"
                     />
                   </div>
@@ -1125,31 +1057,20 @@ export default function FooterBuilder() {
                     </div>
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {(activeBlock.data as MenuBlockData).links.map((link) => (
-                        <div
-                          key={link.id}
-                          className="flex gap-2 items-start p-3 border rounded-lg"
-                        >
+                        <div key={link.id} className="flex gap-2 items-start p-3 border rounded-lg">
                           <div className="flex-1 space-y-2">
                             <Input
                               value={link.label}
-                              onChange={(e) =>
-                                updateMenuLink(link.id, "label", e.target.value)
-                              }
+                              onChange={(e) => updateMenuLink(link.id, "label", e.target.value)}
                               placeholder="Link Label"
                             />
                             <Input
                               value={link.slug}
-                              onChange={(e) =>
-                                updateMenuLink(link.id, "slug", e.target.value)
-                              }
+                              onChange={(e) => updateMenuLink(link.id, "slug", e.target.value)}
                               placeholder="Slug (e.g. /about)"
                             />
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => deleteMenuLink(link.id)}
-                          >
+                          <Button size="sm" variant="ghost" onClick={() => deleteMenuLink(link.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -1173,9 +1094,7 @@ export default function FooterBuilder() {
                     <Label>Content</Label>
                     <Textarea
                       value={(activeBlock.data as TextBlockData).content || ""}
-                      onChange={(e) =>
-                        updateBlockData("content", e.target.value)
-                      }
+                      onChange={(e) => updateBlockData("content", e.target.value)}
                       placeholder="Enter your text content here..."
                       rows={5}
                     />
@@ -1188,9 +1107,7 @@ export default function FooterBuilder() {
                   <div className="space-y-2">
                     <Label>Title</Label>
                     <Input
-                      value={
-                        (activeBlock.data as NewsletterBlockData).title || ""
-                      }
+                      value={(activeBlock.data as NewsletterBlockData).title || ""}
                       onChange={(e) => updateBlockData("title", e.target.value)}
                       placeholder="Subscribe to our newsletter"
                     />
@@ -1198,13 +1115,8 @@ export default function FooterBuilder() {
                   <div className="space-y-2">
                     <Label>Description</Label>
                     <Textarea
-                      value={
-                        (activeBlock.data as NewsletterBlockData).description ||
-                        ""
-                      }
-                      onChange={(e) =>
-                        updateBlockData("description", e.target.value)
-                      }
+                      value={(activeBlock.data as NewsletterBlockData).description || ""}
+                      onChange={(e) => updateBlockData("description", e.target.value)}
                       placeholder="Enter newsletter description..."
                       rows={3}
                     />
@@ -1212,13 +1124,8 @@ export default function FooterBuilder() {
                   <div className="space-y-2">
                     <Label>Button Text</Label>
                     <Input
-                      value={
-                        (activeBlock.data as NewsletterBlockData).buttonText ||
-                        ""
-                      }
-                      onChange={(e) =>
-                        updateBlockData("buttonText", e.target.value)
-                      }
+                      value={(activeBlock.data as NewsletterBlockData).buttonText || ""}
+                      onChange={(e) => updateBlockData("buttonText", e.target.value)}
                       placeholder="Subscribe"
                     />
                   </div>
@@ -1226,29 +1133,19 @@ export default function FooterBuilder() {
                     <Label>Button Action</Label>
                     <select
                       className="w-full border rounded-md px-3 py-2 text-sm bg-background"
-                      value={
-                        (activeBlock.data as NewsletterBlockData).buttonAction
-                      }
-                      onChange={(e) =>
-                        updateBlockData("buttonAction", e.target.value)
-                      }
+                      value={(activeBlock.data as NewsletterBlockData).buttonAction}
+                      onChange={(e) => updateBlockData("buttonAction", e.target.value)}
                     >
                       <option value="subscribe">Subscribe Action</option>
                       <option value="redirect">Redirect to URL</option>
                     </select>
                   </div>
-                  {(activeBlock.data as NewsletterBlockData).buttonAction ===
-                    "redirect" && (
+                  {(activeBlock.data as NewsletterBlockData).buttonAction === "redirect" && (
                     <div className="space-y-2">
                       <Label>Redirect URL</Label>
                       <Input
-                        value={
-                          (activeBlock.data as NewsletterBlockData)
-                            .redirectUrl || ""
-                        }
-                        onChange={(e) =>
-                          updateBlockData("redirectUrl", e.target.value)
-                        }
+                        value={(activeBlock.data as NewsletterBlockData).redirectUrl || ""}
+                        onChange={(e) => updateBlockData("redirectUrl", e.target.value)}
                         placeholder="https://example.com/subscribe"
                       />
                     </div>

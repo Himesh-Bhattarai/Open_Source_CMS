@@ -1,31 +1,52 @@
-import type React from "react"
-
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { Providers } from "./providers"
-import { Toaster } from "@/components/ui/toaster"
+import type React from "react";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "./providers";
+import { Toaster } from "@/components/ui/sonner";
 import { TenantProvider } from "@/context/TenantContext";
-import "./globals.css"
+import { LazyAnalytics } from "@/components/perf/lazy-analytics";
+import { siteMetadataConfig } from "@/lib/seo/site-metadata";
+import "./globals.css";
 
-
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
-
-interface Metadata {
-  title: string
-  description: string
-  icons: {
-    icon: {
-      url: string
-      media: string
-    }[]
-    apple: string
-  }
-  }
+const _geist = Geist({ subsets: ["latin"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Content Flow",
-  description: "Content Flow is a modern content management system designed to streamline your digital content workflow.",
+  metadataBase: new URL(siteMetadataConfig.siteUrl),
+  title: {
+    default: siteMetadataConfig.title,
+    template: `%s | ${siteMetadataConfig.name}`,
+  },
+  description: siteMetadataConfig.description,
+  applicationName: siteMetadataConfig.name,
+  creator: siteMetadataConfig.name,
+  publisher: siteMetadataConfig.name,
+  keywords: [
+    "content management system",
+    "multi-tenant CMS",
+    "website builder",
+    "no-code CMS",
+    "headless cms",
+  ],
+  openGraph: {
+    title: siteMetadataConfig.title,
+    description: siteMetadataConfig.description,
+    url: siteMetadataConfig.siteUrl,
+    siteName: siteMetadataConfig.name,
+    type: "website",
+    images: [siteMetadataConfig.defaultOgImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteMetadataConfig.title,
+    description: siteMetadataConfig.description,
+    creator: siteMetadataConfig.twitterHandle,
+    images: [siteMetadataConfig.defaultOgImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       {
@@ -43,24 +64,22 @@ export const metadata: Metadata = {
     ],
     apple: "/fav/apple-touch-icon.png",
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
         <Providers>
-          <TenantProvider>
-          {children}
-          </TenantProvider>
-          <Toaster />
+          <TenantProvider>{children}</TenantProvider>
+          <Toaster position="bottom-right" richColors closeButton />
         </Providers>
-        <Analytics />
+        <LazyAnalytics />
       </body>
     </html>
-  )
+  );
 }

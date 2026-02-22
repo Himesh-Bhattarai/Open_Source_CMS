@@ -1,4 +1,3 @@
-
 const DELETE_ACCOUNT_URL = process.env.NEXT_PUBLIC_DELETE_ACCOUNT_URL;
 
 export const deleteAccount = async () => {
@@ -6,7 +5,6 @@ export const deleteAccount = async () => {
     const response = await fetch(DELETE_ACCOUNT_URL, {
       method: "DELETE",
       credentials: "include",
-
     });
 
     const data = await response.json();
@@ -18,6 +16,10 @@ export const deleteAccount = async () => {
       message: data.message,
     };
   } catch (err) {
-    console.log(err);
+    return {
+      ok: false,
+      status: 500,
+      message: err?.message || "Network error",
+    };
   }
 };

@@ -1,30 +1,36 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Activity, FileText, Upload, Trash2, Edit, User, Download, Filter, X } from "lucide-react"
-import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Activity, FileText, Upload, Trash2, Edit, User, Download, Filter, X } from "lucide-react";
+import { useState } from "react";
 
 interface ActivityLog {
-  id: number
-  action: string
-  type: string
-  item: string
-  user: string
-  userEmail: string
-  timestamp: string
-  ip: string
-  details: string
+  id: number;
+  action: string;
+  type: string;
+  item: string;
+  user: string;
+  userEmail: string;
+  timestamp: string;
+  ip: string;
+  details: string;
 }
 
 export default function ActivityLogsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [actionFilter, setActionFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [timeFilter, setTimeFilter] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("all");
   const [activities, setActivities] = useState<ActivityLog[]>([
     {
       id: 1,
@@ -81,19 +87,19 @@ export default function ActivityLogsPage() {
       ip: "192.168.1.2",
       details: "Changed meta description and keywords",
     },
-  ])
+  ]);
 
   const filteredActivities = activities.filter((activity) => {
     const matchesSearch =
       activity.item.toLowerCase().includes(searchQuery.toLowerCase()) ||
       activity.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      activity.details.toLowerCase().includes(searchQuery.toLowerCase())
+      activity.details.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesAction = actionFilter === "all" || activity.action === actionFilter
-    const matchesType = typeFilter === "all" || activity.type === typeFilter
+    const matchesAction = actionFilter === "all" || activity.action === actionFilter;
+    const matchesType = typeFilter === "all" || activity.type === typeFilter;
 
-    return matchesSearch && matchesAction && matchesType
-  })
+    return matchesSearch && matchesAction && matchesType;
+  });
 
   const handleExport = () => {
     const csv = [
@@ -101,54 +107,55 @@ export default function ActivityLogsPage() {
       ...filteredActivities.map((a) =>
         [a.id, a.action, a.type, a.item, a.user, a.timestamp, a.ip, a.details].join(","),
       ),
-    ].join("\n")
+    ].join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `activity-logs-${new Date().toISOString().split("T")[0]}.csv`
-    a.click()
-  }
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `activity-logs-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+  };
 
   const clearFilters = () => {
-    setSearchQuery("")
-    setActionFilter("all")
-    setTypeFilter("all")
-    setTimeFilter("all")
-  }
+    setSearchQuery("");
+    setActionFilter("all");
+    setTypeFilter("all");
+    setTimeFilter("all");
+  };
 
-  const hasActiveFilters = searchQuery || actionFilter !== "all" || typeFilter !== "all" || timeFilter !== "all"
+  const hasActiveFilters =
+    searchQuery || actionFilter !== "all" || typeFilter !== "all" || timeFilter !== "all";
 
   const getActionIcon = (action: string) => {
     switch (action) {
       case "published":
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
       case "updated":
-        return <Edit className="h-4 w-4" />
+        return <Edit className="h-4 w-4" />;
       case "uploaded":
-        return <Upload className="h-4 w-4" />
+        return <Upload className="h-4 w-4" />;
       case "deleted":
-        return <Trash2 className="h-4 w-4" />
+        return <Trash2 className="h-4 w-4" />;
       default:
-        return <Activity className="h-4 w-4" />
+        return <Activity className="h-4 w-4" />;
     }
-  }
+  };
 
   const getActionColor = (action: string) => {
     switch (action) {
       case "published":
-        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
       case "updated":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
       case "uploaded":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
       case "deleted":
-        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
       default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+        return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400";
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -180,7 +187,11 @@ export default function ActivityLogsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
-            <Input placeholder="Search logs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <Input
+              placeholder="Search logs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             <Select value={actionFilter} onValueChange={setActionFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Action Type" />
@@ -266,5 +277,5 @@ export default function ActivityLogsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

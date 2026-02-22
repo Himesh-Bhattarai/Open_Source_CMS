@@ -18,5 +18,4 @@ const TenantUserSchema = new Schema(
 TenantUserSchema.index({ tenantId: 1, userId: 1 }, { unique: true });
 TenantUserSchema.index({ tenantId: 1 });
 
-export const TenantUser =
-  models.TenantUser || model("TenantUser", TenantUserSchema);
+export const TenantUser = models.TenantUser || model("TenantUser", TenantUserSchema);

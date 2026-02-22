@@ -51,7 +51,8 @@ describe("External request middleware chain", () => {
 
     const invalidApp = await loadExternalRequestApp({
       rateImpl: passRate,
-      extractImpl: (req, res) => res.status(400).json({ error: "Invalid URL. Must include domain." }),
+      extractImpl: (req, res) =>
+        res.status(400).json({ error: "Invalid URL. Must include domain." }),
       oneRoutesImpl: oneRoutes,
     });
     const invalid = await request(invalidApp).get("/api/v1/external-request/");

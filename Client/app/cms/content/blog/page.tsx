@@ -4,13 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -25,23 +19,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Search,
-  Plus,
-  Filter,
-  MoreVertical,
-  Eye,
-  Edit,
-  Trash2,
-  Copy,
-} from "lucide-react";
+import { Search, Plus, Filter, MoreVertical, Eye, Edit, Trash2, Copy } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BulkActionsBar } from "@/components/cms/bulk-actions-bar";
 import { loadAllBlogs } from "@/Api/Blog/Load";
 import { deleteBlogById } from "@/Api/Blog/Delete";
 import { useRouter } from "next/navigation";
-
-         
+import { toast } from "sonner";
 
 // Blog post type
 type BlogPost = {
@@ -63,7 +47,6 @@ export default function BlogPostsPage() {
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [blog, setBlog] = useState<BlogPost[]>([]);
-  const [message, setMessage] = useState<string>("");
 
   // Load all blogs from API
   useEffect(() => {
@@ -84,30 +67,20 @@ export default function BlogPostsPage() {
   const deleteBlog = async (id: string) => {
     try {
       setLoading(true);
-      setMessage("");
       const response = await deleteBlogById(id);
       if (response?.ok) {
         setBlog((prevBlog) => prevBlog.filter((post) => post._id !== id));
-
-        setMessage("Blog post deleted successfully.");
+        toast.success("Blog post deleted successfully.");
+      } else {
+        toast.error("Failed to delete blog post.");
       }
       setLoading(false);
     } catch (err) {
       console.error("Error deleting blog:", err);
-      setMessage("Failed to delete blog post.");
+      toast.error("Failed to delete blog post.");
       setLoading(false);
     }
   };
-
-  //message timeout
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage("");
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
 
   // Toggle select all posts
   const toggleSelectAll = () => {
@@ -120,9 +93,7 @@ export default function BlogPostsPage() {
 
   // Toggle single post selection
   const toggleSelect = (id: string) => {
-    setSelectedPosts((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
+    setSelectedPosts((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
   };
 
   // Status badge
@@ -141,11 +112,8 @@ export default function BlogPostsPage() {
 
   // Filtered blogs
   const filteredBlogs = blog.filter((post) => {
-    const matchesStatus =
-      statusFilter === "all" || post.status === statusFilter;
-    const matchesSearch = post.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === "all" || post.status === statusFilter;
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -157,9 +125,7 @@ export default function BlogPostsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Blog Posts</h1>
-          <p className="text-muted-foreground">
-            Manage your blog content and articles
-          </p>
+          <p className="text-muted-foreground">Manage your blog content and articles</p>
         </div>
         <Link href="/cms/content/blog/new">
           <Button>
@@ -204,9 +170,7 @@ export default function BlogPostsPage() {
             <CardTitle className="text-sm font-medium">Total Views</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {blog.reduce((acc, p) => acc + p.views, 0)}
-            </div>
+            <div className="text-2xl font-bold">{blog.reduce((acc, p) => acc + p.views, 0)}</div>
           </CardContent>
         </Card>
       </div>
@@ -267,10 +231,7 @@ export default function BlogPostsPage() {
               </thead>
               <tbody>
                 {filteredBlogs.map((post) => (
-                  <tr
-                    key={post._id}
-                    className="border-b last:border-0 hover:bg-muted/50"
-                  >
+                  <tr key={post._id} className="border-b last:border-0 hover:bg-muted/50">
                     <td className="p-4">
                       <Checkbox
                         checked={selectedPosts.includes(post._id)}
@@ -282,6 +243,8 @@ export default function BlogPostsPage() {
                         <img
                           src={post.featuredImage || "/placeholder.svg"}
                           alt={post.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-16 h-10 object-cover rounded border"
                         />
                         <div>
@@ -302,9 +265,7 @@ export default function BlogPostsPage() {
                     </td>
                     <td className="p-4 text-sm">{post.author}</td>
                     <td className="p-4">{getStatusBadge(post.status)}</td>
-                    <td className="p-4 text-sm">
-                      {post.views.toLocaleString()}
-                    </td>
+                    <td className="p-4 text-sm">{post.views.toLocaleString()}</td>
                     <td className="p-4 text-sm">{post.publishedDate || "-"}</td>
                     <td className="p-4">
                       <DropdownMenu>
@@ -318,7 +279,9 @@ export default function BlogPostsPage() {
                             <Eye className="h-4 w-4 mr-2" />
                             Preview
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => router.push(`/cms/content/blog/${post._id}`)}>
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/cms/content/blog/${post._id}`)}
+                          >
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
@@ -355,10 +318,6 @@ export default function BlogPostsPage() {
           onDelete={() => console.log("Delete:", selectedPosts)}
           onCancel={() => setSelectedPosts([])}
         />
-      )}
-
-      {message && (
-        <div className="text-center text-sm text-green-600">{message}</div>
       )}
     </div>
   );

@@ -30,7 +30,7 @@ const FooterSchema = new Schema(
           required: true,
         },
 
-        data: Schema.Types.Mixed, 
+        data: Schema.Types.Mixed,
       },
     ],
 

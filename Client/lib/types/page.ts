@@ -33,7 +33,7 @@ export interface SEOData {
     image?: string;
     site?: string;
   };
-  structuredData?: Record<string, any>;
+  structuredData?: Record<string, unknown>;
   sitemapInclusion: boolean;
   noIndexReasons?: string[]; // Track why page might be noindex
 }
@@ -42,18 +42,18 @@ export interface PageBlock {
   id: string;
   type: string;
   order: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   schemaVersion: string;
   validationErrors?: string[];
-  // Future-proof: allow any additional data
-  [key: string]: any;
+  // Future-proof: allow additional block fields
+  [key: string]: unknown;
 }
 
 export interface PageVersion {
   id: string;
   pageId: string;
   versionNumber: number;
-  data: any;
+  data: unknown;
   createdAt: Date;
   createdBy: string;
   changes: string[];
@@ -119,7 +119,7 @@ export interface Page {
   etag: string;
   lastSavedHash: string;
 
-  //i dont know what is that suggested by chatGPT so to get rid of warning i added this
+  //i don't know what is that suggested by chatGPT so to get rid of warning i added this
   affectedPages?: string[];
 }
 

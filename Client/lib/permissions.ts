@@ -66,17 +66,11 @@ export function hasPermission(role: Role, permission: Permission): boolean {
   return rolePermissions[role]?.includes(permission) ?? false;
 }
 
-export function hasAnyPermission(
-  role: Role,
-  permissions: Permission[],
-): boolean {
+export function hasAnyPermission(role: Role, permissions: Permission[]): boolean {
   return permissions.some((permission) => hasPermission(role, permission));
 }
 
-export function hasAllPermissions(
-  role: Role,
-  permissions: Permission[],
-): boolean {
+export function hasAllPermissions(role: Role, permissions: Permission[]): boolean {
   return permissions.every((permission) => hasPermission(role, permission));
 }
 

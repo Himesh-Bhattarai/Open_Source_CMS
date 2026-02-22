@@ -1,13 +1,24 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, XCircle, Code, Copy, ExternalLink, AlertCircle, Loader2 } from "lucide-react"
-import { useAuth } from "@/hooks/useAuth"
-import { useState, useEffect } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { integrationsApi } from "@/Api/integrations/Fetch"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  CheckCircle2,
+  XCircle,
+  Code,
+  Copy,
+  ExternalLink,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { integrationsApi } from "@/Api/integrations/Fetch";
+import { toast } from "sonner";
+import { INTEGRATION_DOCS_ROUTE, buildApiTestCommand } from "@/lib/docs/integration-guides";
+import Link from "next/link";
 
 // Type definitions for API response
 interface Endpoint {
@@ -38,92 +49,103 @@ interface ApiResponse {
 }
 
 export default function IntegrationsPage() {
-  const { user } = useAuth()
-  const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  const [apiList, setApiList] = useState<Integration[]>([])
-  const [loading, setLoading] = useState(true)
-  const [message, setMessage] = useState("")
+  const { user } = useAuth();
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [apiList, setApiList] = useState<Integration[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Fetch integrations data from API
   useEffect(() => {
     const loadApisList = async () => {
-      setLoading(true)
-      setMessage("")
+      setLoading(true);
+      setErrorMessage("");
 
       try {
-        const loadApi = await integrationsApi()
+        const loadApi = await integrationsApi();
 
         if (loadApi?.ok && Array.isArray(loadApi.data)) {
-      
-          const allIntegrations = loadApi.data.flatMap(tenant =>
-            (tenant.integrations || []).map((integration : Integration)=> ({
+          const allIntegrations = loadApi.data.flatMap((tenant) =>
+            (tenant.integrations || []).map((integration: Integration) => ({
               ...integration,
-              _uniqueId: `${tenant.tenantId}-${integration.id}` 
-            }))
-          )
-          setApiList(allIntegrations)
-
-
-          setMessage(
-            allIntegrations.length
-              ? "Successfully loaded integrations"
-              : "No integrations found"
-          )
+              _uniqueId: `${tenant.tenantId}-${integration.id}`,
+            })),
+          );
+          setApiList(allIntegrations);
         } else {
-          setApiList([])
-          setMessage("Failed to load integrations from API")
+          setApiList([]);
+          setErrorMessage("Failed to load integrations from API");
         }
       } catch (error) {
-        console.error("Error loading integrations:", error)
-        setApiList([])
-        setMessage("Error loading integrations. Please try again.")
+        console.error("Error loading integrations:", error);
+        setApiList([]);
+        setErrorMessage("Error loading integrations. Please try again.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadApisList()
-  }, [])
+    loadApisList();
+  }, []);
 
   // Calculate connected and total counts
-  const connectedCount = apiList.filter((integration) =>
-    integration.status === "ready" || integration.status === "connected"
-  ).length
+  const connectedCount = apiList.filter(
+    (integration) => integration.status === "ready" || integration.status === "connected",
+  ).length;
 
-  const totalCount = apiList.length
+  const totalCount = apiList.length;
 
   // Format status for display
   const formatStatus = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1)
-  }
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   // Format endpoint key for display
   const formatEndpointKey = (key: string) => {
     return key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
-      .replace(':', ' - ')
-  }
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase())
+      .replace(":", " - ");
+  };
 
   // Copy endpoint URL to clipboard
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedKey(key)
-    setTimeout(() => setCopiedKey(null), 2000)
-  }
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleCopyTestCommand = (integration: Integration) => {
+    const endpoint = getFirstEndpoint(integration);
+    if (!endpoint || endpoint === "#") {
+      toast.error("No endpoint available to test");
+      return;
+    }
+
+    const command = buildApiTestCommand(endpoint);
+    if (!command) {
+      toast.error("Unable to build test command");
+      return;
+    }
+
+    navigator.clipboard.writeText(command);
+    setCopiedKey(`${integration.id}-test`);
+    setTimeout(() => setCopiedKey(null), 2000);
+    toast.success("Test command copied. Run it in terminal.");
+  };
 
   // Get first connected endpoint for Test API button
   const getFirstEndpoint = (integration: Integration) => {
     if (!integration.endpoints || integration.endpoints.length === 0) {
-      return "#"
+      return "#";
     }
 
     const connectedEndpoint = integration.endpoints.find(
-      endpoint => endpoint.status === "ready" || endpoint.status === "connected"
-    )
+      (endpoint) => endpoint.status === "ready" || endpoint.status === "connected",
+    );
 
-    return connectedEndpoint?.url || integration.endpoints[0].url
-  }
+    return connectedEndpoint?.url || integration.endpoints[0].url;
+  };
 
   return (
     <div className="space-y-6">
@@ -142,10 +164,10 @@ export default function IntegrationsPage() {
         </Alert>
       )}
 
-      {/* Message Display */}
-      {message && !loading && (
-        <Alert variant={message.includes("Failed") || message.includes("Error") ? "destructive" : "default"}>
-          <AlertDescription>{message}</AlertDescription>
+      {/* Error Display */}
+      {errorMessage && !loading && (
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       )}
 
@@ -168,8 +190,8 @@ export default function IntegrationsPage() {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Note:</strong> Only features that are integrated with your website will appear in the navigation.
-              Connect features using the APIs below.
+              <strong>Note:</strong> Only features that are integrated with your website will appear
+              in the navigation. Connect features using the APIs below.
             </AlertDescription>
           </Alert>
 
@@ -186,17 +208,12 @@ export default function IntegrationsPage() {
                   <div
                     className="bg-green-600 h-2 rounded-full transition-all"
                     style={{
-                      width: totalCount > 0
-                        ? `${(connectedCount / totalCount) * 100}%`
-                        : '0%'
+                      width: totalCount > 0 ? `${(connectedCount / totalCount) * 100}%` : "0%",
                     }}
                   />
                 </div>
                 <span className="text-sm font-medium">
-                  {totalCount > 0
-                    ? `${Math.round((connectedCount / totalCount) * 100)}%`
-                    : '0%'
-                  }
+                  {totalCount > 0 ? `${Math.round((connectedCount / totalCount) * 100)}%` : "0%"}
                 </span>
               </div>
             </CardContent>
@@ -205,7 +222,8 @@ export default function IntegrationsPage() {
           {/* Integrations Grid */}
           <div className="grid gap-6 md:grid-cols-2">
             {apiList.map((integration) => {
-              const isConnected = integration.status === "ready" || integration.status === "connected"
+              const isConnected =
+                integration.status === "ready" || integration.status === "connected";
 
               return (
                 <Card
@@ -237,11 +255,9 @@ export default function IntegrationsPage() {
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                   
                     {integration.endpoints && integration.endpoints.length > 0 ? (
                       integration.endpoints.map((endpoint, index) => (
                         <div key={`${integration._uniqueId}-${endpoint.key}`}>
-
                           <div className="flex items-center justify-between mb-2">
                             <label className="text-sm font-medium">
                               {formatEndpointKey(endpoint.key)}
@@ -262,7 +278,9 @@ export default function IntegrationsPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => handleCopy(endpoint.url, `${integration.id}-${endpoint.key}`)}
+                                onClick={() =>
+                                  handleCopy(endpoint.url, `${integration.id}-${endpoint.key}`)
+                                }
                                 className="h-7 text-xs"
                               >
                                 {copiedKey === `${integration.id}-${endpoint.key}` ? (
@@ -286,56 +304,43 @@ export default function IntegrationsPage() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 bg-transparent"
-                        asChild
-                      >
-                        <a
-                          href={`/docs/API_INTEGRATION.md#${integration.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
+                      <Button size="sm" variant="outline" className="flex-1 bg-transparent" asChild>
+                        <Link href={`${INTEGRATION_DOCS_ROUTE}#${integration.id}`}>
                           <Code className="h-4 w-4 mr-2" />
                           View Docs
-                        </a>
+                        </Link>
                       </Button>
 
                       {isConnected ? (
                         <Button
                           size="sm"
                           className="flex-1"
-                          asChild
                           disabled={!integration.endpoints || integration.endpoints.length === 0}
+                          onClick={() => handleCopyTestCommand(integration)}
                         >
-                          <a
-                            href={getFirstEndpoint(integration)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => {
-                              if (!integration.endpoints || integration.endpoints.length === 0) {
-                                e.preventDefault()
-                              }
-                            }}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Test API
-                          </a>
+                          {copiedKey === `${integration.id}-test` ? (
+                            <>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Test API
+                            </>
+                          )}
                         </Button>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="default"
-                          className="flex-1"
-                        >
-                          Setup Guide
+                        <Button size="sm" variant="default" className="flex-1" asChild>
+                          <Link href={`${INTEGRATION_DOCS_ROUTE}#${integration.id}`}>
+                            Setup Guide
+                          </Link>
                         </Button>
                       )}
                     </div>
                   </CardContent>
                 </Card>
-              )
+              );
             })}
           </div>
 
@@ -349,30 +354,33 @@ export default function IntegrationsPage() {
               <div>
                 <h3 className="font-semibold mb-2">1. Your Website Calls the API</h3>
                 <p className="text-muted-foreground">
-                  Your existing website makes HTTP requests to ContentFlow APIs to fetch content (menu, footer, pages, etc.)
+                  Your existing website makes HTTP requests to ContentFlow APIs to fetch content
+                  (menu, footer, pages, etc.)
                 </p>
               </div>
 
               <div>
                 <h3 className="font-semibold mb-2">2. Edit Content in the CMS</h3>
                 <p className="text-muted-foreground">
-                  You log into this dashboard and make changes (edit menu items, update footer, create pages)
+                  You log into this dashboard and make changes (edit menu items, update footer,
+                  create pages)
                 </p>
               </div>
 
               <div>
                 <h3 className="font-semibold mb-2">3. Changes Appear Automatically</h3>
                 <p className="text-muted-foreground">
-                  Your website automatically shows the updated content without any code changes or redeployment
+                  Your website automatically shows the updated content without any code changes or
+                  redeployment
                 </p>
               </div>
 
               <Alert className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
                 <Code className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-blue-800 dark:text-blue-200">
-                  <strong>For Developers:</strong> Share the API documentation with your web developer to integrate these
-                  features. See <code className="text-xs">/docs/API_INTEGRATION.md</code> for complete implementation
-                  examples.
+                  <strong>For Developers:</strong> Use terminal docs at{" "}
+                  <code className="text-xs">{INTEGRATION_DOCS_ROUTE}</code> and test endpoints with
+                  saved cookie sessions.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -380,5 +388,5 @@ export default function IntegrationsPage() {
         </>
       )}
     </div>
-  )
+  );
 }

@@ -14,6 +14,19 @@ export const PageSchema = new Schema(
     seo: {
       keywords: [String],
       noIndex: { type: Boolean, default: false },
+      focusKeyword: { type: String, default: "" },
+      sitemapInclusion: { type: Boolean, default: true },
+      robots: {
+        index: { type: Boolean, default: true },
+        follow: { type: Boolean, default: true },
+        maxImagePreview: {
+          type: String,
+          enum: ["none", "standard", "large"],
+          default: "large",
+        },
+        maxSnippet: { type: Number, default: -1 },
+        maxVideoPreview: { type: Number, default: -1 },
+      },
 
       // Phase-2 editable
       metaTitle: String,
@@ -31,6 +44,7 @@ export const PageSchema = new Schema(
         title: String,
         description: String,
         image: String,
+        site: String,
       },
       structuredData: Schema.Types.Mixed,
     },
@@ -42,6 +56,12 @@ export const PageSchema = new Schema(
       allowComments: { type: Boolean, default: true },
       template: { type: String, default: "default" },
       isHomepage: { type: Boolean, default: false },
+      locked: {
+        isLocked: { type: Boolean, default: false },
+        byUserId: { type: String, default: null },
+        byUserName: { type: String, default: null },
+        lockedAt: { type: Date, default: null },
+      },
     },
 
     status: {

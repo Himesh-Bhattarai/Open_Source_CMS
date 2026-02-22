@@ -1,6 +1,6 @@
 import { Field } from "../../../Models/Field/Field.js";
 import { logger as log } from "../../../Utils/Logger/logger.js";
-import {cmsEventService as notif} from "../../../Services/notificationServices.js"
+import { cmsEventService as notif } from "../../../Services/notificationServices.js";
 export const fieldCheckPoint = async (req, res, next) => {
   try {
     const { userId, name, type, order, required, options } = req.body;
@@ -22,9 +22,7 @@ export const fieldCheckPoint = async (req, res, next) => {
       options,
     });
 
-    log.info(
-      `Field created by: ${userId} name: ${name} Date: ${field.createdAt}`,
-    );
+    log.info(`Field created by: ${userId} name: ${name} Date: ${field.createdAt}`);
 
     res.status(200).json({
       message: "Field created successfully by " + userId,

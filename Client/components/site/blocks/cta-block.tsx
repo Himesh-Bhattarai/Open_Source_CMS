@@ -1,21 +1,23 @@
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface CTABlockProps {
   data: {
-    heading?: string
-    description?: string
-    buttonText?: string
-    buttonLink?: string
-    variant?: "primary" | "gradient"
-  }
+    heading?: string;
+    description?: string;
+    buttonText?: string;
+    buttonLink?: string;
+    variant?: "primary" | "gradient";
+  };
 }
 
 export function CTABlock({ data }: CTABlockProps) {
-  const isGradient = data.variant === "gradient"
+  const isGradient = data.variant === "gradient";
 
   return (
-    <section className={`py-20 lg:py-32 ${isGradient ? "bg-linear-to-br from-primary to-primary/80" : "bg-primary"}`}>
+    <section
+      className={`py-20 lg:py-32 ${isGradient ? "bg-linear-to-br from-primary to-primary/80" : "bg-primary"}`}
+    >
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center text-primary-foreground">
           <h2 className="text-balance text-4xl lg:text-5xl font-bold tracking-tight mb-4">
@@ -32,5 +34,5 @@ export function CTABlock({ data }: CTABlockProps) {
         </div>
       </div>
     </section>
-  )
+  );
 }

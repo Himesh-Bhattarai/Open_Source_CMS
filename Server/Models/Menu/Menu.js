@@ -4,7 +4,7 @@ const { Schema, model, models } = mongoose;
 // Menu item schema (flexible)
 const MenuItemSchema = new Schema(
   {
-    label: String, 
+    label: String,
     type: String,
     link: String,
     enabled: Boolean,
@@ -23,8 +23,13 @@ const MenuSchema = new Schema(
     title: String,
     description: String,
     menuLocation: { type: String, enum: ["header", "footer", "sidebar"] },
+    navbarType: {
+      type: String,
+      enum: ["static", "dropdown", "mega", "breadcrumb"],
+      default: "static",
+    },
 
-    items: { type: [MenuItemSchema], default: [] }, 
+    items: { type: [MenuItemSchema], default: [] },
 
     status: { type: String, enum: ["draft", "published"], default: "draft" },
     publishedAt: Date,
