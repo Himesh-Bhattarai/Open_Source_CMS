@@ -227,7 +227,7 @@ jobs:
           script_stop: true
           timeout: 25m
           script: |
-            set -Eeuo pipefail
+            set -Eeuxo pipefail
             APP_ROOT="${APP_PATH}"
             RELEASES_DIR="${APP_ROOT}/releases"
             CURRENT_LINK="${APP_ROOT}/current"
