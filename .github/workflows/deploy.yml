@@ -1,5 +1,3 @@
-name: Deploy (CI/CD)
-
 on:
   # Deploy pipeline trigger on deploy branch pushes.
   push:
@@ -36,7 +34,6 @@ jobs:
       (github.event_name == 'push' && github.ref == 'refs/heads/deploy') ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'deploy')
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -70,7 +67,6 @@ jobs:
                 "Direct push detected on deploy branch. Merge through PR only."
               );
             }
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -80,7 +76,6 @@ jobs:
             package-lock.json
             Client/package-lock.json
             Server/package-lock.json
-
       # Explicit node_modules cache as requested.
       - name: Cache node_modules (root + client + server)
         uses: actions/cache@v4
@@ -92,7 +87,6 @@ jobs:
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json', 'Client/package-lock.json', 'Server/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-modules-
-
       - name: Inject optional CI env files
         run: |
           set -euo pipefail
@@ -102,19 +96,16 @@ jobs:
           if [ -n "${{ secrets.CLIENT_ENV_FILE }}" ]; then
             printf "%s" "${{ secrets.CLIENT_ENV_FILE }}" > Client/.env.local
           fi
-
       - name: Install dependencies
         run: |
           set -euo pipefail
           npm ci
           npm --prefix Client ci
           npm --prefix Server ci
-
       - name: Verify npm ci lockfile determinism
         run: |
           set -euo pipefail
           git diff --exit-code -- package-lock.json Client/package-lock.json Server/package-lock.json
-
       - name: Run ESLint
         run: |
           set -euo pipefail
@@ -124,17 +115,14 @@ jobs:
           else
             echo "No server lint script found; skipping server lint."
           fi
-
       - name: Run TypeScript type check
         run: |
           set -euo pipefail
           npm --prefix Client run typecheck
-
       - name: Guard explicit any regressions
         run: |
           set -euo pipefail
           npm run quality:any
-
       - name: Run tests
         run: |
           set -euo pipefail
@@ -144,12 +132,10 @@ jobs:
             echo "No client test script found; skipping client tests."
           fi
           npm --prefix Server run test -- --silent
-
       - name: Build frontend (Next.js production build)
         run: |
           set -euo pipefail
           npm --prefix Client run build
-
       - name: Build backend / runtime validation
         run: |
           set -euo pipefail
@@ -159,14 +145,12 @@ jobs:
             echo "No backend build script found; running syntax checks."
             find Server -path 'Server/node_modules' -prune -o -name "*.js" -print0 | xargs -0 -n1 node --check
           fi
-
       # Build once, deploy artifact: deterministic and lighter server deploy.
       - name: Package deployment artifact
         run: |
           set -euo pipefail
           rm -rf _release
           mkdir -p _release
-
           # Copy repository while excluding CI-time/runtime noise.
           rsync -a ./ _release/ \
             --exclude '.git' \
@@ -179,12 +163,9 @@ jobs:
             --exclude 'Server/tests' \
             --exclude 'Server/advTest' \
             --exclude '*.log'
-
           # Ensure frontend build output exists in artifact.
           test -d _release/Client/.next
-
           tar -czf "release-${GITHUB_SHA}.tar.gz" -C _release .
-
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
@@ -237,16 +218,13 @@ jobs:
           timeout: 25m
           script: |
             set -Eeuo pipefail
-
             APP_ROOT="${APP_PATH}"
             RELEASES_DIR="${APP_ROOT}/releases"
             CURRENT_LINK="${APP_ROOT}/current"
             NEW_RELEASE="${RELEASES_DIR}/${DEPLOY_SHA}"
             ARTIFACT="/tmp/release-${DEPLOY_SHA}.tar.gz"
             PREVIOUS_RELEASE="$(readlink -f "${CURRENT_LINK}" || true)"
-
             mkdir -p "${RELEASES_DIR}"
-
             rollback() {
               echo "Rollback triggered..."
               if [ -n "${PREVIOUS_RELEASE:-}" ] && [ -d "${PREVIOUS_RELEASE}" ]; then
@@ -271,34 +249,27 @@ jobs:
               fi
               rm -rf "${NEW_RELEASE}" || true
             }
-
             trap rollback ERR
-
             rm -rf "${NEW_RELEASE}"
             mkdir -p "${NEW_RELEASE}"
             tar -xzf "${ARTIFACT}" -C "${NEW_RELEASE}"
-
             if [ -n "${SERVER_ENV_FILE:-}" ]; then
               printf "%s" "${SERVER_ENV_FILE}" > "${NEW_RELEASE}/Server/.env"
             fi
             if [ -n "${CLIENT_ENV_FILE:-}" ]; then
               printf "%s" "${CLIENT_ENV_FILE}" > "${NEW_RELEASE}/Client/.env.local"
             fi
-
             # Install production dependencies only.
             npm --prefix "${NEW_RELEASE}/Server" ci --omit=dev
             npm --prefix "${NEW_RELEASE}/Client" ci --omit=dev
-
             # Run migration if script exists.
             if npm --prefix "${NEW_RELEASE}/Server" run | grep -qE '^  migrate'; then
               npm --prefix "${NEW_RELEASE}/Server" run migrate
             else
               echo "No migration script found; skipping migration."
             fi
-
             # Switch traffic atomically to new release.
             ln -sfn "${NEW_RELEASE}" "${CURRENT_LINK}"
-
             # Zero-downtime reload when PM2 cluster is configured.
             if [ -f "${CURRENT_LINK}/ecosystem.config.js" ]; then
               echo "PM2 command: startOrReload ${CURRENT_LINK}/ecosystem.config.js --update-env"
@@ -316,7 +287,6 @@ jobs:
               fi
             fi
             pm2 save
-
             for i in $(seq 1 20); do
               if curl -fsS "${HEALTHCHECK_URL}" >/dev/null; then
                 echo "Health check passed."
@@ -329,7 +299,6 @@ jobs:
               echo "Health check attempt ${i}/20 failed; retrying in 3s..."
               sleep 3
             done
-
             echo "Health check failed."
             exit 1
 
@@ -338,12 +307,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - deploy_pm2
-    if: >
-      needs.deploy_pm2.result == 'success' &&
-      secrets.SENTRY_AUTH_TOKEN != '' &&
-      secrets.SENTRY_ORG != '' &&
-      secrets.SENTRY_PROJECT != ''
-
+    env:                                    # Define secrets as env variables for conditionals
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -351,6 +318,7 @@ jobs:
           fetch-depth: 0
 
       - name: Create Sentry release
+        if: env.SENTRY_AUTH_TOKEN != '' && env.SENTRY_ORG != '' && env.SENTRY_PROJECT != ''
         uses: getsentry/action-release@v1
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -380,9 +348,31 @@ jobs:
           elif [ "${{ needs.ci.result }}" = "success" ] && [ "${{ needs.deploy_pm2.result }}" = "skipped" ]; then
             RESULT="skipped"
           fi
-
           MSG="Deploy result: ${RESULT} | repo: ${{ github.repository }} | branch: ${{ github.ref_name }} | sha: ${{ github.sha }} | method: pm2"
           echo "message=${MSG}" >> "$GITHUB_OUTPUT"
 
+      - name: Notify Slack (optional)
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -sS -X POST -H "Content-type: application/json" \
+              --data "{\"text\":\"${{ steps.status.outputs.message }}\"}" \
+              "$SLACK_WEBHOOK_URL"
+          else
+            echo "Slack webhook not set, skipping notification."
+          fi
 
-     
+      - name: Notify Discord (optional)
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            curl -sS -X POST -H "Content-Type: application/json" \
+              --data "{\"content\":\"${{ steps.status.outputs.message }}\"}" \
+              "$DISCORD_WEBHOOK_URL"
+          else
+            echo "Discord webhook not set, skipping notification."
+          fi
