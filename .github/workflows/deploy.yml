@@ -194,7 +194,7 @@ jobs:
           name: release-${{ github.sha }}
           path: .
 
-      # 🔍 DEBUG STEP – captures the actual SSH host key fingerprint(s)
+      # Optional debug step – shows the actual host key fingerprints
       - name: Debug SSH host key from runner
         run: |
           echo "Scanning host ${{ secrets.SSH_HOST }} for SSH host keys..."
@@ -203,6 +203,13 @@ jobs:
             echo "$line" | ssh-keygen -lf -
           done
 
+      # ✅ Add host to known_hosts – this resolves the fingerprint mismatch
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # ✅ Upload artifact – upgraded action, fingerprint removed
       - name: Upload artifact to VPS
         uses: appleboy/scp-action@v1.0.0   # upgraded from v0.1.7
         with:
