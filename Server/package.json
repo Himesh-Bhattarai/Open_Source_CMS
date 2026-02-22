@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
+  "overrides": {
+    "ajv": "7.2.4",
+    "cross-spawn": "6.0.6",
+    "minimatch": "10.2.1",
+    "tmp": "0.2.3"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
@@ -33,7 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "eslint": "^4.1.1",
+    "eslint": "^10.0.1",
     "fast-check": "^3.18.0",
     "globals": "^16.5.0",
     "jest": "^30.2.0",

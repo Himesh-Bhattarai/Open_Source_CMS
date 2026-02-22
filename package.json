@@ -2,6 +2,10 @@
   "name": "project-root",
   "private": true,
   "type": "module",
+  "overrides": {
+    "debug": "4.3.4",
+    "tough-cookie": "4.1.3"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client -- -H 0.0.0.0 -p 3000\"",
     "start": "concurrently \"npm run start --prefix Server\" \"npm run start --prefix Client -- -H 0.0.0.0 -p 3000\"",
