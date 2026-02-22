@@ -210,7 +210,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
-          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           envs: APP_PATH,DEPLOY_SHA,HEALTHCHECK_URL,SERVER_ENV_FILE,CLIENT_ENV_FILE
           script_stop: true
           timeout: 25m
