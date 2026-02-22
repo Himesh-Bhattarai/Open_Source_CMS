@@ -204,15 +204,15 @@ jobs:
           done
 
       - name: Upload artifact to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0   # upgraded from v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
-          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           source: release-${{ github.sha }}.tar.gz
           target: /tmp
+          # fingerprint input is removed – now using known_hosts
 
       - name: Deploy artifact via SSH (blue/green-style release dirs)
         uses: appleboy/ssh-action@v1.0.3
@@ -227,7 +227,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
-          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          # fingerprint is optional here; you can keep or remove
+          # fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           envs: APP_PATH,DEPLOY_SHA,HEALTHCHECK_URL,SERVER_ENV_FILE,CLIENT_ENV_FILE
           script_stop: true
           timeout: 25m
