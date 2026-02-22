@@ -1,24 +1,18 @@
 on:
-  # Deploy pipeline trigger on deploy branch pushes.
   push:
     branches:
       - deploy
-
-  # Also trigger when PR is merged into deploy.
   pull_request:
     branches:
       - deploy
     types:
       - closed
-
-  # Manual fallback trigger.
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
-# Avoid overlapping deploys for the same effective commit.
 concurrency:
   group: deploy-${{ github.workflow }}-${{ github.event.pull_request.merge_commit_sha || github.sha }}
   cancel-in-progress: true
@@ -40,7 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Guardrail: prevent direct pushes to deploy from bypassing PR flow.
       - name: Guard deploy branch policy (require merged PR on push)
         if: github.event_name == 'push' && github.ref == 'refs/heads/deploy'
         uses: actions/github-script@v7
@@ -194,7 +187,6 @@ jobs:
           name: release-${{ github.sha }}
           path: .
 
-      # Optional debug step – shows the actual host key fingerprints
       - name: Debug SSH host key from runner
         run: |
           echo "Scanning host ${{ secrets.SSH_HOST }} for SSH host keys..."
@@ -203,15 +195,13 @@ jobs:
             echo "$line" | ssh-keygen -lf -
           done
 
-      # ✅ Add host to known_hosts – this resolves the fingerprint mismatch
       - name: Add host to known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      # ✅ Upload artifact – upgraded action, fingerprint removed
       - name: Upload artifact to VPS
-        uses: appleboy/scp-action@v1.0.0   # upgraded from v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -219,7 +209,6 @@ jobs:
           port: ${{ secrets.SSH_PORT || '22' }}
           source: release-${{ github.sha }}.tar.gz
           target: /tmp
-          # fingerprint input is removed – now using known_hosts
 
       - name: Deploy artifact via SSH (blue/green-style release dirs)
         uses: appleboy/ssh-action@v1.0.3
@@ -234,8 +223,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
-          # fingerprint is optional here; you can keep or remove
-          # fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           envs: APP_PATH,DEPLOY_SHA,HEALTHCHECK_URL,SERVER_ENV_FILE,CLIENT_ENV_FILE
           script_stop: true
           timeout: 25m
@@ -306,9 +293,21 @@ jobs:
               fi
             fi
             pm2 save
-              echo "===== PM2 logs ====="
-              pm2 logs contentflow --lines 20 --nostream
-              echo "===================="
+
+            # 🚀 Enhanced debugging section
+            echo "🔧 HEALTHCHECK_URL = ${HEALTHCHECK_URL}"
+            echo "📋 PM2 process list:"
+            pm2 list
+            echo "📋 Last 20 lines of PM2 logs for contentflow:"
+            pm2 logs contentflow --lines 20 --nostream || echo "❌ No logs found"
+            echo "🔍 Testing health endpoint (${HEALTHCHECK_URL})..."
+            if curl -fsS "${HEALTHCHECK_URL}" >/dev/null; then
+              echo "✅ Health endpoint reachable"
+            else
+              echo "❌ Health endpoint not reachable"
+            fi
+            # 🔁 End of debug section
+
             for i in $(seq 1 20); do
                 if curl -fsS "${HEALTHCHECK_URL}" >/dev/null; then
                 echo "Health check passed."
