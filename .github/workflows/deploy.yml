@@ -306,8 +306,11 @@ jobs:
               fi
             fi
             pm2 save
+              echo "===== PM2 logs ====="
+              pm2 logs contentflow --lines 20 --nostream
+              echo "===================="
             for i in $(seq 1 20); do
-              if curl -fsS "${HEALTHCHECK_URL}" >/dev/null; then
+                if curl -fsS "${HEALTHCHECK_URL}" >/dev/null; then
                 echo "Health check passed."
                 trap - ERR
                 ls -1dt "${RELEASES_DIR}"/* 2>/dev/null | tail -n +6 | xargs -r rm -rf
