@@ -271,11 +271,11 @@ jobs:
             fi
             npm --prefix "${NEW_RELEASE}/Server" ci --omit=dev
             npm --prefix "${NEW_RELEASE}/Client" ci --omit=dev
-            if npm --prefix "${NEW_RELEASE}/Server" run | grep -qE '^  migrate'; then
-              npm --prefix "${NEW_RELEASE}/Server" run migrate
-            else
-              echo "No migration script found; skipping migration."
-            fi
+
+            # ✅ Run migration only if script exists (using --if-present)
+            npm --prefix "${NEW_RELEASE}/Server" run migrate --if-present
+            echo "Migration check completed."
+
             ln -sfn "${NEW_RELEASE}" "${CURRENT_LINK}"
             if [ -f "${CURRENT_LINK}/ecosystem.config.js" ]; then
               echo "PM2 command: startOrReload ${CURRENT_LINK}/ecosystem.config.js --update-env"
