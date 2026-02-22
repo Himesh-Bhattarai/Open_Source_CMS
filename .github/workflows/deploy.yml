@@ -224,7 +224,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
           envs: APP_PATH,DEPLOY_SHA,HEALTHCHECK_URL,SERVER_ENV_FILE,CLIENT_ENV_FILE
-          script_stop: true
+          # ⚠️ IMPORTANT: Set script_stop: false to allow conditional checks to pass
+          script_stop: false
           timeout: 25m
           script: |
             set -Eeuxo pipefail
