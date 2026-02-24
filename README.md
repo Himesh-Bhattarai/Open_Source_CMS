@@ -111,6 +111,8 @@ Detailed map:
 - `docs/API_ROUTE_MAP.md`
 - `docs/CODEBASE_MAP.md`
 - `docs/DEPLOYMENT_GUIDE.md`
+- `docs/RELEASE_PROCESS.md`
+- `CHANGELOG.md`
 - `CODE_OF_CONDUCT.md`
 - `SECURITY.md`
 - `SUPPORT.md`

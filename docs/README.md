@@ -7,6 +7,8 @@ Use this index to navigate project docs quickly.
 - `README.md`: project overview and setup
 - `CONTRIBUTING.md`: contribution workflow
 - `STATUS.md`: commit status convention
+- `docs/RELEASE_PROCESS.md`: versioning and release steps
+- `CHANGELOG.md`: release notes ledger
 
 ## Technical Maps
 

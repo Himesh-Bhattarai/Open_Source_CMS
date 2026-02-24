@@ -20,7 +20,7 @@ if (!REFRESH_TOKEN || !ACCESS_TOKEN) {
 export const getCookieOptions = (maxAge) => ({
   httpOnly: true,
   secure: isProd,
-  sameSite: "lax",
+  sameSite: isProd ? "none" : "lax",
   path: "/",
   maxAge,
 });
