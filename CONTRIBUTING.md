@@ -52,19 +52,69 @@ Use focused branches:
 
 This repo uses STATUS-style commit messages.
 
-Format:
+Recommended format:
 
 ```text
-STATUS(<code>): short description
+status(###): short description
 ```
+
+Accepted prefixes: `status`, `Status`, `STATUS` (recommended: `status`).
+Do not add a space between prefix and code. Use `:` between code and summary.
 
 Examples:
 
-- `STATUS(301): add theme load fallback handling`
-- `STATUS(601): fix update-page endpoint path`
-- `STATUS(203): update environment docs`
+- `status(301): add theme load fallback handling`
+- `status(601): fix update-page endpoint path`
+- `status(203): update environment docs`
 
 See `STATUS.md` for full code mapping.
+
+## STATUS Commit Quickstart (Optional)
+
+If you want local enforcement and a guided commit prompt, use the STATUS_COMMIT
+tooling (kept in the separate STATUS_COMMIT repo).
+
+Option A: Copy tooling files into this repo.
+
+1. Copy these files from STATUS_COMMIT into this repo:
+
+```text
+.gitmessage
+.githooks/commit-msg
+.githooks/prepare-commit-msg
+scripts/install-hooks.sh
+scripts/install-hooks.ps1
+```
+
+2. Set the commit template:
+
+```bash
+git config commit.template .gitmessage
+```
+
+3. Install the hooks:
+
+```bash
+bash scripts/install-hooks.sh
+```
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install-hooks.ps1
+```
+
+Option B: One-command install from the STATUS_COMMIT repo.
+
+1. macOS/Linux:
+
+```bash
+./bin/status-commit install --repo /path/to/your/repo
+```
+
+2. Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File bin/status-commit.ps1 -Repo C:\path\to\your\repo
+```
 
 ## Coding Notes
 

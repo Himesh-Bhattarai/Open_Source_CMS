@@ -1,0 +1,46 @@
+name: Commit Message Check
+
+on:
+  push:
+    branches:
+      - main
+      - working
+
+permissions:
+  contents: read
+
+jobs:
+  status_commit:
+    name: Validate STATUS commit format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            RANGE="$AFTER"
+          else
+            RANGE="$BEFORE..$AFTER"
+          fi
+          echo "Checking commit subjects in range: $RANGE"
+          VALID1='^(status|Status|STATUS)\((([0-9]{3})|infinity)\): .+'
+          VALID2='^(status|Status|STATUS):[0-9]{3}: .+'
+          FAILED=0
+          while IFS= read -r SUBJECT; do
+            if [[ -z "$SUBJECT" ]]; then
+              continue
+            fi
+            if [[ ! "$SUBJECT" =~ $VALID1 && ! "$SUBJECT" =~ $VALID2 ]]; then
+              echo "Invalid commit subject: $SUBJECT"
+              FAILED=1
+            fi
+          done < <(git log --format=%s "$RANGE")
+          exit $FAILED
