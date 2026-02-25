@@ -19,6 +19,7 @@ import {
 import { Eye, EyeOff, Loader2, Check, Chrome, Facebook } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { registerApi } from "@/Api/Auth/Signup";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function SignupPage() {
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     setIsLoading(true);
     setError("");
@@ -51,8 +53,13 @@ export default function SignupPage() {
 
     try {
       const apiRequest = await registerApi(formData);
-      if (apiRequest.ok) {
+
+      if (apiRequest.ok ) {
+        toast.success("Account created successfully! Please log in.");
         router.push("/login");
+      }else{
+        toast.error("Registration failed: " + (apiRequest.message || "Unknown error"));
+        setError(apiRequest.message || "Unknown error");
       }
       setIsLoading(false);
     } catch (err) {
