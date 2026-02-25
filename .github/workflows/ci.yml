@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  test:
+    name: Lint / Typecheck / Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            Client/package-lock.json
+            Server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          npm ci
+          npm --prefix Client ci
+          npm --prefix Server ci
+
+      - name: Run ESLint
+        run: |
+          set -euo pipefail
+          npm --prefix Client run lint
+          if npm --prefix Server run | grep -qE '^  lint'; then
+            npm --prefix Server run lint
+          else
+            echo "No server lint script found; skipping server lint."
+          fi
+
+      - name: Run TypeScript type check
+        run: |
+          set -euo pipefail
+          npm --prefix Client run typecheck
+
+      - name: Run tests
+        run: |
+          set -euo pipefail
+          npm --prefix Client run --if-present test
+          npm --prefix Server run test -- --silent
