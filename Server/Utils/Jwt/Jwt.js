@@ -28,7 +28,7 @@ export const getCookieOptions = (maxAge) => ({
 //Cookies Token Generation and Verification
 export const generateTokens = (payload) => {
   const accessToken = jwt.sign({ ...payload, type: "access" }, ACCESS_TOKEN, {
-    expiresIn: ACCESS_TOKEN_EXPIRES_IN || "15m",
+    expiresIn: ACCESS_TOKEN_EXPIRES_IN || "2h",
   });
 
   const refreshToken = jwt.sign({ userId: payload.userId, type: "refresh" }, REFRESH_TOKEN, {
