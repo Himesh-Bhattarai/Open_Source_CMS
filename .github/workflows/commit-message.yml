@@ -32,7 +32,6 @@ jobs:
           fi
           echo "Checking commit subjects in range: $RANGE"
           VALID1='^(status|Status|STATUS)\((([0-9]{3})|infinity)\): .+'
-          VALID2='^(status|Status|STATUS):[0-9]{3}: .+'
           FAILED=0
           while IFS= read -r SUBJECT; do
             if [[ -z "$SUBJECT" ]]; then
