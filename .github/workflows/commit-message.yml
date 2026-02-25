@@ -31,13 +31,13 @@ jobs:
             RANGE="$BEFORE..$AFTER"
           fi
           echo "Checking commit subjects in range: $RANGE"
-          VALID1='^(status|Status|STATUS)\((([0-9]{3})|infinity)\): .+'
+          VALID1='^(status|Status|STATUS)\((([0-9]{3})|infinity)\) : .+'
           FAILED=0
           while IFS= read -r SUBJECT; do
             if [[ -z "$SUBJECT" ]]; then
               continue
             fi
-            if [[ ! "$SUBJECT" =~ $VALID1 && ! "$SUBJECT" =~ $VALID2 ]]; then
+            if [[ ! "$SUBJECT" =~ $VALID1 ]]; then
               echo "Invalid commit subject: $SUBJECT"
               FAILED=1
             fi
